@@ -1,8 +1,191 @@
 <!DOCTYPE html>
-<html>
-<head><title>TaxSyncQC MVP</title></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TaxSyncQC — Estimateur d'impôt Québec</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+    .drop { border: 2px dashed #ccc; border-radius: 8px; padding: 2rem; text-align: center; margin: 1rem 0; background: #fafafa; }
+    .result { background: #e6f7ff; border-left: 4px solid #1890ff; padding: 1rem; margin: 1rem 0; border-radius: 4px; }
+    .lang-toggle { text-align: right; margin-bottom: 1rem; }
+    .warning { color: #fa8c16; }
+  </style>
+</head>
 <body>
-  <h1>✅ Quebec Tax Estimator — LIVE</h1>
-  <p>Working as of $(date)</p>
+  <div class="lang-toggle">
+    <button onclick="setLang('en')" id="btn-en">EN</button>
+    <button onclick="setLang('fr')" id="btn-fr">FR</button>
+  </div>
+
+  <h1 id="title">💰 TaxSyncQC — Quebec Tax Estimator</h1>
+  <p id="subtitle"><strong>Quebec 2025 tax credit estimator</strong> — paste RL-1 text or upload a PDF.</p>
+
+  <div class="drop" id="dropZone">
+    📄 Drop RL-1 PDF here<br>or<br>
+    <input type="file" id="fileInput" accept=".pdf,.txt" style="display:none"/>
+    <button onclick="document.getElementById('fileInput').click()">Choose File</button>
+  </div>
+
+  <p id="paste-label">Or paste RL-1 text:</p>
+  <textarea id="textInput" rows="6" placeholder="Case A: 35000&#10;Case C: 2120&#10;Case L: 300"></textarea>
+  <br><button onclick="estimate()">Estimate Refund</button>
+
+  <div id="output"></div>
+
+  <script>
+    // ✅ Bilingual strings (fr/en)
+    const translations = {
+      en: {
+        title: "💰 TaxSyncQC — Quebec Tax Estimator",
+        subtitle: "Quebec 2025 tax credit estimator",
+        pasteLabel: "Or paste RL-1 text:",
+        estimateBtn: "Estimate Refund",
+        income: "Income",
+        solidarity: "Solidarity Credit",
+        workPremium: "Work Premium",
+        bpaSavings: "BPA Savings",
+        cwb: "CWB (cash)",
+        qcTotal: "QC Total",
+        fedTotal: "Fed Total",
+        totalBenefit: "Total Benefit",
+        cashBack: "Cash Back",
+        warnings: "⚠️ Warnings:",
+        missingUnionDues: "Union dues (Case L) missing — may be deductible",
+        missingSIN: "SIN missing — required for filing"
+      },
+      fr: {
+        title: "💰 TaxSyncQC — Estimateur d'impôt Québec",
+        subtitle: "Estimateur de crédits d'impôt Québec 2025",
+        pasteLabel: "Ou collez le texte du RL-1 :",
+        estimateBtn: "Estimer le remboursement",
+        income: "Revenu",
+        solidarity: "Crédit pour la solidarité",
+        workPremium: "Prime au travail",
+        bpaSavings: "Économies BPA",
+        cwb: "PTE (argent)",
+        qcTotal: "Total QC",
+        fedTotal: "Total fédéral",
+        totalBenefit: "Avantage total",
+        cashBack: "Remboursement",
+        warnings: "⚠️ Avertissements :",
+        missingUnionDues: "Cotisations syndicales (cas L) manquantes — peuvent être déductibles",
+        missingSIN: "NAS manquant — obligatoire pour la déclaration"
+      }
+    };
+
+    let lang = 'en';
+    const _ = (key) => translations[lang][key] || key;
+
+    function setLang(newLang) {
+      lang = newLang;
+      document.getElementById('btn-en').style.fontWeight = lang === 'en' ? 'bold' : 'normal';
+      document.getElementById('btn-fr').style.fontWeight = lang === 'fr' ? 'bold' : 'normal';
+      updateUI();
+    }
+
+    function updateUI() {
+      document.getElementById('title').textContent = _( 'title' );
+      document.getElementById('subtitle').innerHTML = `<strong>${_( 'subtitle' )}</strong>`;
+      document.getElementById('paste-label').textContent = _( 'pasteLabel' );
+      document.querySelector('button[onclick="estimate()"]').textContent = _( 'estimateBtn' );
+      if (document.getElementById('textInput').value.includes('Case A')) estimate();
+    }
+
+    // ✅ Quebec + Federal logic (same as CLI)
+    function parseRL1(text) {
+      const clean = text.replace(/\s+/g, ' ').trim();
+      const extract = (regex) => {
+        const m = clean.match(regex);
+        return m ? parseFloat(m[1].replace(/,/g, '')) || 0 : null;
+      };
+      return {
+        income: extract(/Case\s+A[:\s]*([\d,]+\.?\d*)/i),
+        unionDues: extract(/Case\s+L[:\s]*([\d,]+\.?\d*)/i),
+        sin: clean.match(/S\.I\.N\.\s*[:\-]?\s*(\d{3}\s?\d{3}\s?\d{3})/i)?.[1] || null,
+        isValid: function() { return this.income > 0; },
+        warnings: function() {
+          const w = [];
+          if (this.unionDues === null) w.push(_( 'missingUnionDues' ));
+          if (!this.sin) w.push(_( 'missingSIN' ));
+          return w;
+        }
+      };
+    }
+
+    function calculateSolidarity(income) {
+      const BASE = 531, PHASEOUT_START = 57965, PHASEOUT_END = 64125;
+      let amount = BASE;
+      if (income > PHASEOUT_START) {
+        if (income >= PHASEOUT_END) amount = 0;
+        else amount *= (1 - (income - PHASEOUT_START) / (PHASEOUT_END - PHASEOUT_START));
+      }
+      return Math.round(amount * 100) / 100;
+    }
+
+    function calculateWorkPremium(income) {
+      if (income < 7200) return 0;
+      const base = Math.min(income - 7200, 33100);
+      return Math.min(Math.round(base * 0.26 * 100) / 100, 728);
+    }
+
+    function estimateFederal(income) {
+      let cwb = 0;
+      if (income <= 25539) cwb = Math.min(income * 0.27, 1519);
+      else if (income <= 35539) cwb = Math.max(0, 1519 - (income - 25539) * 0.15);
+      const bpa = Math.max(0, 15705 - Math.max(0, income - 165430) * 15705 / 70000);
+      const bpaSavings = bpa * 0.15;
+      return { cwb: Math.round(cwb * 100) / 100, bpaSavings: Math.round(bpaSavings * 100) / 100 };
+    }
+
+    function estimate() {
+      const text = document.getElementById('textInput').value;
+      const data = parseRL1(text);
+      if (!data.isValid()) {
+        document.getElementById('output').innerHTML = `<p style="color:red">${lang === 'fr' ? '❌ RL-1 invalide — vérifiez le cas A.' : '❌ Invalid RL-1 — check Case A.'}</p>`;
+        return;
+      }
+
+      const income = data.income;
+      const qc = { solidarity: calculateSolidarity(income), workPremium: calculateWorkPremium(income) };
+      const fed = estimateFederal(income);
+      const qcTotal = qc.solidarity + qc.workPremium;
+      const totalBenefit = qcTotal + fed.bpaSavings + fed.cwb;
+      const cashBack = qc.workPremium + fed.cwb;
+
+      let html = `<div class="result">
+        <h3>🧾 ${lang === 'fr' ? 'Estimation Québec + Fédéral (2025)' : 'Quebec + Federal Estimate (2025)'}</h3>
+        <p>💼 ${_( 'income' )}: $${income.toLocaleString()}</p>
+        <h4>${lang === 'fr' ? '🇶🇨 Québec' : '🇶🇨 Quebec'}</h4>
+        <p>💰 ${_( 'solidarity' )}: $${qc.solidarity}</p>
+        <p>👷 ${_( 'workPremium' )}: $${qc.workPremium}</p>
+        <p><strong>✅ ${_( 'qcTotal' )}: $${qcTotal.toFixed(2)}</strong></p>
+        <h4>${lang === 'fr' ? '🇨🇦 Fédéral' : '🇨🇦 Federal'}</h4>
+        <p>🛡️ ${_( 'bpaSavings' )}: $${fed.bpaSavings}</p>
+        <p>💵 ${_( 'cwb' )}: $${fed.cwb}</p>
+        <p><strong>✅ ${_( 'fedTotal' )}: $${(fed.bpaSavings + fed.cwb).toFixed(2)}</strong></p>
+        <p><strong>🎯 ${_( 'totalBenefit' )}: $${totalBenefit.toFixed(2)}</strong></p>
+        <p><strong>💸 ${_( 'cashBack' )}: $${cashBack.toFixed(2)}</strong></p>
+      </div>`;
+
+      const warns = data.warnings();
+      if (warns.length > 0) {
+        html += `<div class="warning"><strong>${_( 'warnings' )}</strong><ul>`;
+        warns.forEach(w => html += `<li>${w}</li>`);
+        html += '</ul></div>';
+      }
+
+      document.getElementById('output').innerHTML = html;
+    }
+
+    document.getElementById('textInput').addEventListener('input', () => {
+      if (document.getElementById('textInput').value.includes('Case A')) {
+        setTimeout(estimate, 300);
+      }
+    });
+
+    // Init in English (can default to 'fr' if preferred)
+    updateUI();
+  </script>
 </body>
 </html>
