@@ -1,21 +1,41 @@
 {
   "name": "taxsyncqc",
   "version": "1.0.0",
-  "description": "",
+  "description": "Quebec + Federal tax credits estimator (2025) — Free, open-source, bilingual (FR/EN)",
   "main": "cli.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Isaloum/TaxSyncQC.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
+  "keywords": [
+    "quebec",
+    "tax",
+    "credits",
+    "rrsp",
+    "rl-1",
+    "t4",
+    "solidarity",
+    "work-premium",
+    "cwb",
+    "canada"
+  ],
+  "author": "Ihab Saloum",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Isaloum/TaxSyncQC/issues"
   },
-  "homepage": "https://github.com/Isaloum/TaxSyncQC#readme"
+  "homepage": "https://Isaloum.github.io/TaxSyncQC",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {}
+  }
 }
