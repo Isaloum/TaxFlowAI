@@ -176,11 +176,9 @@
   </div>
 
   <div class="input-group">
-  <div class="input-group">
     <label data-i18n="rrspContribution">Contribution RRSP ($)</label>
     <input type="number" id="rrspInput" step="100" min="0" max="31560" value="0" placeholder="Ex: 5000">
     <div class="hint" data-i18n="hintRRSP">Maximum: $31,560 (2025 limit)</div>
-  </div>
   </div>
 
   <button type="button" onclick="calculate()" data-i18n="estimateButton">Estimer les crédits</button>
@@ -230,6 +228,7 @@
         t4BoxBenefits: "Various benefits (housing, car, loans, etc.)",
         bothTabDesc: "Enter data from both forms above — useful for dual-status workers (e.g., Indigenous, reservist).",
         rrspContribution: "RRSP Contribution ($)",
+        hintRRSP: "Maximum: $31,560 (2025 limit)",
         estimateButton: "Estimate Credits",
         resultTitle: "🧾 Quebec + Federal Estimate (2025)",
         grossIncome: "💼 Gross income",
@@ -285,6 +284,7 @@
         t4BoxBenefits: "Avantages divers (logement, auto, prêts, etc.)",
         bothTabDesc: "Entrez les données des deux formulaires ci-dessus — utile pour les travailleurs en double statut (ex: autochtone, réserviste).",
         rrspContribution: "Contribution RRSP ($)",
+        hintRRSP: "Maximum : 31 560 $ (limite 2025)",
         estimateButton: "Estimer les crédits",
         resultTitle: "🧾 Estimation Québec + Fédéral (2025)",
         grossIncome: "💼 Revenu brut",
@@ -313,7 +313,6 @@
       document.documentElement.lang = l;
       document.title = _('title').replace(/<[^>]*>/g, '');
 
-      // Update all elements with data-i18n attribute
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         el.innerHTML = _(key);
@@ -335,12 +334,9 @@
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       event.target.classList.add('active');
     }
-`;
-    }
 
     function getFormData() {
       const isRL1 = document.getElementById('rl1Tab').classList.contains('active');
-      const form = isRL1 ? 'rl1' : 't4';
 
       const data = {
         source: isRL1 ? 'RL-1' : 'T4',
@@ -390,17 +386,14 @@
       const rrsp = parseFloat(document.getElementById('rrspInput').value) || 0;
       const effectiveIncome = Math.max(0, income - rrsp);
 
-      // Québec credits
       const solidarity = effectiveIncome <= 57965 ? 531 : Math.max(0, 531 * (1 - (effectiveIncome - 57965) / 6160));
       const workPremium = effectiveIncome < 7200 ? 0 : Math.min(728, Math.min(effectiveIncome - 7200, 33100) * 0.26);
 
-      // Federal credits
       const cwb = effectiveIncome <= 25539 ? Math.min(effectiveIncome * 0.27, 1519) :
                  effectiveIncome <= 35539 ? Math.max(0, 1519 - (effectiveIncome - 25539) * 0.15) : 0;
       const bpa = Math.max(0, 15705 - Math.max(0, effectiveIncome - 165430) * 15705 / 70000);
       const bpaSavings = bpa * 0.15;
 
-      // RRSP tax saved
       const marginalRate = income <= 51268 ? 0.2885 : income <= 57965 ? 0.3325 : 0.3885;
       const taxSaved = rrsp * marginalRate;
 
@@ -436,7 +429,6 @@
 
       document.getElementById('output').innerHTML = html;
 
-      // Show structured JSON for automation
       if (document.getElementById('modeToggle').checked) {
         const exportData = {
           ...data,
@@ -451,7 +443,6 @@
       }
     }
 
-    // Init
     setLang('fr');
   </script>
 </body>
