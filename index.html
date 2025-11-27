@@ -176,9 +176,11 @@
   </div>
 
   <div class="input-group">
+  <div class="input-group">
     <label data-i18n="rrspContribution">Contribution RRSP ($)</label>
-    <input type="range" id="rrspSlider" min="0" max="31560" value="0" step="100" oninput="updateRrsp(this.value)">
-    <div id="rrspValue">$0</div>
+    <input type="number" id="rrspInput" step="100" min="0" max="31560" value="0" placeholder="Ex: 5000">
+    <div class="hint" data-i18n="hintRRSP">Maximum: $31,560 (2025 limit)</div>
+  </div>
   </div>
 
   <button type="button" onclick="calculate()" data-i18n="estimateButton">Estimer les crédits</button>
@@ -333,9 +335,7 @@
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       event.target.classList.add('active');
     }
-
-    function updateRrsp(val) {
-      document.getElementById('rrspValue').textContent = `$${parseInt(val).toLocaleString()}`;
+`;
     }
 
     function getFormData() {
@@ -387,7 +387,7 @@
       const income = data.source === 'RL-1' ? data.rl1.A : data.t4['14'];
       const unionDues = data.source === 'RL-1' ? data.rl1.F : data.t4['44'];
       const sin = data.source === 'RL-1' ? data.rl1.sin : data.t4.sin;
-      const rrsp = parseFloat(document.getElementById('rrspSlider').value) || 0;
+      const rrsp = parseFloat(document.getElementById('rrspInput').value) || 0;
       const effectiveIncome = Math.max(0, income - rrsp);
 
       // Québec credits
