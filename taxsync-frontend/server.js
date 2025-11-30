@@ -3,12 +3,16 @@ import express from 'express';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
+import multer from 'multer';
 
 // Import the actual calculation functions
 import { calculateCredits } from './src/credit-calculator.js';
 
 // Import the new email/text parsing functionality
 import { handleWebhookData } from '../../email-text-parser.js';
+
+// Import PDF parsing functionality
+import { extractTaxSlipFromPdf } from '../../pdf-parser.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -76,6 +80,59 @@ app.post('/api/parse-slip', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       error: 'Failed to parse tax slip information' 
+    });
+  }
+});
+
+// Configure multer for file uploads
+const upload = multer({ 
+  storage: multer.memoryStorage(), // Store files in memory
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Only allow PDF files
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'), false);
+    }
+  }
+});
+
+// API endpoint for parsing tax slip information from PDF files
+app.post('/api/parse-pdf', upload.single('pdf'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'PDF file is required' 
+      });
+    }
+    
+    // The PDF file is available as a buffer in req.file.buffer
+    const pdfBuffer = req.file.buffer;
+    
+    const result = await extractTaxSlipFromPdf(pdfBuffer);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        slip: result.slip,
+        message: 'Tax slip information extracted from PDF successfully'
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        error: result.error,
+        warnings: result.warnings
+      });
+    }
+  } catch (error) {
+    console.error('Error parsing tax slip from PDF:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to parse tax slip information from PDF' 
     });
   }
 });
