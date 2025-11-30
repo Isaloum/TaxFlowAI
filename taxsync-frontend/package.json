@@ -1,0 +1,30 @@
+{
+  "name": "taxsyncqc-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Frontend for TaxSyncQC - Quebec Tax Calculator for Accountants",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "node build-frontend.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "tax",
+    "quebec",
+    "accounting",
+    "frontend",
+    "calculator"
+  ],
+  "author": "Ihab Saloum",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Isaloum/TaxSyncQC.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Isaloum/TaxSyncQC/issues"
+  },
+  "homepage": "https://github.com/Isaloum/TaxSyncQC#readme"
+}

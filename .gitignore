@@ -2,9 +2,10 @@
 # Dependencies
 node_modules/
 
-# Logs and temp files
-*.log
-*.tmp
+# Build artifacts
+dist/
+build/
+*.js
 
 # Environment
 .env
@@ -15,16 +16,14 @@ node_modules/
 .vscode/
 .idea/
 
-# Build artifacts
-build/
-dist/
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Original rules preserved
+# Logs
 *.log
+
+# Temporary files
+*.tmp
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
 ```
