@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { calculateCredits } from '../credit-calculator.js'; // Import the backend calculation logic
+// import { calculateCredits } from '../../credit-calculator.js'; // Import the calculation logic
 import './TaxCalculator.css';
 
 const TaxCalculator = ({ language }) => {
@@ -72,23 +72,33 @@ const TaxCalculator = ({ language }) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      // Call the backend API to calculate credits
+      const response = await fetch('/api/calculate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          income: parseFloat(formData.income) || 0,
+          spouseIncome: parseFloat(formData.spouseIncome) || 0,
+          children: parseInt(formData.children) || 0,
+          rrspContribution: parseFloat(formData.rrspContribution) || 0,
+          disability: formData.disability,
+          workIncident: formData.workIncident
+        })
+      });
+      
+      if (response.ok) {
+        const calculatedResults = await response.json();
+        setResults(calculatedResults);
+      } else {
+        console.error('Error calculating credits:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error calling calculation API:', error);
+    }
     
-    // Convert form values to the format expected by the calculation function
-    const inputData = {
-      income: parseFloat(formData.income) || 0,
-      spouseIncome: parseFloat(formData.spouseIncome) || 0,
-      children: parseInt(formData.children) || 0,
-      rrspContribution: parseFloat(formData.rrspContribution) || 0,
-      disability: formData.disability,
-      workIncident: formData.workIncident
-    };
-    
-    // Calculate credits using the backend logic
-    const calculatedResults = calculateCredits(inputData);
-    
-    setResults(calculatedResults);
     setIsLoading(false);
   };
 
