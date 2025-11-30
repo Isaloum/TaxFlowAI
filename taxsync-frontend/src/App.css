@@ -71,6 +71,33 @@ body {
   font-weight: bold;
 }
 
+.tab-navigation {
+  display: flex;
+  gap: 0.5rem;
+  margin-right: 1rem;
+}
+
+.tab-navigation button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.tab-navigation button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.tab-navigation button.active {
+  background: white;
+  color: #2c5282;
+  font-weight: 500;
+}
+
 main {
   flex: 1;
   padding: 2rem;

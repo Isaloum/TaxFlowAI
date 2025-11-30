@@ -6,9 +6,9 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "build": "node build-frontend.js",
-    "dev": "node server.js"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "keywords": [
     "tax",
@@ -26,5 +26,14 @@
   "bugs": {
     "url": "https://github.com/Isaloum/TaxSyncQC/issues"
   },
-  "homepage": "https://github.com/Isaloum/TaxSyncQC#readme"
+  "homepage": "https://github.com/Isaloum/TaxSyncQC#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "vite": "^7.2.4"
+  }
 }
