@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-// import { calculateCredits } from '../../credit-calculator.js'; // Import the calculation logic
+import RRSPOptimizerChart from './RRSPOptimizerChart.jsx';
 import './TaxCalculator.css';
 
 const TaxCalculator = ({ language }) => {
@@ -229,6 +229,15 @@ const TaxCalculator = ({ language }) => {
           
           <div className="total-savings">
             <h4>{t.totalSavings} <strong>${results.totalSavings.toFixed(2)}</strong></h4>
+          </div>
+          
+          {/* RRSP Optimizer Chart */}
+          <div className="rrsp-optimizer-section">
+            <RRSPOptimizerChart 
+              language={language} 
+              income={parseFloat(formData.income) || 0} 
+              contribution={parseFloat(formData.rrspContribution) || 0} 
+            />
           </div>
         </div>
       )}

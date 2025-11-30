@@ -28,9 +28,13 @@
   },
   "homepage": "https://github.com/Isaloum/TaxSyncQC#readme",
   "dependencies": {
+    "chart.js": "^4.5.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "pdf-parse": "^2.4.5",
     "react": "^19.2.0",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
