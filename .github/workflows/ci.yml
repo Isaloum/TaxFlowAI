@@ -11,6 +11,9 @@ jobs:
     name: Node.js ${{ matrix.node-version }} - Lint, Test & Audit
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: read
+    
     strategy:
       matrix:
         node-version: [18, 20]
