@@ -62,7 +62,10 @@ You can pipe raw payroll emails or copied PDF text through an n8n webhook and le
 3. **Paste any email/text** into the new “Paste email/text to parse” box and click **Send to n8n**. Once the webhook replies, hit **Apply parsed fields** to load the values into the calculator and run your estimate.
 
 Tip: Add validation/guardrails in n8n (e.g., clamp to positive numbers, mark confidence) before returning the JSON to the app.
-
+**Troubleshooting**
+- The UI validates the webhook URL (must be http/https) and will flag malformed or empty responses.
+- If the webhook returns non-numeric slip values or no RL-1/T4/RRSP fields, the app will show an error and skip applying them.
+- Some workflows wrap data in a `data` object; the app automatically unwraps this shape.
 ---
 
 ## 📖 How to Use

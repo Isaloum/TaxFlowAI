@@ -1,212 +1,455 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TaxSyncQC — Estimation officielle Québec 2025</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 800px; margin: 1rem auto; padding: 0 1rem; line-height: 1.5; }
-    .lang-toggle { text-align: right; margin-bottom: 1rem; }
-    .tabs { display: flex; margin-bottom: 1rem; border-bottom: 1px solid #ccc; }
-    .tab-btn { padding: 0.75rem 1.5rem; background: #f0f0f0; border: none; cursor: pointer; }
-    .tab-btn.active { background: #1890ff; color: white; }
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --accent: #2563eb;
+      --accent-2: #0ea5e9;
+      --success: #0f9d58;
+      --warning: #f97316;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.08), transparent 25%),
+                  radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.09), transparent 30%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 0 1rem 2rem;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding-top: 1.5rem;
+    }
+
+    .surface {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .badge {
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(14, 165, 233, 0.08));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.25rem;
+    }
+
+    h1 { margin: 0 0 0.5rem; font-size: 1.8rem; letter-spacing: -0.02em; }
+    h2 { margin: 0.5rem 0 0.75rem; }
+    h3 { margin-top: 0; }
+
+    .lang-toggle button {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.75rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      min-width: 52px;
+      transition: all 0.2s ease;
+    }
+    .lang-toggle button:hover { border-color: var(--accent); color: var(--accent); }
+    .lang-toggle button[style*="bold"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+
+    .tab-btn {
+      padding: 0.9rem 1.2rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 700;
+      text-align: left;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .tab-btn.active { background: linear-gradient(135deg, #2563eb, #0ea5e9); color: #fff; border-color: transparent; }
+
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    fieldset { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem; }
-    legend { font-weight: bold; padding: 0 0.5rem; }
+
+    fieldset {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+      background: #fcfdff;
+    }
+
+    legend { font-weight: 700; padding: 0 0.5rem; color: var(--text); }
+    .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem 1.5rem; }
     .input-group { margin-bottom: 1rem; }
-    label { display: block; font-weight: bold; margin-bottom: 0.25rem; }
-    .box-label { color: #1890ff; font-family: monospace; }
-    .hint { font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
-    input, select, textarea { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
-    .toggle { margin: 1rem 0; }
-    button { background: #1890ff; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1.1em; }
-    button.secondary { background: #52c41a; margin-left: 0.5rem; }
-    .result { background: #e6f7ff; border-left: 4px solid #1890ff; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
-    .warnings { color: #fa8c16; margin-top: 1rem; }
-    .json-output { background: #f5f5f5; padding: 1rem; border-radius: 4px; overflow-x: auto; font-family: monospace; font-size: 0.9em; margin-top: 1rem; }
-    .integration { border: 1px dashed #ccc; padding: 1rem; border-radius: 6px; margin: 1.5rem 0; background: #fafafa; }
-    .integration h2 { margin-top: 0; }
+    label { display: block; font-weight: 700; margin-bottom: 0.25rem; color: var(--text); }
+    .box-label { color: var(--accent); font-family: "SFMono-Regular", Menlo, Consolas, monospace; }
+    .hint { font-size: 0.9rem; color: var(--muted); margin-top: 0.25rem; }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid var(--border, #ccc);
+      border-radius: 8px;
+      background: #fff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .toggle {
+      margin: 1rem 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0.9rem;
+      background: #fff;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #2563eb, #0ea5e9);
+      color: #fff;
+      padding: 0.85rem 1.3rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: var(--shadow);
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 10px 30px rgba(37, 99, 235, 0.25); }
+    .btn:active { transform: translateY(0); }
+    .btn.secondary { background: linear-gradient(135deg, #0f9d58, #10b981); margin-left: 0; }
+    .btn.ghost { background: #fff; color: var(--text); border: 1px solid var(--border); box-shadow: none; }
+
+    .action-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin: 1rem 0; }
+
+    .result {
+      background: #eef5ff;
+      border: 1px solid rgba(37, 99, 235, 0.2);
+      padding: 1.25rem;
+      margin: 1.25rem 0;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .warnings { color: var(--warning); margin-top: 1rem; font-weight: 600; }
+    .warnings ul { margin: 0.35rem 0 0; padding-left: 1.1rem; color: var(--text); }
+
+    .json-output {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 1rem;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 0.9em;
+      margin-top: 1rem;
+      border: 1px solid #1e293b;
+    }
+
+    .integration {
+      border: 1px dashed var(--border);
+      padding: 1.2rem;
+      border-radius: var(--radius);
+      margin: 1.25rem 0;
+      background: #f8fafc;
+      box-shadow: var(--shadow);
+    }
+
+    .integration h2 { margin-top: 0; display: flex; align-items: center; gap: 0.4rem; }
+    #n8nStatus { min-height: 1.2rem; font-weight: 600; }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0; }
+    .pill { padding: 0.45rem 0.75rem; border-radius: 999px; background: #fff; border: 1px solid var(--border); font-size: 0.95rem; color: var(--muted); box-shadow: var(--shadow); }
+
+    footer { margin-top: 2rem; color: var(--muted); font-size: 0.95rem; text-align: center; }
   </style>
 </head>
 <body>
-  <div class="lang-toggle">
-    <button onclick="setLang('en')" id="btn-en">EN</button>
-    <button onclick="setLang('fr')" id="btn-fr" style="font-weight:bold">FR</button>
-  </div>
-
-  <h1 data-i18n="title">💰 TaxSyncQC — Estimation officielle Québec 2025</h1>
-  <p data-i18n="subtitle">Basé sur les documents <strong>RL-1-T(2025-10)</strong> et <strong>T4 (2025)</strong> de Revenu Québec et l'ARC.</p>
-
-  <div class="toggle">
-    <label>
-      <input type="checkbox" id="modeToggle" onchange="toggleMode()">
-      <span data-i18n="advancedMode">Mode avancé (tous les champs)</span>
-    </label>
-  </div>
-
-  <div class="tabs">
-    <button class="tab-btn active" onclick="showTab('rl1')" data-i18n="tabRL1">RL-1 (Revenu Québec)</button>
-    <button class="tab-btn" onclick="showTab('t4')" data-i18n="tabT4">T4 (ARC)</button>
-    <button class="tab-btn" onclick="showTab('both')" data-i18n="tabBoth">Les deux</button>
-  </div>
-
-  <!-- RL-1 Tab -->
-  <div id="rl1Tab" class="tab-content active">
-    <form id="rl1Form">
-      <fieldset>
-        <legend data-i18n="essentialRequired">✅ Essentiel (requis)</legend>
-        <div class="input-group">
-          <label><span class="box-label">Case A</span> — <span data-i18n="rl1BoxA">Revenu d'emploi (Ligne 101)</span></label>
-          <input type="number" id="rl1_A" step="100" placeholder="Ex: 60000">
-          <div class="hint" data-i18n="hintRL1BoxA">Box A — top left on RL-1</div>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <span style="font-size:1.7rem">💰</span>
+        <div>
+          <div>TaxSyncQC</div>
+          <small class="hint">Crédits Québec + Fédéral 2025</small>
         </div>
-        <div class="input-group">
-          <label><span class="box-label">Case F</span> — <span data-i18n="rl1BoxF">Cotisations syndicales (Ligne 397.1)</span></label>
-          <input type="number" id="rl1_F" step="1" placeholder="Ex: 400">
-        </div>
-        <div class="input-group">
-          <label data-i18n="sinLabel">NAS</label>
-          <input type="text" id="rl1_sin" maxlength="11" placeholder="Ex: 123 456 789">
-        </div>
-      </fieldset>
-
-      <fieldset id="rl1Deductions" style="display:none;">
-        <legend data-i18n="deductions">⚠️ Déductions</legend>
-        <div class="input-group">
-          <label><span class="box-label">Case B.A</span> — <span data-i18n="rl1BoxBA">Cotisations RRQ (Ligne 98)</span></label>
-          <input type="number" id="rl1_BA" step="1">
-        </div>
-        <div class="input-group">
-          <label><span class="box-label">Case H</span> — <span data-i18n="rl1BoxH">Prime d'assurance parentale (Ligne 97)</span></label>
-          <input type="number" id="rl1_H" step="1">
-        </div>
-        <div class="input-group">
-          <label><span class="box-label">Case D</span> — <span data-i18n="rl1BoxD">Cotisations RPA (Ligne 205)</span></label>
-          <input type="number" id="rl1_D" step="1">
-        </div>
-        <div class="input-group">
-          <label><span class="box-label">Case D-1</span> — <span data-i18n="rl1BoxD1">Arrangement de retraite (Ligne 207)</span></label>
-          <input type="number" id="rl1_D1" step="1">
-        </div>
-        <div class="input-group">
-          <label><span class="box-label">Case N</span> — <span data-i18n="rl1BoxN">Dons de bienfaisance (Ligne 395)</span></label>
-          <input type="number" id="rl1_N" step="1">
-        </div>
-      </fieldset>
-
-      <fieldset id="rl1Benefits" style="display:none;">
-        <legend data-i18n="taxableBenefits">🔹 Avantages imposables (inclus dans la Case A)</legend>
-        <div class="input-group">
-          <label><span class="box-label">Case J</span> — <span data-i18n="rl1BoxJ">Régime privé de soins de santé (Ligne 381)</span></label>
-          <input type="number" id="rl1_J" step="1">
-        </div>
-        <div class="input-group">
-          <label><span class="box-label">Case K</span> — <span data-i18n="rl1BoxK">Déplacements (région éloignée) (Ligne 236)</span></label>
-          <input type="number" id="rl1_K" step="1">
-        </div>
-        <div class="input-group">
-          <label><span class="box-label">Case L</span> — <span data-i18n="rl1BoxL">Autres avantages</span></label>
-          <input type="number" id="rl1_L" step="1">
-        </div>
-        <div class="input-group">
-          <label><span class="box-label">Case M</span> — <span data-i18n="rl1BoxM">Commissions (Ligne 100)</span></label>
-          <input type="number" id="rl1_M" step="1">
-        </div>
-      </fieldset>
-    </form>
-  </div>
-
-  <!-- T4 Tab -->
-  <div id="t4Tab" class="tab-content">
-    <form id="t4Form">
-      <fieldset>
-        <legend data-i18n="essentialRequired">✅ Essentiel (requis)</legend>
-        <div class="input-group">
-          <label><span class="box-label">Box 14</span> — <span data-i18n="t4Box14">Revenus d'emploi (Ligne 10100)</span></label>
-          <input type="number" id="t4_14" step="100" placeholder="Ex: 60000">
-          <div class="hint" data-i18n="hintT4Box14">Box 14 — center-left on T4</div>
-        </div>
-        <div class="input-group">
-          <label><span class="box-label">Box 44</span> — <span data-i18n="t4Box44">Cotisations syndicales (Ligne 21200)</span></label>
-          <input type="number" id="t4_44" step="1" placeholder="Ex: 400">
-        </div>
-        <div class="input-group">
-          <label data-i18n="sinLabelT4">SIN</label>
-          <input type="text" id="t4_sin" maxlength="11" placeholder="Ex: 123-456-789">
-        </div>
-      </fieldset>
-
-      <fieldset id="t4Deductions" style="display:none;">
-        <legend data-i18n="deductions">⚠️ Déductions</legend>
-        <div class="input-group">
-          <label><span class="box-label">Box 17</span> — <span data-i18n="t4Box17">Cotisations RRQ (QC)</span> / <span class="box-label">Box 16</span> — <span data-i18n="t4Box16">RPC (autres)</span></label>
-          <input type="number" id="t4_17" step="1" placeholder="QC: Box 17">
-          <input type="number" id="t4_16" step="1" placeholder="Elsewhere: Box 16">
-        </div>
-        <div class="input-group">
-          <label><span class="box-label">Box 55</span> — <span data-i18n="t4Box55">RPAP (QC)</span> / <span class="box-label">Box 18</span> — <span data-i18n="t4Box18">AE</span></label>
-          <input type="number" id="t4_55" step="1" placeholder="QC: Box 55">
-          <input type="number" id="t4_18" step="1" placeholder="Elsewhere: Box 18">
-        </div>
-        <div class="input-group">
-          <label><span class="box-label">Box 20</span> — <span data-i18n="t4Box20">Cotisations RPA (Ligne 20700)</span></label>
-          <input type="number" id="t4_20" step="1">
-        </div>
-        <div class="input-group">
-          <label><span class="box-label">Box 52</span> — <span data-i18n="t4Box52">Facteur d'équivalence (Ligne 20600)</span></label>
-          <input type="number" id="t4_52" step="1">
-        </div>
-        <div class="input-group">
-          <label><span class="box-label">Box 46</span> — <span data-i18n="t4Box46">Dons de bienfaisance</span></label>
-          <input type="number" id="t4_46" step="1">
-        </div>
-      </fieldset>
-
-      <fieldset id="t4Benefits" style="display:none;">
-        <legend data-i18n="taxableBenefitsT4">🔹 Avantages imposables (déjà inclus dans Box 14)</legend>
-        <div class="input-group">
-          <label><span class="box-label">Boxes 30, 32, 34, 36, 38, 40</span> — <span data-i18n="t4BoxBenefits">Avantages divers (logement, auto, prêts, etc.)</span></label>
-          <input type="number" id="t4_benefits" step="1" placeholder="Total si connu">
-        </div>
-      </fieldset>
-    </form>
-  </div>
-
-  <!-- Both Tab -->
-  <div id="bothTab" class="tab-content">
-    <p data-i18n="bothTabDesc">Entrez les données des deux formulaires ci-dessus — utile pour les travailleurs en double statut (ex: autochtone, réserviste).</p>
-  </div>
-
-  <div class="input-group">
-    <label data-i18n="rrspContribution">Contribution RRSP ($)</label>
-    <input type="number" id="rrspInput" step="100" min="0" max="31560" value="0" placeholder="Ex: 5000">
-    <div class="hint" data-i18n="hintRRSP">Maximum: $31,560 (2025 limit)</div>
-  </div>
-
-  <div class="integration">
-    <h2 data-i18n="n8nTitle">🔗 Connect to n8n</h2>
-    <p class="hint" data-i18n="n8nDesc">Send pasted email/text to an n8n webhook that extracts RL-1/T4 fields and optional RRSP suggestion.</p>
-    <div class="input-group">
-      <label data-i18n="n8nUrlLabel">n8n webhook URL</label>
-      <input type="url" id="n8nUrl" placeholder="https://your-n8n.example/webhook/parse-slip">
+      </div>
+      <div class="lang-toggle">
+        <button onclick="setLang('en')" id="btn-en">EN</button>
+        <button onclick="setLang('fr')" id="btn-fr" style="font-weight:bold">FR</button>
+      </div>
     </div>
-    <div class="input-group">
-      <label data-i18n="n8nTextLabel">Paste email/text to parse</label>
-      <textarea id="n8nText" rows="4" placeholder="Paste a payroll email or PDF text here"></textarea>
+
+    <div class="hero">
+      <div class="badge">✅ Conforme 2025</div>
+      <h1 data-i18n="title">💰 TaxSyncQC — Estimation officielle Québec 2025</h1>
+      <p data-i18n="subtitle">Basé sur les documents <strong>RL-1-T(2025-10)</strong> et <strong>T4 (2025)</strong> de Revenu Québec et l'ARC.</p>
+      <div class="pill-row">
+        <div class="pill">⚡ 100% navigateur — aucune donnée envoyée</div>
+        <div class="pill">🇨🇦 & 🇶🇨 Bilingue</div>
+        <div class="pill">📊 RRSP & crédits majeurs</div>
+      </div>
     </div>
-    <div class="input-group" style="display:flex; gap:0.5rem; align-items:center;">
-      <button type="button" class="secondary" onclick="sendToN8n()" data-i18n="n8nSend">🚀 Send to n8n</button>
-      <button type="button" class="secondary" id="applyN8nBtn" onclick="applyN8nData()" disabled data-i18n="n8nApply">⬇️ Apply parsed fields</button>
+
+    <div class="toggle">
+      <label>
+        <input type="checkbox" id="modeToggle" onchange="toggleMode()">
+        <span data-i18n="advancedMode">Mode avancé (tous les champs)</span>
+      </label>
     </div>
-    <div id="n8nStatus" class="hint"></div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('rl1', event)" data-tab="rl1">RL-1 (Revenu Québec)</button>
+      <button class="tab-btn" onclick="showTab('t4', event)" data-tab="t4">T4 (ARC)</button>
+      <button class="tab-btn" onclick="showTab('both', event)" data-tab="both">Les deux</button>
+    </div>
+
+    <div class="surface">
+      <!-- RL-1 Tab -->
+      <div id="rl1Tab" class="tab-content active">
+        <form id="rl1Form">
+          <fieldset>
+            <legend data-i18n="essentialRequired">✅ Essentiel (requis)</legend>
+            <div class="input-grid">
+              <div class="input-group">
+                <label><span class="box-label">Case A</span> — <span data-i18n="rl1BoxA">Revenu d'emploi (Ligne 101)</span></label>
+                <input type="number" id="rl1_A" step="100" placeholder="Ex: 60000">
+                <div class="hint" data-i18n="hintRL1BoxA">Box A — top left on RL-1</div>
+              </div>
+              <div class="input-group">
+                <label><span class="box-label">Case F</span> — <span data-i18n="rl1BoxF">Cotisations syndicales (Ligne 397.1)</span></label>
+                <input type="number" id="rl1_F" step="1" placeholder="Ex: 400">
+              </div>
+              <div class="input-group">
+                <label data-i18n="sinLabel">NAS</label>
+                <input type="text" id="rl1_sin" maxlength="11" placeholder="Ex: 123 456 789">
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset id="rl1Deductions" style="display:none;">
+            <legend data-i18n="deductions">⚠️ Déductions</legend>
+            <div class="input-grid">
+              <div class="input-group">
+                <label><span class="box-label">Case B.A</span> — <span data-i18n="rl1BoxBA">Cotisations RRQ (Ligne 98)</span></label>
+                <input type="number" id="rl1_BA" step="1">
+              </div>
+              <div class="input-group">
+                <label><span class="box-label">Case H</span> — <span data-i18n="rl1BoxH">Prime d'assurance parentale (Ligne 97)</span></label>
+                <input type="number" id="rl1_H" step="1">
+              </div>
+              <div class="input-group">
+                <label><span class="box-label">Case D</span> — <span data-i18n="rl1BoxD">Cotisations RPA (Ligne 205)</span></label>
+                <input type="number" id="rl1_D" step="1">
+              </div>
+              <div class="input-group">
+                <label><span class="box-label">Case D-1</span> — <span data-i18n="rl1BoxD1">Arrangement de retraite (Ligne 207)</span></label>
+                <input type="number" id="rl1_D1" step="1">
+              </div>
+              <div class="input-group">
+                <label><span class="box-label">Case N</span> — <span data-i18n="rl1BoxN">Dons de bienfaisance (Ligne 395)</span></label>
+                <input type="number" id="rl1_N" step="1">
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset id="rl1Benefits" style="display:none;">
+            <legend data-i18n="taxableBenefits">🔹 Avantages imposables (inclus dans la Case A)</legend>
+            <div class="input-grid">
+              <div class="input-group">
+                <label><span class="box-label">Case J</span> — <span data-i18n="rl1BoxJ">Régime privé de soins de santé (Ligne 381)</span></label>
+                <input type="number" id="rl1_J" step="1">
+              </div>
+              <div class="input-group">
+                <label><span class="box-label">Case K</span> — <span data-i18n="rl1BoxK">Déplacements (région éloignée) (Ligne 236)</span></label>
+                <input type="number" id="rl1_K" step="1">
+              </div>
+              <div class="input-group">
+                <label><span class="box-label">Case L</span> — <span data-i18n="rl1BoxL">Autres avantages</span></label>
+                <input type="number" id="rl1_L" step="1">
+              </div>
+              <div class="input-group">
+                <label><span class="box-label">Case M</span> — <span data-i18n="rl1BoxM">Commissions (Ligne 100)</span></label>
+                <input type="number" id="rl1_M" step="1">
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+
+      <!-- T4 Tab -->
+      <div id="t4Tab" class="tab-content">
+        <form id="t4Form">
+          <fieldset>
+            <legend data-i18n="essentialRequired">✅ Essentiel (requis)</legend>
+            <div class="input-grid">
+              <div class="input-group">
+                <label><span class="box-label">Box 14</span> — <span data-i18n="t4Box14">Revenus d'emploi (Ligne 10100)</span></label>
+                <input type="number" id="t4_14" step="100" placeholder="Ex: 60000">
+                <div class="hint" data-i18n="hintT4Box14">Box 14 — center-left on T4</div>
+              </div>
+              <div class="input-group">
+                <label><span class="box-label">Box 44</span> — <span data-i18n="t4Box44">Cotisations syndicales (Ligne 21200)</span></label>
+                <input type="number" id="t4_44" step="1" placeholder="Ex: 400">
+              </div>
+              <div class="input-group">
+                <label data-i18n="sinLabelT4">SIN</label>
+                <input type="text" id="t4_sin" maxlength="11" placeholder="Ex: 123-456-789">
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset id="t4Deductions" style="display:none;">
+            <legend data-i18n="deductions">⚠️ Déductions</legend>
+            <div class="input-grid">
+              <div class="input-group">
+                <label><span class="box-label">Box 17</span> — <span data-i18n="t4Box17">Cotisations RRQ (QC)</span> / <span class="box-label">Box 16</span> — <span data-i18n="t4Box16">RPC (autres)</span></label>
+                <input type="number" id="t4_17" step="1" placeholder="QC: Box 17">
+                <input type="number" id="t4_16" step="1" placeholder="Elsewhere: Box 16">
+              </div>
+              <div class="input-group">
+                <label><span class="box-label">Box 55</span> — <span data-i18n="t4Box55">RPAP (QC)</span> / <span class="box-label">Box 18</span> — <span data-i18n="t4Box18">AE</span></label>
+                <input type="number" id="t4_55" step="1" placeholder="QC: Box 55">
+                <input type="number" id="t4_18" step="1" placeholder="Elsewhere: Box 18">
+              </div>
+              <div class="input-group">
+                <label><span class="box-label">Box 20</span> — <span data-i18n="t4Box20">Cotisations RPA (Ligne 20700)</span></label>
+                <input type="number" id="t4_20" step="1">
+              </div>
+              <div class="input-group">
+                <label><span class="box-label">Box 52</span> — <span data-i18n="t4Box52">Facteur d'équivalence (Ligne 20600)</span></label>
+                <input type="number" id="t4_52" step="1">
+              </div>
+              <div class="input-group">
+                <label><span class="box-label">Box 46</span> — <span data-i18n="t4Box46">Dons de bienfaisance</span></label>
+                <input type="number" id="t4_46" step="1">
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset id="t4Benefits" style="display:none;">
+            <legend data-i18n="taxableBenefitsT4">🔹 Avantages imposables (déjà inclus dans Box 14)</legend>
+            <div class="input-grid">
+              <div class="input-group">
+                <label><span class="box-label">Boxes 30, 32, 34, 36, 38, 40</span> — <span data-i18n="t4BoxBenefits">Avantages divers (logement, auto, prêts, etc.)</span></label>
+                <input type="number" id="t4_benefits" step="1" placeholder="Total si connu">
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+
+      <!-- Both Tab -->
+      <div id="bothTab" class="tab-content">
+        <p data-i18n="bothTabDesc">Entrez les données des deux formulaires ci-dessus — utile pour les travailleurs en double statut (ex: autochtone, réserviste).</p>
+      </div>
+
+      <div class="surface">
+        <div class="input-group">
+          <label data-i18n="rrspContribution">Contribution RRSP ($)</label>
+          <input type="number" id="rrspInput" step="100" min="0" max="31560" value="0" placeholder="Ex: 5000">
+          <div class="hint" data-i18n="hintRRSP">Maximum: $31,560 (2025 limit)</div>
+        </div>
+      </div>
+
+      <div class="integration">
+        <h2 data-i18n="n8nTitle">🔗 Connect to n8n</h2>
+        <p class="hint" data-i18n="n8nDesc">Send pasted email/text to an n8n webhook that extracts RL-1/T4 fields and optional RRSP suggestion.</p>
+        <div class="input-group">
+          <label data-i18n="n8nUrlLabel">n8n webhook URL</label>
+          <input type="url" id="n8nUrl" placeholder="https://your-n8n.example/webhook/parse-slip">
+        </div>
+        <div class="input-group">
+          <label data-i18n="n8nTextLabel">Paste email/text to parse</label>
+          <textarea id="n8nText" rows="4" placeholder="Paste a payroll email or PDF text here"></textarea>
+        </div>
+        <div class="action-row">
+          <button type="button" class="btn secondary" onclick="sendToN8n()" data-i18n="n8nSend">🚀 Send to n8n</button>
+          <button type="button" class="btn ghost" id="applyN8nBtn" onclick="applyN8nData()" disabled data-i18n="n8nApply">⬇️ Apply parsed fields</button>
+        </div>
+        <div id="n8nStatus" class="hint"></div>
+      </div>
+
+      <div class="action-row">
+        <button type="button" class="btn" onclick="calculate()" data-i18n="estimateButton">Estimer les crédits</button>
+        <button type="button" class="btn ghost" id="exportBtn" onclick="toggleJSON()" style="display:none;" data-i18n="exportButton">📋 Export JSON</button>
+      </div>
+
+      <div id="output"></div>
+      <div id="jsonOutput" class="json-output" style="display:none;"></div>
+    </div>
+
+    <footer>
+      TaxSyncQC — calculs 2025 côté client pour vos formulaires RL-1 et T4.
+    </footer>
   </div>
-
-  <button type="button" onclick="calculate()" data-i18n="estimateButton">Estimer les crédits</button>
-  <button type="button" class="secondary" id="exportBtn" onclick="toggleJSON()" style="display:none;" data-i18n="exportButton">📋 Export JSON</button>
-
-  <div id="output"></div>
-  <div id="jsonOutput" class="json-output" style="display:none;"></div>
 
   <script src="tax-calculator-bundle.js"></script>
   <script>
@@ -265,7 +508,9 @@
         n8nNoResult: "No parsed fields yet — send text to your webhook first.",
         n8nApplied: "Applied parsed values to the form.",
         n8nErrorMissing: "Please paste some text and set your n8n webhook URL.",
+        n8nErrorInvalidUrl: "Enter a valid http(s) webhook URL.",
         n8nErrorCall: "Could not reach the n8n webhook. Double-check the URL and response format.",
+        n8nErrorPayload: "Webhook response was missing RL-1/T4/RRSP fields.",
         resultTitle: "🧾 Quebec + Federal Estimate (2025)",
         grossIncome: "💼 Gross income",
         afterRRSP: "📉 After RRSP",
@@ -331,7 +576,9 @@
         n8nNoResult: "Aucun champ extrait pour le moment — envoyez d'abord le texte à votre webhook.",
         n8nApplied: "Valeurs extraites appliquées au formulaire.",
         n8nErrorMissing: "Collez un texte et ajoutez l'URL du webhook n8n.",
+        n8nErrorInvalidUrl: "Entrez une URL de webhook http(s) valide.",
         n8nErrorCall: "Impossible de joindre le webhook n8n. Vérifiez l'URL et le format de réponse.",
+        n8nErrorPayload: "La réponse du webhook ne contient pas de champs RL-1/T4/RRSP.",
         resultTitle: "🧾 Estimation Québec + Fédéral (2025)",
         grossIncome: "💼 Revenu brut",
         afterRRSP: "📉 Après RRSP",
@@ -372,17 +619,20 @@
     function toggleMode() {
       const advanced = document.getElementById('modeToggle').checked;
       ['rl1Deductions', 'rl1Benefits', 't4Deductions', 't4Benefits'].forEach(id => {
-        document.getElementById(id).style.display = advanced ? 'block' : 'none';
+        const el = document.getElementById(id);
+        if (el) el.style.display = advanced ? 'block' : 'none';
       });
       document.getElementById('exportBtn').style.display = advanced && lastCalculationData ? 'inline-block' : 'none';
     }
 
-    function showTab(tabId) {
+    function showTab(tabId, ev) {
       ['rl1Tab', 't4Tab', 'bothTab'].forEach(id => {
-        document.getElementById(id).classList.toggle('active', id === tabId + 'Tab');
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('active', id === `${tabId}Tab`);
       });
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+      if (ev && ev.currentTarget) ev.currentTarget.classList.add('active');
+      else if (ev && ev.target) ev.target.classList.add('active');
     }
 
     function toggleJSON() {
@@ -451,6 +701,53 @@
       }
     }
 
+    function isValidWebhookUrl(url) {
+      try {
+        const parsed = new URL(url);
+        return ['http:', 'https:'].includes(parsed.protocol);
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function sanitizeSlipFields(raw) {
+      if (!raw || typeof raw !== 'object') return {};
+      const clean = {};
+      Object.entries(raw).forEach(([key, value]) => {
+        const normalizedKey = key.toString().replace(/[^a-zA-Z0-9]/g, '');
+        const num = typeof value === 'string' ? parseFloat(value.replace(/[, ]+/g, '')) : Number(value);
+        if (normalizedKey && Number.isFinite(num)) {
+          clean[normalizedKey] = num;
+        }
+      });
+      return clean;
+    }
+
+    function normalizeN8nPayload(payload) {
+      if (!payload || typeof payload !== 'object') {
+        return null;
+      }
+
+      if (!payload.rl1 && !payload.t4 && payload.data && typeof payload.data === 'object') {
+        payload = payload.data;
+      }
+
+      const rl1 = sanitizeSlipFields(payload.rl1);
+      const t4 = sanitizeSlipFields(payload.t4);
+      const rrspRaw = payload.rrsp;
+      const hasContent = (rl1 && Object.keys(rl1).length > 0) || (t4 && Object.keys(t4).length > 0) || (rrspRaw !== undefined && rrspRaw !== null);
+      if (!hasContent) {
+        return null;
+      }
+
+      const rrsp = rrspRaw === undefined || rrspRaw === null ? null : Number(rrspRaw);
+      return {
+        rl1,
+        t4,
+        rrsp: Number.isFinite(rrsp) ? rrsp : null
+      };
+    }
+
     function loadSavedN8nUrl() {
       try {
         const saved = localStorage.getItem('n8nWebhookUrl');
@@ -458,7 +755,7 @@
           document.getElementById('n8nUrl').value = saved;
         }
       } catch (e) {
-        // localStorage not available (unlikely in browser), ignore
+        // ignore
       }
     }
 
@@ -474,14 +771,15 @@
         return;
       }
 
+      if (!isValidWebhookUrl(url)) {
+        setN8nStatus('n8nErrorInvalidUrl');
+        return;
+      }
+
       setN8nStatus(null, lang === 'fr' ? 'Envoi au webhook n8n…' : 'Sending to n8n webhook…');
 
       try {
-        try {
-          localStorage.setItem('n8nWebhookUrl', url);
-        } catch (e) {
-          // ignore storage errors
-        }
+        try { localStorage.setItem('n8nWebhookUrl', url); } catch (e) { /* ignore */ }
 
         const response = await fetch(url, {
           method: 'POST',
@@ -489,24 +787,22 @@
           body: JSON.stringify({ text, lang, source: 'taxsyncqc-web' })
         });
 
-        if (!response.ok) {
-          throw new Error('Bad status');
-        }
+        if (!response.ok) throw new Error('Bad status');
 
         const payload = await response.json();
-        lastN8nResult = payload;
+        const normalized = normalizeN8nPayload(payload);
+        if (!normalized) {
+          setN8nStatus('n8nErrorPayload');
+          return;
+        }
+
+        lastN8nResult = normalized;
         applyBtn.disabled = false;
 
         const summary = [];
-        if (payload?.rl1 && Object.keys(payload.rl1).length > 0) {
-          summary.push(`RL-1: ${Object.keys(payload.rl1).join(', ')}`);
-        }
-        if (payload?.t4 && Object.keys(payload.t4).length > 0) {
-          summary.push(`T4: ${Object.keys(payload.t4).join(', ')}`);
-        }
-        if (payload?.rrsp !== undefined && payload.rrsp !== null) {
-          summary.push(`RRSP: ${payload.rrsp}`);
-        }
+        if (normalized.rl1 && Object.keys(normalized.rl1).length > 0) summary.push(`RL-1: ${Object.keys(normalized.rl1).join(', ')}`);
+        if (normalized.t4 && Object.keys(normalized.t4).length > 0) summary.push(`T4: ${Object.keys(normalized.t4).join(', ')}`);
+        if (normalized.rrsp !== undefined && normalized.rrsp !== null) summary.push(`RRSP: ${normalized.rrsp}`);
 
         const statusText = (lang === 'fr' ? 'Champs reçus: ' : 'Fields received: ') + (summary.join(' | ') || 'OK');
         setN8nStatus(null, statusText);
@@ -552,6 +848,7 @@
 
       const statusText = `${_('n8nApplied')} (${applied.join(', ')})`;
       setN8nStatus(null, statusText);
+      calculate();
     }
 
     function calculate() {
@@ -591,9 +888,8 @@
         <p style="font-size: 1.2em; color: #1890ff;"><strong>${_('cashRefund')}: $${cashBack.toFixed(2)}</strong></p>
       </div>`;
 
-      // Smart warnings - only show if they save real money
       const warnings = [];
-      if (unionDues === null && income > 30000) {
+      if ((unionDues === null || unionDues === 0) && income > 30000) {
         warnings.push(_('warningUnionDues'));
       }
 
@@ -605,7 +901,6 @@
 
       document.getElementById('output').innerHTML = html;
 
-      // Store calculation data for export
       lastCalculationData = {
         ...data,
         analysis: {
@@ -616,10 +911,7 @@
         }
       };
 
-      // Show export button if in advanced mode
       document.getElementById('exportBtn').style.display = document.getElementById('modeToggle').checked ? 'inline-block' : 'none';
-      
-      // Pre-fill JSON but keep hidden
       document.getElementById('jsonOutput').textContent = JSON.stringify(lastCalculationData, null, 2);
       document.getElementById('jsonOutput').style.display = 'none';
     }
