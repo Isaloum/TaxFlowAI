@@ -27,9 +27,7 @@ jobs:
       - name: Cache npm dependencies
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.npm
-            ~/.npm/_cacache
+          path: ~/.npm
           key: ${{ runner.os }}-node-${{ matrix.node-version }}-npm-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-${{ matrix.node-version }}-npm-
@@ -46,9 +44,10 @@ jobs:
       
       - name: Run npm audit
         run: |
+          EXIT_CODE=0
           npm audit --audit-level=high --json > audit.json || EXIT_CODE=$?
           cat audit.json
-          if [ ! -z "$EXIT_CODE" ] && [ $EXIT_CODE -ne 0 ]; then
+          if [ -n "$EXIT_CODE" ] && [ $EXIT_CODE -ne 0 ]; then
             echo "::error::npm audit found high severity vulnerabilities"
             exit $EXIT_CODE
           fi
