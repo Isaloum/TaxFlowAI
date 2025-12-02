@@ -1,0 +1,66 @@
+# Adds Node.js CI on push and pull_request with caching, lint/test (if-present),
+# npm audit (fail on high) and artifact upload (audit + test artifacts).
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Cache npm (extra cache for speed)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ~/.npm/_cacache
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ matrix.node-version }}-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint (if present)
+        run: npm run lint --if-present
+
+      - name: Run tests (if present)
+        env:
+          CI: true
+        run: npm test --if-present
+
+      - name: Run npm audit (save JSON)
+        run: |
+          npm audit --json --audit-level=high > audit.json || true
+          node -e "const fs=require('fs');const p='audit.json'; if(!fs.existsSync(p)) process.exit(0); const a=JSON.parse(fs.readFileSync(p)); const v=a.metadata && a.metadata.vulnerabilities ? a.metadata.vulnerabilities : {}; if((v.high||0) + (v.critical||0) > 0) { console.error('High/critical vulnerabilities found'); process.exit(1); }"
+
+      - name: Package CI artifacts (audit + test results if present)
+        run: |
+          mkdir -p ci-artifacts
+          if [ -f audit.json ]; then cp audit.json ci-artifacts/; fi
+          if [ -f test-results.xml ]; then cp test-results.xml ci-artifacts/; fi
+          if [ -d coverage ]; then cp -r coverage ci-artifacts/; fi
+          if [ -z "$(ls -A ci-artifacts)" ]; then echo "no artifacts" > ci-artifacts/.empty; fi
+
+      - name: Upload CI artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-artifacts
+          path: ci-artifacts
