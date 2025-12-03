@@ -36,7 +36,8 @@ name: ci-logs-node-${{ matrix.node-version }}
 index.html
 index.html.backup
 
-# Script that runs in browser context with globals
+# Script that runs in browser context with undefined globals (getFormData, TaxCalculator, _)
+# These are defined by other scripts loaded in index.html
 fix-calculate.js
 
 # Dependencies

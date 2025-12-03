@@ -1,7 +1,7 @@
 # Solution: Fix PR #14 CI Failures
 
 ## Executive Summary
-Successfully identified and fixed 2 critical CI failures in PR #14 (branch: `copilot/add-ci-lint-prettier`):
+Successfully identified and fixed 2 critical CI failures in PR #14 (branch: `copilot/add-ci-lint-prettier`, commit: ddefa15 before fixes):
 1. **GitHub Actions artifact name conflict** - Fixed by making artifact names unique per Node.js version
 2. **123 ESLint/Prettier lint errors** - Fixed by creating `.eslintignore` and running auto-format
 
@@ -10,7 +10,7 @@ Successfully identified and fixed 2 critical CI failures in PR #14 (branch: `cop
 ### Issue #1: Artifact Name Conflict
 **Symptom**: GitHub Actions workflow fails when uploading artifacts because both Node.js 18.x and 20.x jobs try to upload with the same name.
 
-**Root Cause**: In `.github/workflows/ci.yml`, the artifact upload step uses a static name:
+**Root Cause**: In PR #14's original `.github/workflows/ci.yml` (commit ddefa15), the artifact upload step uses a static name:
 ```yaml
 - name: Upload artifacts
   if: always()
@@ -59,7 +59,8 @@ name: ci-logs-node-${{ matrix.node-version }}
 index.html
 index.html.backup
 
-# Script that runs in browser context with globals
+# Script that runs in browser context with undefined globals (getFormData, TaxCalculator, _)
+# These are defined by other scripts loaded in index.html
 fix-calculate.js
 
 # Dependencies
