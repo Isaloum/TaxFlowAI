@@ -13,7 +13,8 @@
     "_": "readonly",
     "getFormData": "readonly",
     "TaxCalculator": "readonly",
-    "lastCalculationData": "writable"
+    "lastCalculationData": "writable",
+    "test": "readonly"
   },
   "rules": {
     "no-unused-vars": ["warn"],
