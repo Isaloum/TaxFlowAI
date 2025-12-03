@@ -653,7 +653,12 @@
         </div>
 
         <div class="action-row">
-          <button type="button" class="btn" onclick="calculate()" data-i18n="estimateButton">
+          <button
+            type="button"
+            class="btn"
+            onclick="calculate && calculate()"
+            data-i18n="estimateButton"
+          >
             Estimer les crédits
           </button>
           <button
@@ -1097,7 +1102,9 @@
 
         const statusText = `${_('n8nApplied')} (${applied.join(', ')})`;
         setN8nStatus(null, statusText);
-        calculate();
+        if (calculate) {
+          calculate();
+        }
       }
 
       let calculate;
