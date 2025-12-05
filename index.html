@@ -363,336 +363,338 @@
         </div>
       </div>
 
-      <div class="hero">
-        <div class="badge">✅ Conforme 2025</div>
-        <h1 data-i18n="title">💰 TaxSyncQC — Estimation officielle Québec 2025</h1>
-        <p data-i18n="subtitle">
-          Basé sur les documents <strong>RL-1-T(2025-10)</strong> et <strong>T4 (2025)</strong> de
-          Revenu Québec et l'ARC.
-        </p>
-        <div class="pill-row">
-          <div class="pill">⚡ 100% navigateur — aucune donnée envoyée</div>
-          <div class="pill">🇨🇦 & 🇶🇨 Bilingue</div>
-          <div class="pill">📊 RRSP & crédits majeurs</div>
-        </div>
-      </div>
-
-      <div class="toggle">
-        <label>
-          <input type="checkbox" id="modeToggle" onchange="toggleMode()" />
-          <span data-i18n="advancedMode">Mode avancé (tous les champs)</span>
-        </label>
-      </div>
-
-      <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('rl1', event)" data-tab="rl1">
-          RL-1 (Revenu Québec)
-        </button>
-        <button class="tab-btn" onclick="showTab('t4', event)" data-tab="t4">T4 (ARC)</button>
-        <button class="tab-btn" onclick="showTab('both', event)" data-tab="both">Les deux</button>
-      </div>
-
-      <div class="surface">
-        <!-- RL-1 Tab -->
-        <div id="rl1Tab" class="tab-content active">
-          <form id="rl1Form">
-            <fieldset>
-              <legend data-i18n="essentialRequired">✅ Essentiel (requis)</legend>
-              <div class="input-grid">
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Case A</span> —
-                    <span data-i18n="rl1BoxA">Revenu d'emploi (Ligne 101)</span></label
-                  >
-                  <input type="number" id="rl1_A" step="100" placeholder="Ex: 60000" />
-                  <div class="hint" data-i18n="hintRL1BoxA">Box A — top left on RL-1</div>
-                </div>
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Case F</span> —
-                    <span data-i18n="rl1BoxF">Cotisations syndicales (Ligne 397.1)</span></label
-                  >
-                  <input type="number" id="rl1_F" step="1" placeholder="Ex: 400" />
-                </div>
-                <div class="input-group">
-                  <label data-i18n="sinLabel">NAS</label>
-                  <input type="text" id="rl1_sin" maxlength="11" placeholder="Ex: 123 456 789" />
-                </div>
-              </div>
-            </fieldset>
-
-            <fieldset id="rl1Deductions" style="display: none">
-              <legend data-i18n="deductions">⚠️ Déductions</legend>
-              <div class="input-grid">
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Case B.A</span> —
-                    <span data-i18n="rl1BoxBA">Cotisations RRQ (Ligne 98)</span></label
-                  >
-                  <input type="number" id="rl1_BA" step="1" />
-                </div>
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Case H</span> —
-                    <span data-i18n="rl1BoxH">Prime d'assurance parentale (Ligne 97)</span></label
-                  >
-                  <input type="number" id="rl1_H" step="1" />
-                </div>
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Case D</span> —
-                    <span data-i18n="rl1BoxD">Cotisations RPA (Ligne 205)</span></label
-                  >
-                  <input type="number" id="rl1_D" step="1" />
-                </div>
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Case D-1</span> —
-                    <span data-i18n="rl1BoxD1">Arrangement de retraite (Ligne 207)</span></label
-                  >
-                  <input type="number" id="rl1_D1" step="1" />
-                </div>
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Case N</span> —
-                    <span data-i18n="rl1BoxN">Dons de bienfaisance (Ligne 395)</span></label
-                  >
-                  <input type="number" id="rl1_N" step="1" />
-                </div>
-              </div>
-            </fieldset>
-
-            <fieldset id="rl1Benefits" style="display: none">
-              <legend data-i18n="taxableBenefits">
-                🔹 Avantages imposables (inclus dans la Case A)
-              </legend>
-              <div class="input-grid">
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Case J</span> —
-                    <span data-i18n="rl1BoxJ"
-                      >Régime privé de soins de santé (Ligne 381)</span
-                    ></label
-                  >
-                  <input type="number" id="rl1_J" step="1" />
-                </div>
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Case K</span> —
-                    <span data-i18n="rl1BoxK"
-                      >Déplacements (région éloignée) (Ligne 236)</span
-                    ></label
-                  >
-                  <input type="number" id="rl1_K" step="1" />
-                </div>
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Case L</span> —
-                    <span data-i18n="rl1BoxL">Autres avantages</span></label
-                  >
-                  <input type="number" id="rl1_L" step="1" />
-                </div>
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Case M</span> —
-                    <span data-i18n="rl1BoxM">Commissions (Ligne 100)</span></label
-                  >
-                  <input type="number" id="rl1_M" step="1" />
-                </div>
-              </div>
-            </fieldset>
-          </form>
-        </div>
-
-        <!-- T4 Tab -->
-        <div id="t4Tab" class="tab-content">
-          <form id="t4Form">
-            <fieldset>
-              <legend data-i18n="essentialRequired">✅ Essentiel (requis)</legend>
-              <div class="input-grid">
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Box 14</span> —
-                    <span data-i18n="t4Box14">Revenus d'emploi (Ligne 10100)</span></label
-                  >
-                  <input type="number" id="t4_14" step="100" placeholder="Ex: 60000" />
-                  <div class="hint" data-i18n="hintT4Box14">Box 14 — center-left on T4</div>
-                </div>
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Box 44</span> —
-                    <span data-i18n="t4Box44">Cotisations syndicales (Ligne 21200)</span></label
-                  >
-                  <input type="number" id="t4_44" step="1" placeholder="Ex: 400" />
-                </div>
-                <div class="input-group">
-                  <label data-i18n="sinLabelT4">SIN</label>
-                  <input type="text" id="t4_sin" maxlength="11" placeholder="Ex: 123-456-789" />
-                </div>
-              </div>
-            </fieldset>
-
-            <fieldset id="t4Deductions" style="display: none">
-              <legend data-i18n="deductions">⚠️ Déductions</legend>
-              <div class="input-grid">
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Box 17</span> —
-                    <span data-i18n="t4Box17">Cotisations RRQ (QC)</span> /
-                    <span class="box-label">Box 16</span> —
-                    <span data-i18n="t4Box16">RPC (autres)</span></label
-                  >
-                  <input type="number" id="t4_17" step="1" placeholder="QC: Box 17" />
-                  <input type="number" id="t4_16" step="1" placeholder="Elsewhere: Box 16" />
-                </div>
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Box 55</span> —
-                    <span data-i18n="t4Box55">RPAP (QC)</span> /
-                    <span class="box-label">Box 18</span> —
-                    <span data-i18n="t4Box18">AE</span></label
-                  >
-                  <input type="number" id="t4_55" step="1" placeholder="QC: Box 55" />
-                  <input type="number" id="t4_18" step="1" placeholder="Elsewhere: Box 18" />
-                </div>
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Box 20</span> —
-                    <span data-i18n="t4Box20">Cotisations RPA (Ligne 20700)</span></label
-                  >
-                  <input type="number" id="t4_20" step="1" />
-                </div>
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Box 52</span> —
-                    <span data-i18n="t4Box52">Facteur d'équivalence (Ligne 20600)</span></label
-                  >
-                  <input type="number" id="t4_52" step="1" />
-                </div>
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Box 46</span> —
-                    <span data-i18n="t4Box46">Dons de bienfaisance</span></label
-                  >
-                  <input type="number" id="t4_46" step="1" />
-                </div>
-              </div>
-            </fieldset>
-
-            <fieldset id="t4Benefits" style="display: none">
-              <legend data-i18n="taxableBenefitsT4">
-                🔹 Avantages imposables (déjà inclus dans Box 14)
-              </legend>
-              <div class="input-grid">
-                <div class="input-group">
-                  <label
-                    ><span class="box-label">Boxes 30, 32, 34, 36, 38, 40</span> —
-                    <span data-i18n="t4BoxBenefits"
-                      >Avantages divers (logement, auto, prêts, etc.)</span
-                    ></label
-                  >
-                  <input type="number" id="t4_benefits" step="1" placeholder="Total si connu" />
-                </div>
-              </div>
-            </fieldset>
-          </form>
-        </div>
-
-        <!-- Both Tab -->
-        <div id="bothTab" class="tab-content">
-          <p data-i18n="bothTabDesc">
-            Entrez les données des deux formulaires ci-dessus — utile pour les travailleurs en
-            double statut (ex: autochtone, réserviste).
+      <main role="main">
+        <div class="hero">
+          <div class="badge">✅ Conforme 2025</div>
+          <h1 data-i18n="title">💰 TaxSyncQC — Estimation officielle Québec 2025</h1>
+          <p data-i18n="subtitle">
+            Basé sur les documents <strong>RL-1-T(2025-10)</strong> et <strong>T4 (2025)</strong> de
+            Revenu Québec et l'ARC.
           </p>
+          <div class="pill-row">
+            <div class="pill">⚡ 100% navigateur — aucune donnée envoyée</div>
+            <div class="pill">🇨🇦 & 🇶🇨 Bilingue</div>
+            <div class="pill">📊 RRSP & crédits majeurs</div>
+          </div>
+        </div>
+
+        <div class="toggle">
+          <label>
+            <input type="checkbox" id="modeToggle" onchange="toggleMode()" />
+            <span data-i18n="advancedMode">Mode avancé (tous les champs)</span>
+          </label>
+        </div>
+
+        <div class="tabs">
+          <button class="tab-btn active" onclick="showTab('rl1', event)" data-tab="rl1">
+            RL-1 (Revenu Québec)
+          </button>
+          <button class="tab-btn" onclick="showTab('t4', event)" data-tab="t4">T4 (ARC)</button>
+          <button class="tab-btn" onclick="showTab('both', event)" data-tab="both">Les deux</button>
         </div>
 
         <div class="surface">
-          <div class="input-group">
-            <label data-i18n="rrspContribution">Contribution RRSP ($)</label>
-            <input
-              type="number"
-              id="rrspInput"
-              step="100"
-              min="0"
-              max="31560"
-              value="0"
-              placeholder="Ex: 5000"
-            />
-            <div class="hint" data-i18n="hintRRSP">Maximum: $31,560 (2025 limit)</div>
-          </div>
-        </div>
+          <!-- RL-1 Tab -->
+          <div id="rl1Tab" class="tab-content active">
+            <form id="rl1Form">
+              <fieldset>
+                <legend data-i18n="essentialRequired">✅ Essentiel (requis)</legend>
+                <div class="input-grid">
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Case A</span> —
+                      <span data-i18n="rl1BoxA">Revenu d'emploi (Ligne 101)</span></label
+                    >
+                    <input type="number" id="rl1_A" step="100" placeholder="Ex: 60000" />
+                    <div class="hint" data-i18n="hintRL1BoxA">Box A — top left on RL-1</div>
+                  </div>
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Case F</span> —
+                      <span data-i18n="rl1BoxF">Cotisations syndicales (Ligne 397.1)</span></label
+                    >
+                    <input type="number" id="rl1_F" step="1" placeholder="Ex: 400" />
+                  </div>
+                  <div class="input-group">
+                    <label data-i18n="sinLabel">NAS</label>
+                    <input type="text" id="rl1_sin" maxlength="11" placeholder="Ex: 123 456 789" />
+                  </div>
+                </div>
+              </fieldset>
 
-        <div class="integration">
-          <h2 data-i18n="n8nTitle">🔗 Connect to n8n</h2>
-          <p class="hint" data-i18n="n8nDesc">
-            Send pasted email/text to an n8n webhook that extracts RL-1/T4 fields and optional RRSP
-            suggestion.
-          </p>
-          <div class="input-group">
-            <label data-i18n="n8nUrlLabel">n8n webhook URL</label>
-            <input
-              type="url"
-              id="n8nUrl"
-              placeholder="https://your-n8n.example/webhook/parse-slip"
-            />
+              <fieldset id="rl1Deductions" style="display: none">
+                <legend data-i18n="deductions">⚠️ Déductions</legend>
+                <div class="input-grid">
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Case B.A</span> —
+                      <span data-i18n="rl1BoxBA">Cotisations RRQ (Ligne 98)</span></label
+                    >
+                    <input type="number" id="rl1_BA" step="1" />
+                  </div>
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Case H</span> —
+                      <span data-i18n="rl1BoxH">Prime d'assurance parentale (Ligne 97)</span></label
+                    >
+                    <input type="number" id="rl1_H" step="1" />
+                  </div>
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Case D</span> —
+                      <span data-i18n="rl1BoxD">Cotisations RPA (Ligne 205)</span></label
+                    >
+                    <input type="number" id="rl1_D" step="1" />
+                  </div>
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Case D-1</span> —
+                      <span data-i18n="rl1BoxD1">Arrangement de retraite (Ligne 207)</span></label
+                    >
+                    <input type="number" id="rl1_D1" step="1" />
+                  </div>
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Case N</span> —
+                      <span data-i18n="rl1BoxN">Dons de bienfaisance (Ligne 395)</span></label
+                    >
+                    <input type="number" id="rl1_N" step="1" />
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset id="rl1Benefits" style="display: none">
+                <legend data-i18n="taxableBenefits">
+                  🔹 Avantages imposables (inclus dans la Case A)
+                </legend>
+                <div class="input-grid">
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Case J</span> —
+                      <span data-i18n="rl1BoxJ"
+                        >Régime privé de soins de santé (Ligne 381)</span
+                      ></label
+                    >
+                    <input type="number" id="rl1_J" step="1" />
+                  </div>
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Case K</span> —
+                      <span data-i18n="rl1BoxK"
+                        >Déplacements (région éloignée) (Ligne 236)</span
+                      ></label
+                    >
+                    <input type="number" id="rl1_K" step="1" />
+                  </div>
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Case L</span> —
+                      <span data-i18n="rl1BoxL">Autres avantages</span></label
+                    >
+                    <input type="number" id="rl1_L" step="1" />
+                  </div>
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Case M</span> —
+                      <span data-i18n="rl1BoxM">Commissions (Ligne 100)</span></label
+                    >
+                    <input type="number" id="rl1_M" step="1" />
+                  </div>
+                </div>
+              </fieldset>
+            </form>
           </div>
-          <div class="input-group">
-            <label data-i18n="n8nTextLabel">Paste email/text to parse</label>
-            <textarea
-              id="n8nText"
-              rows="4"
-              placeholder="Paste a payroll email or PDF text here"
-            ></textarea>
+
+          <!-- T4 Tab -->
+          <div id="t4Tab" class="tab-content">
+            <form id="t4Form">
+              <fieldset>
+                <legend data-i18n="essentialRequired">✅ Essentiel (requis)</legend>
+                <div class="input-grid">
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Box 14</span> —
+                      <span data-i18n="t4Box14">Revenus d'emploi (Ligne 10100)</span></label
+                    >
+                    <input type="number" id="t4_14" step="100" placeholder="Ex: 60000" />
+                    <div class="hint" data-i18n="hintT4Box14">Box 14 — center-left on T4</div>
+                  </div>
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Box 44</span> —
+                      <span data-i18n="t4Box44">Cotisations syndicales (Ligne 21200)</span></label
+                    >
+                    <input type="number" id="t4_44" step="1" placeholder="Ex: 400" />
+                  </div>
+                  <div class="input-group">
+                    <label data-i18n="sinLabelT4">SIN</label>
+                    <input type="text" id="t4_sin" maxlength="11" placeholder="Ex: 123-456-789" />
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset id="t4Deductions" style="display: none">
+                <legend data-i18n="deductions">⚠️ Déductions</legend>
+                <div class="input-grid">
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Box 17</span> —
+                      <span data-i18n="t4Box17">Cotisations RRQ (QC)</span> /
+                      <span class="box-label">Box 16</span> —
+                      <span data-i18n="t4Box16">RPC (autres)</span></label
+                    >
+                    <input type="number" id="t4_17" step="1" placeholder="QC: Box 17" />
+                    <input type="number" id="t4_16" step="1" placeholder="Elsewhere: Box 16" />
+                  </div>
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Box 55</span> —
+                      <span data-i18n="t4Box55">RPAP (QC)</span> /
+                      <span class="box-label">Box 18</span> —
+                      <span data-i18n="t4Box18">AE</span></label
+                    >
+                    <input type="number" id="t4_55" step="1" placeholder="QC: Box 55" />
+                    <input type="number" id="t4_18" step="1" placeholder="Elsewhere: Box 18" />
+                  </div>
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Box 20</span> —
+                      <span data-i18n="t4Box20">Cotisations RPA (Ligne 20700)</span></label
+                    >
+                    <input type="number" id="t4_20" step="1" />
+                  </div>
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Box 52</span> —
+                      <span data-i18n="t4Box52">Facteur d'équivalence (Ligne 20600)</span></label
+                    >
+                    <input type="number" id="t4_52" step="1" />
+                  </div>
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Box 46</span> —
+                      <span data-i18n="t4Box46">Dons de bienfaisance</span></label
+                    >
+                    <input type="number" id="t4_46" step="1" />
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset id="t4Benefits" style="display: none">
+                <legend data-i18n="taxableBenefitsT4">
+                  🔹 Avantages imposables (déjà inclus dans Box 14)
+                </legend>
+                <div class="input-grid">
+                  <div class="input-group">
+                    <label
+                      ><span class="box-label">Boxes 30, 32, 34, 36, 38, 40</span> —
+                      <span data-i18n="t4BoxBenefits"
+                        >Avantages divers (logement, auto, prêts, etc.)</span
+                      ></label
+                    >
+                    <input type="number" id="t4_benefits" step="1" placeholder="Total si connu" />
+                  </div>
+                </div>
+              </fieldset>
+            </form>
           </div>
-          <div class="input-group" style="display: flex; align-items: center; gap: 0.5rem">
-            <label for="autoParseToggle" style="margin: 0; font-weight: 700">Auto‑parse</label>
-            <input type="checkbox" id="autoParseToggle" />
-            <small class="hint" id="autoParseHint"
-              >Enable auto‑parse on paste/drop (requires webhook configured)</small
-            >
+
+          <!-- Both Tab -->
+          <div id="bothTab" class="tab-content">
+            <p data-i18n="bothTabDesc">
+              Entrez les données des deux formulaires ci-dessus — utile pour les travailleurs en
+              double statut (ex: autochtone, réserviste).
+            </p>
           </div>
+
+          <div class="surface">
+            <div class="input-group">
+              <label data-i18n="rrspContribution">Contribution RRSP ($)</label>
+              <input
+                type="number"
+                id="rrspInput"
+                step="100"
+                min="0"
+                max="31560"
+                value="0"
+                placeholder="Ex: 5000"
+              />
+              <div class="hint" data-i18n="hintRRSP">Maximum: $31,560 (2025 limit)</div>
+            </div>
+          </div>
+
+          <div class="integration">
+            <h2 data-i18n="n8nTitle">🔗 Connect to n8n</h2>
+            <p class="hint" data-i18n="n8nDesc">
+              Send pasted email/text to an n8n webhook that extracts RL-1/T4 fields and optional
+              RRSP suggestion.
+            </p>
+            <div class="input-group">
+              <label data-i18n="n8nUrlLabel">n8n webhook URL</label>
+              <input
+                type="url"
+                id="n8nUrl"
+                placeholder="https://your-n8n.example/webhook/parse-slip"
+              />
+            </div>
+            <div class="input-group">
+              <label data-i18n="n8nTextLabel">Paste email/text to parse</label>
+              <textarea
+                id="n8nText"
+                rows="4"
+                placeholder="Paste a payroll email or PDF text here"
+              ></textarea>
+            </div>
+            <div class="input-group" style="display: flex; align-items: center; gap: 0.5rem">
+              <label for="autoParseToggle" style="margin: 0; font-weight: 700">Auto‑parse</label>
+              <input type="checkbox" id="autoParseToggle" />
+              <small class="hint" id="autoParseHint"
+                >Enable auto‑parse on paste/drop (requires webhook configured)</small
+              >
+            </div>
+            <div class="action-row">
+              <button type="button" class="btn secondary" onclick="sendToN8n()" data-i18n="n8nSend">
+                🚀 Send to n8n
+              </button>
+              <button
+                type="button"
+                class="btn ghost"
+                id="applyN8nBtn"
+                onclick="applyN8nData()"
+                disabled
+                data-i18n="n8nApply"
+              >
+                ⬇️ Apply parsed fields
+              </button>
+            </div>
+            <div id="n8nStatus" class="hint"></div>
+          </div>
+
           <div class="action-row">
-            <button type="button" class="btn secondary" onclick="sendToN8n()" data-i18n="n8nSend">
-              🚀 Send to n8n
+            <button
+              type="button"
+              class="btn"
+              onclick="calculate && calculate()"
+              data-i18n="estimateButton"
+            >
+              Estimer les crédits
             </button>
             <button
               type="button"
               class="btn ghost"
-              id="applyN8nBtn"
-              onclick="applyN8nData()"
-              disabled
-              data-i18n="n8nApply"
+              id="exportBtn"
+              onclick="toggleJSON()"
+              style="display: none"
+              data-i18n="exportButton"
             >
-              ⬇️ Apply parsed fields
+              📋 Export JSON
             </button>
           </div>
-          <div id="n8nStatus" class="hint"></div>
-        </div>
 
-        <div class="action-row">
-          <button
-            type="button"
-            class="btn"
-            onclick="calculate && calculate()"
-            data-i18n="estimateButton"
-          >
-            Estimer les crédits
-          </button>
-          <button
-            type="button"
-            class="btn ghost"
-            id="exportBtn"
-            onclick="toggleJSON()"
-            style="display: none"
-            data-i18n="exportButton"
-          >
-            📋 Export JSON
-          </button>
+          <div id="output"></div>
+          <div id="jsonOutput" class="json-output" style="display: none"></div>
         </div>
-
-        <div id="output"></div>
-        <div id="jsonOutput" class="json-output" style="display: none"></div>
-      </div>
+      </main>
 
       <footer>TaxSyncQC — calculs 2025 côté client pour vos formulaires RL-1 et T4.</footer>
     </div>
