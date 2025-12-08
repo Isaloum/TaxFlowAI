@@ -2,27 +2,43 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - name: Install deps
-        run: npm ci
-      - name: Build (noop)
-        run: echo "No build step; publishing project root"
-      - name: Deploy to Pages
-        uses: peaceiris/actions-gh-pages@v4
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Build
+        run: |
+          echo "No build step needed; this is a static site"
+        # This project deploys the root directory as-is
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
-          publish_branch: gh-pages
+          path: ./
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
