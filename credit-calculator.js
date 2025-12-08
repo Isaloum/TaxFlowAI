@@ -1,6 +1,13 @@
 // credit-calculator.js — 2025 official credit formulas
 
-// Solidarity Tax Credit (Revenu Québec, p.12)
+/**
+ * Calculate the Quebec Solidarity Tax Credit (Crédit pour la solidarité)
+ * Based on Revenu Québec 2025 official guide (p.12)
+ *
+ * @param {number} income - Annual net income in CAD
+ * @param {boolean} [isSingle=true] - Whether the person is single (true) or has a spouse (false)
+ * @returns {number} Credit amount in CAD (rounded to 2 decimal places)
+ */
 export function calculateSolidarityCredit(income, isSingle = true) {
   const BASE = 531;
   const PHASEOUT_START = 57_965;
@@ -20,7 +27,14 @@ export function calculateSolidarityCredit(income, isSingle = true) {
   return Math.round(amount * 100) / 100;
 }
 
-// Work Premium (Prime au travail) — capped at $728 for singles
+/**
+ * Calculate the Quebec Work Premium (Prime au travail)
+ * Encourages low-income workers to remain in the workforce
+ *
+ * @param {number} income - Annual work income in CAD
+ * @param {boolean} [isSingle=true] - Whether the person is single or has dependents
+ * @returns {number} Credit amount in CAD (max $728 single, $1,456 with dependents)
+ */
 export function calculateWorkPremium(income, isSingle = true) {
   if (income < 7_200) return 0;
 
@@ -35,7 +49,14 @@ export function calculateWorkPremium(income, isSingle = true) {
   return Math.min(Math.round(raw * 100) / 100, MAX_CREDIT);
 }
 
-// Canada Workers Benefit (CWB) — 2025 rates
+/**
+ * Calculate the Canada Workers Benefit (CWB) - Federal credit
+ * Formerly known as the Working Income Tax Benefit (WITB)
+ *
+ * @param {number} income - Annual net income in CAD
+ * @param {boolean} [hasDependents=false] - Whether the person has eligible dependents
+ * @returns {number} Credit amount in CAD (max $1,519 single, $2,528 with dependents)
+ */
 export function calculateCWB(income, hasDependents = false) {
   const MAX_SINGLE = 1_519;
   const MAX_FAMILY = 2_528;

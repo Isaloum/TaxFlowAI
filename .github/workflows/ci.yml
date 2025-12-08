@@ -29,7 +29,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ci-logs
+          name: ci-logs-node-${{ matrix.node-version }}
           path: |
             ./npm-debug.log
             ./test-results || true
