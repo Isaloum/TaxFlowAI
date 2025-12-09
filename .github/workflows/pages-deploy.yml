@@ -2,27 +2,58 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   workflow_dispatch:
 
+# Grant GITHUB_TOKEN the permissions required to deploy to GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Setup Node.js (if you need to run build scripts in the future)
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - name: Install deps
+
+      - name: Install dependencies
         run: npm ci
-      - name: Build (noop)
-        run: echo "No build step; publishing project root"
-      - name: Deploy to Pages
-        uses: peaceiris/actions-gh-pages@v4
+
+      # Build step: Currently publishing project root as-is (static site)
+      # If you need to add a build process:
+      # 1. Add a "build" script to package.json (e.g., "build": "your-build-command")
+      # 2. Uncomment the build step below
+      # 3. Update the 'path' in Upload step to point to your build output directory
+      
+      # - name: Build
+      #   run: npm run build
+
+      # Upload the site content to GitHub Pages
+      # Change 'path' below if your site is in a different directory (e.g., ./dist, ./public)
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
-          publish_branch: gh-pages
+          path: ./  # Publishing project root - change this if you have a build directory
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
