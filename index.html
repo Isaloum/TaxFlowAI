@@ -734,6 +734,7 @@
     </div>
 
     <script src="tax-calculator-bundle.js"></script>
+    <script src="fix-calculate-browser.js"></script>
     <script src="autoparse.js"></script>
     <script>
       let lastN8nResult = null;
@@ -1173,12 +1174,18 @@
         }
       }
 
+      // Initialize calculate function
       let calculate;
-      (async () => {
-        const { initFixCalculate } = await import('./fix-calculate.js');
-        calculate = initFixCalculate(window.TaxCalculator, _);
+      if (typeof window.initFixCalculate === 'function' && typeof window.TaxCalculator === 'object') {
+        calculate = window.initFixCalculate(window.TaxCalculator, _);
         window.calculate = calculate;
-      })();
+        console.log('[TaxSyncQC] Calculate function ready!');
+      } else {
+        console.error('[TaxSyncQC] Missing dependencies:', {
+          initFixCalculate: typeof window.initFixCalculate,
+          TaxCalculator: typeof window.TaxCalculator
+        });
+      }
 
       loadSavedN8nUrl();
       setN8nStatus('n8nNoResult');
