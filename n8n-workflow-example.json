@@ -1,0 +1,87 @@
+{
+  "name": "TaxSyncQC - RL-1/T4 Parser",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "parse-tax-slip",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "taxsyncqc-parser"
+    },
+    {
+      "parameters": {
+        "jsCode": "// TaxSyncQC RL-1/T4 Parser\n// This extracts Quebec RL-1 and Federal T4 slip data from pasted text\n\nconst inputText = $input.item.json.body.text || '';\nconst lang = $input.item.json.body.lang || 'fr';\n\n// Helper function to extract money values\nfunction extractMoney(text, patterns) {\n  for (const pattern of patterns) {\n    const match = text.match(pattern);\n    if (match) {\n      const value = match[1].replace(/[,\\s]/g, '');\n      return parseFloat(value);\n    }\n  }\n  return null;\n}\n\n// RL-1 Patterns (Quebec)\nconst rl1Patterns = {\n  A: [\n    /Case\\s*A[:\\s]*([\\d,\\.\\s]+)/i,\n    /Box\\s*A[:\\s]*([\\d,\\.\\s]+)/i,\n    /Revenu\\s*d'emploi[:\\s]*([\\d,\\.\\s]+)/i,\n    /Employment\\s*income[:\\s]*([\\d,\\.\\s]+)/i\n  ],\n  F: [\n    /Case\\s*F[:\\s]*([\\d,\\.\\s]+)/i,\n    /Box\\s*F[:\\s]*([\\d,\\.\\s]+)/i,\n    /Cotisations\\s*syndicales[:\\s]*([\\d,\\.\\s]+)/i,\n    /Union\\s*dues[:\\s]*([\\d,\\.\\s]+)/i\n  ],\n  'B.A': [\n    /Case\\s*B\\.A[:\\s]*([\\d,\\.\\s]+)/i,\n    /Box\\s*B\\.A[:\\s]*([\\d,\\.\\s]+)/i,\n    /Cotisations\\s*RRQ[:\\s]*([\\d,\\.\\s]+)/i,\n    /QPP\\s*contributions[:\\s]*([\\d,\\.\\s]+)/i\n  ]\n};\n\n// T4 Patterns (Federal)\nconst t4Patterns = {\n  '14': [\n    /Box\\s*14[:\\s]*([\\d,\\.\\s]+)/i,\n    /Case\\s*14[:\\s]*([\\d,\\.\\s]+)/i,\n    /Employment\\s*income[:\\s]*([\\d,\\.\\s]+)/i\n  ],\n  '44': [\n    /Box\\s*44[:\\s]*([\\d,\\.\\s]+)/i,\n    /Case\\s*44[:\\s]*([\\d,\\.\\s]+)/i,\n    /Union\\s*dues[:\\s]*([\\d,\\.\\s]+)/i\n  ],\n  '16': [\n    /Box\\s*16[:\\s]*([\\d,\\.\\s]+)/i,\n    /Employee's\\s*CPP[:\\s]*([\\d,\\.\\s]+)/i\n  ],\n  '17': [\n    /Box\\s*17[:\\s]*([\\d,\\.\\s]+)/i,\n    /Employee's\\s*QPP[:\\s]*([\\d,\\.\\s]+)/i\n  ]\n};\n\n// RRSP Patterns\nconst rrspPatterns = [\n  /RRSP[:\\s]*([\\d,\\.\\s]+)/i,\n  /REER[:\\s]*([\\d,\\.\\s]+)/i,\n  /Contribution\\s*REER[:\\s]*([\\d,\\.\\s]+)/i,\n  /RRSP\\s*contribution[:\\s]*([\\d,\\.\\s]+)/i\n];\n\n// Extract RL-1 data\nconst rl1 = {};\nfor (const [key, patterns] of Object.entries(rl1Patterns)) {\n  const value = extractMoney(inputText, patterns);\n  if (value !== null) {\n    rl1[key] = value;\n  }\n}\n\n// Extract T4 data\nconst t4 = {};\nfor (const [key, patterns] of Object.entries(t4Patterns)) {\n  const value = extractMoney(inputText, patterns);\n  if (value !== null) {\n    t4[key] = value;\n  }\n}\n\n// Extract RRSP\nconst rrsp = extractMoney(inputText, rrspPatterns);\n\n// Determine slip type\nconst hasRL1 = Object.keys(rl1).length > 0;\nconst hasT4 = Object.keys(t4).length > 0;\n\nlet slipType = 'unknown';\nif (hasRL1 && hasT4) slipType = 'both';\nelse if (hasRL1) slipType = 'RL-1';\nelse if (hasT4) slipType = 'T4';\n\n// Return parsed data\nreturn {\n  rl1: Object.keys(rl1).length > 0 ? rl1 : null,\n  t4: Object.keys(t4).length > 0 ? t4 : null,\n  rrsp: rrsp,\n  slipType: slipType,\n  success: hasRL1 || hasT4,\n  rawText: inputText.substring(0, 200) // First 200 chars for debugging\n};"
+      },
+      "id": "parser-code",
+      "name": "Parse Tax Slip",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "response",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [650, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parse Tax Slip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Tax Slip": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-01-07T00:00:00.000Z",
+  "versionId": "1"
+}
