@@ -1,0 +1,242 @@
+{
+  "name": "TaxSyncQC - Email Auto-Parser",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "format": "simple",
+        "options": {
+          "allowUnauthorizedCerts": false
+        }
+      },
+      "id": "email-trigger",
+      "name": "Email Trigger (IMAP)",
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "credentials": {
+        "imap": {
+          "id": "YOUR_IMAP_CREDENTIALS",
+          "name": "IMAP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.subject}}",
+              "operation": "contains",
+              "value2": "RL-1"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "filter-tax-emails",
+      "name": "Filter Tax Emails",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract email body text\nconst emailBody = $input.item.json.text || $input.item.json.html || '';\nconst subject = $input.item.json.subject || '';\nconst from = $input.item.json.from?.text || '';\nconst date = $input.item.json.date || '';\n\nreturn {\n  emailBody,\n  subject,\n  from,\n  date,\n  rawEmail: $input.item.json\n};"
+      },
+      "id": "extract-email-body",
+      "name": "Extract Email Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// TaxSyncQC RL-1/T4 Parser\nconst inputText = $input.item.json.emailBody || '';\n\n// Helper function to extract money values\nfunction extractMoney(text, patterns) {\n  for (const pattern of patterns) {\n    const match = text.match(pattern);\n    if (match) {\n      const value = match[1].replace(/[,\\s]/g, '');\n      return parseFloat(value);\n    }\n  }\n  return null;\n}\n\n// RL-1 Patterns (Quebec)\nconst rl1Patterns = {\n  A: [\n    /Case\\s*A[:\\s]*([\\d,\\.\\s]+)/i,\n    /Box\\s*A[:\\s]*([\\d,\\.\\s]+)/i,\n    /Revenu\\s*d'emploi[:\\s]*([\\d,\\.\\s]+)/i,\n    /Employment\\s*income[:\\s]*([\\d,\\.\\s]+)/i\n  ],\n  F: [\n    /Case\\s*F[:\\s]*([\\d,\\.\\s]+)/i,\n    /Box\\s*F[:\\s]*([\\d,\\.\\s]+)/i,\n    /Cotisations\\s*syndicales[:\\s]*([\\d,\\.\\s]+)/i,\n    /Union\\s*dues[:\\s]*([\\d,\\.\\s]+)/i\n  ],\n  'B.A': [\n    /Case\\s*B\\.A[:\\s]*([\\d,\\.\\s]+)/i,\n    /Box\\s*B\\.A[:\\s]*([\\d,\\.\\s]+)/i,\n    /Cotisations\\s*RRQ[:\\s]*([\\d,\\.\\s]+)/i,\n    /QPP\\s*contributions[:\\s]*([\\d,\\.\\s]+)/i\n  ]\n};\n\n// T4 Patterns (Federal)\nconst t4Patterns = {\n  '14': [\n    /Box\\s*14[:\\s]*([\\d,\\.\\s]+)/i,\n    /Case\\s*14[:\\s]*([\\d,\\.\\s]+)/i,\n    /Employment\\s*income[:\\s]*([\\d,\\.\\s]+)/i\n  ],\n  '44': [\n    /Box\\s*44[:\\s]*([\\d,\\.\\s]+)/i,\n    /Case\\s*44[:\\s]*([\\d,\\.\\s]+)/i,\n    /Union\\s*dues[:\\s]*([\\d,\\.\\s]+)/i\n  ],\n  '16': [\n    /Box\\s*16[:\\s]*([\\d,\\.\\s]+)/i,\n    /Employee's\\s*CPP[:\\s]*([\\d,\\.\\s]+)/i\n  ],\n  '17': [\n    /Box\\s*17[:\\s]*([\\d,\\.\\s]+)/i,\n    /Employee's\\s*QPP[:\\s]*([\\d,\\.\\s]+)/i\n  ]\n};\n\n// RRSP Patterns\nconst rrspPatterns = [\n  /RRSP[:\\s]*([\\d,\\.\\s]+)/i,\n  /REER[:\\s]*([\\d,\\.\\s]+)/i,\n  /Contribution\\s*REER[:\\s]*([\\d,\\.\\s]+)/i,\n  /RRSP\\s*contribution[:\\s]*([\\d,\\.\\s]+)/i\n];\n\n// Extract RL-1 data\nconst rl1 = {};\nfor (const [key, patterns] of Object.entries(rl1Patterns)) {\n  const value = extractMoney(inputText, patterns);\n  if (value !== null) {\n    rl1[key] = value;\n  }\n}\n\n// Extract T4 data\nconst t4 = {};\nfor (const [key, patterns] of Object.entries(t4Patterns)) {\n  const value = extractMoney(inputText, patterns);\n  if (value !== null) {\n    t4[key] = value;\n  }\n}\n\n// Extract RRSP\nconst rrsp = extractMoney(inputText, rrspPatterns);\n\n// Determine slip type\nconst hasRL1 = Object.keys(rl1).length > 0;\nconst hasT4 = Object.keys(t4).length > 0;\n\nlet slipType = 'unknown';\nif (hasRL1 && hasT4) slipType = 'both';\nelse if (hasRL1) slipType = 'RL-1';\nelse if (hasT4) slipType = 'T4';\n\nreturn {\n  rl1: Object.keys(rl1).length > 0 ? rl1 : null,\n  t4: Object.keys(t4).length > 0 ? t4 : null,\n  rrsp: rrsp,\n  slipType: slipType,\n  success: hasRL1 || hasT4,\n  emailFrom: $input.item.json.from,\n  emailSubject: $input.item.json.subject,\n  emailDate: $input.item.json.date\n};"
+      },
+      "id": "parse-tax-slip",
+      "name": "Parse Tax Slip",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.success}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "check-parsing-success",
+      "name": "Parsing Successful?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "YOUR_AIRTABLE_BASE",
+          "mode": "list"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Tax Slips",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email From": "={{$json.emailFrom}}",
+            "Subject": "={{$json.emailSubject}}",
+            "Date Received": "={{$json.emailDate}}",
+            "Slip Type": "={{$json.slipType}}",
+            "Income (RL1-A)": "={{$json.rl1?.A}}",
+            "Union Dues (RL1-F)": "={{$json.rl1?.F}}",
+            "Income (T4-14)": "={{$json.t4?.['14']}}",
+            "Union Dues (T4-44)": "={{$json.t4?.['44']}}",
+            "RRSP": "={{$json.rrsp}}",
+            "Status": "Parsed"
+          }
+        },
+        "options": {}
+      },
+      "id": "save-to-airtable",
+      "name": "Save to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [1250, 100],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "YOUR_AIRTABLE_CREDENTIALS",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "notifications@yourdomain.com",
+        "toEmail": "={{$json.emailFrom}}",
+        "subject": "✅ Your Tax Slip Has Been Processed",
+        "text": "=Hello,\n\nYour tax slip has been automatically processed!\n\n📋 Details:\n- Slip Type: {{$json.slipType}}\n- Income: ${{$json.rl1?.A || $json.t4?.['14'] || 0}}\n- RRSP: ${{$json.rrsp || 0}}\n\n🔗 View your estimate:\nhttps://Isaloum.github.io/TaxSyncQC\n\nThank you,\nTaxSyncQC Team",
+        "options": {}
+      },
+      "id": "send-confirmation-email",
+      "name": "Send Confirmation Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1250, 300],
+      "credentials": {
+        "smtp": {
+          "id": "YOUR_SMTP_CREDENTIALS",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "message": "=🎉 New Tax Slip Processed!\n\nFrom: {{$json.emailFrom}}\nType: {{$json.slipType}}\nIncome: ${{$json.rl1?.A || $json.t4?.['14'] || 0}}\nRRSP: ${{$json.rrsp || 0}}",
+        "additionalFields": {}
+      },
+      "id": "send-slack-notification",
+      "name": "Send Slack Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [1250, 500],
+      "credentials": {
+        "slackApi": {
+          "id": "YOUR_SLACK_CREDENTIALS",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "Filter Tax Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Tax Emails": {
+      "main": [
+        [
+          {
+            "node": "Extract Email Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Email Body": {
+      "main": [
+        [
+          {
+            "node": "Parse Tax Slip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Tax Slip": {
+      "main": [
+        [
+          {
+            "node": "Parsing Successful?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsing Successful?": {
+      "main": [
+        [
+          {
+            "node": "Save to Airtable",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Confirmation Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-01-07T00:00:00.000Z",
+  "versionId": "1"
+}
