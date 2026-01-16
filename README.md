@@ -10,6 +10,25 @@ A free, open-source, bilingual (FR/EN) tool to estimate your tax credits and RRS
 
 ## ✨ Features
 
+### 🤖 **NEW: Document Automation**
+
+**Automatically process tax documents with AI-powered extraction!**
+
+- **Supported Documents:**
+  - 📄 T4, RL-1, T4A, RL-2 (tax slips)
+  - 🚗 Uber/Lyft summaries, taxi statements
+  - ⛽ Gas receipts, maintenance bills
+  - 📱 Phone bills, insurance, parking receipts
+- **Smart Classification** - Automatically identifies document types
+- **Data Extraction** - Extracts income, deductions, expenses
+- **Tax Calculations** - Instant tax impact estimates
+- **87% Test Coverage** - Comprehensive test suite (157 tests)
+
+📚 **Documentation:**
+- **[Email Integration Guide](./EMAIL_INTEGRATION_GUIDE.md)** - Complete setup and usage
+- **[AWS SES Setup](./AWS_SES_SETUP.md)** - Email service configuration
+- **[Deployment Guide](./DEPLOYMENT.md)** - Production deployment
+
 ### 🧮 **Accurate 2025 Calculations**
 
 - **Quebec Credits:**
