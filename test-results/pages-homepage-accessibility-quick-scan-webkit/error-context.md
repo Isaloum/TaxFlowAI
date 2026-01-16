@@ -1,0 +1,84 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: 💰
+      - generic [ref=e6]:
+        - generic [ref=e7]: TaxSyncQC
+        - text: Crédits Québec + Fédéral 2025
+    - generic [ref=e8]:
+      - button "EN" [ref=e9] [cursor=pointer]
+      - button "FR" [ref=e10] [cursor=pointer]
+  - main [ref=e11]:
+    - generic [ref=e12]:
+      - generic [ref=e13]: ✅ Conforme 2025
+      - heading "💰 TaxSyncQC — Estimation officielle Québec 2025" [level=1] [ref=e14]
+      - paragraph [ref=e15]:
+        - text: Basé sur les documents
+        - strong [ref=e16]: RL-1-T(2025-10)
+        - text: et
+        - strong [ref=e17]: T4 (2025)
+        - text: de Revenu Québec et l'ARC.
+      - generic [ref=e18]:
+        - generic [ref=e19]: ⚡ 100% navigateur — aucune donnée envoyée
+        - generic [ref=e20]: 🇨🇦 & 🇶🇨 Bilingue
+        - generic [ref=e21]: 📊 RRSP & crédits majeurs
+    - generic [ref=e23]:
+      - checkbox "Mode avancé (tous les champs)" [ref=e24]
+      - text: Mode avancé (tous les champs)
+    - generic [ref=e25]:
+      - button "RL-1 (Revenu Québec)" [ref=e26] [cursor=pointer]
+      - button "T4 (ARC)" [ref=e27] [cursor=pointer]
+      - button "Les deux" [ref=e28] [cursor=pointer]
+    - generic [ref=e29]:
+      - group "✅ Essentiel (requis)" [ref=e32]:
+        - generic [ref=e33]: ✅ Essentiel (requis)
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - generic [ref=e36]: Case A — Revenu d'emploi (Ligne 101)
+            - spinbutton [ref=e37]
+            - generic [ref=e38]: Case A — en haut à gauche du RL-1
+          - generic [ref=e39]:
+            - generic [ref=e40]: Case F — Cotisations syndicales (Ligne 397.1)
+            - spinbutton [ref=e41]
+          - generic [ref=e42]:
+            - generic [ref=e43]: NAS
+            - 'textbox "Ex: 123 456 789" [ref=e44]'
+      - generic [ref=e46]:
+        - generic [ref=e47]: Contribution RRSP ($)
+        - spinbutton [ref=e48]: "0"
+        - generic [ref=e49]: "Maximum : 31 560 $ (limite 2025)"
+      - generic [ref=e50]:
+        - heading "🔗 Se connecter à n8n" [level=2] [ref=e51]
+        - paragraph [ref=e52]: Envoyez un courriel/texte collé vers un webhook n8n qui extrait les cases RL-1/T4 et une suggestion RRSP optionnelle.
+        - generic [ref=e53]:
+          - generic [ref=e54]: URL du webhook n8n
+          - textbox "https://your-n8n.example/webhook/parse-slip" [ref=e55]
+        - generic [ref=e56]:
+          - generic [ref=e57]: Collez le courriel/texte à analyser
+          - textbox "Paste a payroll email or PDF text here" [ref=e58]
+        - generic [ref=e59]:
+          - generic [ref=e60]: Auto‑parse
+          - checkbox "Auto‑parse" [ref=e61]
+          - generic [ref=e62]: Enable auto‑parse on paste/drop (requires webhook configured)
+        - generic [ref=e63]:
+          - button "🚀 Envoyer à n8n" [ref=e64] [cursor=pointer]
+          - button "⬇️ Appliquer les champs extraits" [disabled] [ref=e65] [cursor=pointer]
+        - generic [ref=e66]: Aucun champ extrait pour le moment — envoyez d'abord le texte à votre webhook.
+      - button "Estimer les crédits" [ref=e68] [cursor=pointer]
+  - contentinfo [ref=e69]:
+    - generic [ref=e70]:
+      - generic [ref=e71]:
+        - text: 💰
+        - strong [ref=e72]: TaxSyncQC
+        - text: — Construit par Ihab Saloum • Projet Open Source
+      - generic [ref=e73]: JavaScript HTML5 Québec Tax Bilingue 100% Client-Side
+      - generic [ref=e74]:
+        - link "Voir le code source" [ref=e75]:
+          - /url: https://github.com/Isaloum/TaxSyncQC
+        - text: •
+        - link "Plus de projets →" [ref=e76]:
+          - /url: https://github.com/Isaloum
+```
