@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Accountant {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  firmName     String
+  phone        String
+  languagePref String   @default("fr") // 'fr' or 'en'
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  clients      Client[]
+
+  @@map("accountants")
+}
+
+model Client {
+  id            String    @id @default(cuid())
+  accountantId  String
+  email         String    @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  province      String
+  phone         String
+  languagePref  String    @default("fr") // 'fr' or 'en'
+  isFirstLogin  Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  accountant    Accountant @relation(fields: [accountantId], references: [id], onDelete: Cascade)
+
+  @@map("clients")
+}
