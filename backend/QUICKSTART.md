@@ -44,8 +44,8 @@ After running `npm run setup`, edit the created `.env` file:
 ```env
 # Replace YOUR-PROJECT-REF with your Supabase project reference
 # Replace [YOUR-PASSWORD] with your actual Supabase password
-DATABASE_URL="postgresql://postgres.YOUR-PROJECT-REF:YOUR_ACTUAL_PASSWORD@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres.YOUR-PROJECT-REF:YOUR_ACTUAL_PASSWORD@aws-0-us-east-1.pooler.supabase.com:5432/postgres"
+DATABASE_URL="postgresql://postgres.YOUR-PROJECT-REF:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.YOUR-PROJECT-REF:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:5432/postgres"
 
 # Generate a secure JWT secret (use any random string, at least 32 characters)
 JWT_SECRET="your-super-secret-jwt-key-min-32-chars-long"
