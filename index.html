@@ -1,1351 +1,500 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>TaxFlowAI — AI-Powered Tax Management for Canada 2025</title>
-    <style>
-      :root {
-        --bg: #f6f8fb;
-        --card: #ffffff;
-        --accent: #2563eb;
-        --accent-2: #0ea5e9;
-        --success: #0f9d58;
-        --warning: #f97316;
-        --text: #0f172a;
-        --muted: #5f6b7a;
-        --border: #e2e8f0;
-        --radius: 12px;
-        --shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
-      }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TaxFlowAI - Streamline Your Tax Practice with AI</title>
+    <meta
+      name="description"
+      content="AI-powered tax management platform for Canadian accountants and their clients. Automate tax form processing with bank-level security."
+    />
+    <meta name="keywords" content="tax software, AI, Canada, accountants, tax automation, CPA" />
+    <meta name="author" content="Ihab Saloum" />
 
-      * {
-        box-sizing: border-box;
-      }
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="TaxFlowAI - Streamline Your Tax Practice with AI" />
+    <meta
+      property="og:description"
+      content="AI-powered tax management platform for Canadian accountants and their clients."
+    />
+    <meta property="og:url" content="https://isaloum.github.io/TaxFlowAI/" />
+    <meta property="og:image" content="https://isaloum.github.io/TaxFlowAI/og-image.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TaxFlowAI - Streamline Your Tax Practice with AI" />
+    <meta
+      name="twitter:description"
+      content="AI-powered tax management platform for Canadian accountants."
+    />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#2563eb',
+              accent: '#dc2626',
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
       body {
-        font-family:
-          'Inter',
-          -apple-system,
-          BlinkMacSystemFont,
-          'Segoe UI',
-          sans-serif;
-        margin: 0;
-        background:
-          radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.08), transparent 25%),
-          radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.09), transparent 30%), var(--bg);
-        color: var(--text);
-        line-height: 1.6;
-        padding: 0 1rem 2rem;
+        font-family: 'Inter', sans-serif;
       }
 
-      .page {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding-top: 1.5rem;
+      .gradient-bg {
+        background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
       }
 
-      .surface {
-        background: var(--card);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        border: 1px solid var(--border);
+      .hero-gradient {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 50%, #dc2626 100%);
       }
 
-      .topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 1rem;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        background: var(--bg);
-        padding: 1rem 1.5rem;
-        margin-top: -1rem;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
-        border-radius: 8px;
+      .scroll-smooth {
+        scroll-behavior: smooth;
       }
 
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        font-weight: 700;
-        color: var(--text);
-        letter-spacing: -0.01em;
+      /* Smooth animations */
+      .fade-in {
+        animation: fadeIn 0.8s ease-in;
       }
 
-      .badge {
-        padding: 0.35rem 0.75rem;
-        border-radius: 999px;
-        background: rgba(37, 99, 235, 0.1);
-        color: var(--accent);
-        font-weight: 600;
-        font-size: 0.95rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-      }
-
-      .hero {
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(14, 165, 233, 0.08));
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 1.5rem;
-        box-shadow: var(--shadow);
-        margin-bottom: 1.25rem;
-      }
-
-      h1 {
-        margin: 0 0 0.5rem;
-        font-size: 1.8rem;
-        letter-spacing: -0.02em;
-      }
-      h2 {
-        margin: 0.5rem 0 0.75rem;
-      }
-      h3 {
-        margin-top: 0;
-      }
-
-      .lang-toggle button {
-        background: transparent;
-        color: var(--text);
-        border: 1px solid var(--border);
-        padding: 0.4rem 0.75rem;
-        border-radius: 999px;
-        cursor: pointer;
-        font-weight: 600;
-        min-width: 52px;
-        transition: all 0.2s ease;
-      }
-      .lang-toggle button:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-      }
-      .lang-toggle button[style*='bold'] {
-        background: var(--accent);
-        color: #fff;
-        border-color: var(--accent);
-      }
-
-      .tabs {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 0.5rem;
-        margin: 1rem 0;
-      }
-
-      .tab-btn {
-        padding: 0.9rem 1.2rem;
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        cursor: pointer;
-        font-weight: 700;
-        text-align: left;
-        color: var(--text);
-        box-shadow: var(--shadow);
-        transition: all 0.2s ease;
-      }
-      .tab-btn:hover {
-        border-color: var(--accent);
-        transform: translateY(-1px);
-      }
-      .tab-btn.active {
-        background: linear-gradient(135deg, #2563eb, #0ea5e9);
-        color: #fff;
-        border-color: transparent;
-      }
-
-      .tab-content {
-        display: none;
-      }
-      .tab-content.active {
-        display: block;
-      }
-
-      fieldset {
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 1rem;
-        margin-bottom: 1.25rem;
-        background: #fcfdff;
-      }
-
-      legend {
-        font-weight: 700;
-        padding: 0 0.5rem;
-        color: var(--text);
-      }
-      .input-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1rem 1.5rem;
-      }
-      .input-group {
-        margin-bottom: 1rem;
-      }
-      label {
-        display: block;
-        font-weight: 700;
-        margin-bottom: 0.25rem;
-        color: var(--text);
-      }
-      .box-label {
-        color: var(--accent);
-        font-family: 'SFMono-Regular', Menlo, Consolas, monospace;
-      }
-      .hint {
-        font-size: 0.9rem;
-        color: var(--muted);
-        margin-top: 0.25rem;
-      }
-
-      input,
-      select,
-      textarea {
-        width: 100%;
-        padding: 0.65rem 0.75rem;
-        border: 1px solid var(--border, #ccc);
-        border-radius: 8px;
-        background: #fff;
-        transition:
-          border-color 0.2s ease,
-          box-shadow 0.2s ease;
-      }
-      input:focus,
-      select:focus,
-      textarea:focus {
-        border-color: var(--accent);
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-      }
-
-      .toggle {
-        margin: 1rem 0;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.6rem 0.9rem;
-        background: #fff;
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        box-shadow: var(--shadow);
-      }
-
-      .btn {
-        background: linear-gradient(135deg, #2563eb, #0ea5e9);
-        color: #fff;
-        padding: 0.85rem 1.3rem;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        font-size: 1rem;
-        font-weight: 700;
-        letter-spacing: 0.01em;
-        transition:
-          transform 0.15s ease,
-          box-shadow 0.15s ease;
-        box-shadow: var(--shadow);
-      }
-      .btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.25);
-      }
-      .btn:active {
-        transform: translateY(0);
-      }
-      .btn.secondary {
-        background: linear-gradient(135deg, #0f9d58, #10b981);
-        margin-left: 0;
-      }
-      .btn.ghost {
-        background: #fff;
-        color: var(--text);
-        border: 1px solid var(--border);
-        box-shadow: none;
-      }
-
-      .action-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        align-items: center;
-        margin: 1rem 0;
-      }
-
-      .result {
-        background: #eef5ff;
-        border: 1px solid rgba(37, 99, 235, 0.2);
-        padding: 1.25rem;
-        margin: 1.25rem 0;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-      }
-
-      .warnings {
-        color: var(--warning);
-        margin-top: 1rem;
-        font-weight: 600;
-      }
-      .warnings ul {
-        margin: 0.35rem 0 0;
-        padding-left: 1.1rem;
-        color: var(--text);
-      }
-
-      .json-output {
-        background: #0f172a;
-        color: #e2e8f0;
-        padding: 1rem;
-        border-radius: var(--radius);
-        overflow-x: auto;
-        font-family: 'SFMono-Regular', Menlo, Consolas, monospace;
-        font-size: 0.9em;
-        margin-top: 1rem;
-        border: 1px solid #1e293b;
-      }
-
-      .integration {
-        border: 1px dashed var(--border);
-        padding: 1.2rem;
-        border-radius: var(--radius);
-        margin: 1.25rem 0;
-        background: #f8fafc;
-        box-shadow: var(--shadow);
-      }
-
-      .integration h2 {
-        margin-top: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-      }
-      #n8nStatus {
-        min-height: 1.2rem;
-        font-weight: 600;
-      }
-
-      .pill-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin: 0.75rem 0;
-      }
-      .pill {
-        padding: 0.45rem 0.75rem;
-        border-radius: 999px;
-        background: #fff;
-        border: 1px solid var(--border);
-        font-size: 0.95rem;
-        color: var(--muted);
-        box-shadow: var(--shadow);
-      }
-
-      footer {
-        margin-top: 2rem;
-        color: var(--muted);
-        font-size: 0.95rem;
-        text-align: center;
-      }
-      /* Footer */
-      footer {
-        margin-top: 3rem;
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        padding: 2rem;
-      }
-      .footer-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-      }
-      .footer-left {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-      .footer-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--accent);
-      }
-      .footer-subtitle {
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-      .footer-right {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-      .footer-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        background: rgba(37, 99, 235, 0.05);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        color: var(--text);
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.2s;
-        font-size: 0.9rem;
-      }
-      .footer-link:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
-      }
-      .tech-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        background: rgba(37, 99, 235, 0.08);
-        border: 1px solid rgba(37, 99, 235, 0.2);
-        border-radius: 6px;
-        font-size: 0.75rem;
-        color: var(--accent);
-        font-weight: 600;
-      }
-      @media (max-width: 768px) {
-        .footer-content {
-          flex-direction: column;
-          text-align: center;
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
         }
-        .footer-right {
-          justify-content: center;
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Hover effects */
+      .feature-card {
+        transition: all 0.3s ease;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+
+      .cta-button {
+        transition: all 0.3s ease;
+      }
+
+      .cta-button:hover {
+        transform: scale(1.05);
+      }
+
+      /* Timeline connector */
+      .timeline-connector {
+        position: relative;
+      }
+
+      .timeline-connector::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: -50%;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(to right, #2563eb, #60a5fa);
+      }
+
+      @media (max-width: 768px) {
+        .timeline-connector::after {
+          display: none;
         }
       }
     </style>
   </head>
-  <body>
-    <div class="page">
-      <header class="topbar">
-        <div class="brand">
-          <span style="font-size: 1.7rem">💰</span>
-          <div>
-            <div data-i18n="headerTitle">TaxFlowAI</div>
-            <small class="hint" data-i18n="headerSubtitle">Crédits Québec + Fédéral 2025</small>
+  <body class="scroll-smooth gradient-bg">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <span class="text-2xl font-bold text-primary">🇨🇦 TaxFlowAI</span>
           </div>
-        </div>
-        <div class="lang-toggle">
-          <button onclick="setLang('en')" id="btn-en">EN</button>
-          <button onclick="setLang('fr')" id="btn-fr" style="font-weight: bold">FR</button>
-        </div>
-      </header>
-
-      <main role="main">
-        <div class="hero">
-          <div class="badge" data-i18n="badge2025">✅ Conforme 2025</div>
-          <h1 data-i18n="title">💰 TaxFlowAI — AI-Powered Tax Management for Canada 2025</h1>
-          <p data-i18n="subtitle">
-            Basé sur les documents <strong>RL-1-T(2025-10)</strong> et <strong>T4 (2025)</strong> de
-            Revenu Québec et l'ARC.
-          </p>
-          <div class="pill-row">
-            <div class="pill">⚡ 100% navigateur — aucune donnée envoyée</div>
-            <div class="pill">🇨🇦 & 🇶🇨 Bilingue</div>
-            <div class="pill">📊 RRSP & crédits majeurs</div>
-          </div>
-        </div>
-
-        <div class="toggle">
-          <label>
-            <input type="checkbox" id="modeToggle" onchange="toggleMode()" />
-            <span data-i18n="advancedMode">Mode avancé (tous les champs)</span>
-          </label>
-        </div>
-
-        <div class="tabs">
-          <button class="tab-btn active" onclick="showTab('rl1', event)" data-tab="rl1">
-            RL-1 (Revenu Québec)
-          </button>
-          <button class="tab-btn" onclick="showTab('t4', event)" data-tab="t4">T4 (ARC)</button>
-          <button
-            class="tab-btn"
-            onclick="showTab('both', event)"
-            data-tab="both"
-            data-i18n="tabBoth"
-          >
-            Les deux
-          </button>
-        </div>
-
-        <div class="surface">
-          <!-- RL-1 Tab -->
-          <div id="rl1Tab" class="tab-content active">
-            <form id="rl1Form">
-              <fieldset>
-                <legend data-i18n="essentialRequired">✅ Essentiel (requis)</legend>
-                <div class="input-grid">
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Case A</span> —
-                      <span data-i18n="rl1BoxA">Revenu d'emploi (Ligne 101)</span></label
-                    >
-                    <input type="number" id="rl1_A" step="100" placeholder="Ex: 60000" />
-                    <div class="hint" data-i18n="hintRL1BoxA">Box A — top left on RL-1</div>
-                  </div>
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Case F</span> —
-                      <span data-i18n="rl1BoxF">Cotisations syndicales (Ligne 397.1)</span></label
-                    >
-                    <input type="number" id="rl1_F" step="1" placeholder="Ex: 400" />
-                  </div>
-                  <div class="input-group">
-                    <label data-i18n="sinLabel">NAS</label>
-                    <input type="text" id="rl1_sin" maxlength="11" placeholder="Ex: 123 456 789" />
-                  </div>
-                </div>
-              </fieldset>
-
-              <fieldset id="rl1Deductions" style="display: none">
-                <legend data-i18n="deductions">⚠️ Déductions</legend>
-                <div class="input-grid">
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Case B.A</span> —
-                      <span data-i18n="rl1BoxBA">Cotisations RRQ (Ligne 98)</span></label
-                    >
-                    <input type="number" id="rl1_BA" step="1" />
-                  </div>
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Case H</span> —
-                      <span data-i18n="rl1BoxH">Prime d'assurance parentale (Ligne 97)</span></label
-                    >
-                    <input type="number" id="rl1_H" step="1" />
-                  </div>
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Case D</span> —
-                      <span data-i18n="rl1BoxD">Cotisations RPA (Ligne 205)</span></label
-                    >
-                    <input type="number" id="rl1_D" step="1" />
-                  </div>
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Case D-1</span> —
-                      <span data-i18n="rl1BoxD1">Arrangement de retraite (Ligne 207)</span></label
-                    >
-                    <input type="number" id="rl1_D1" step="1" />
-                  </div>
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Case N</span> —
-                      <span data-i18n="rl1BoxN">Dons de bienfaisance (Ligne 395)</span></label
-                    >
-                    <input type="number" id="rl1_N" step="1" />
-                  </div>
-                </div>
-              </fieldset>
-
-              <fieldset id="rl1Benefits" style="display: none">
-                <legend data-i18n="taxableBenefits">
-                  🔹 Avantages imposables (inclus dans la Case A)
-                </legend>
-                <div class="input-grid">
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Case J</span> —
-                      <span data-i18n="rl1BoxJ"
-                        >Régime privé de soins de santé (Ligne 381)</span
-                      ></label
-                    >
-                    <input type="number" id="rl1_J" step="1" />
-                  </div>
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Case K</span> —
-                      <span data-i18n="rl1BoxK"
-                        >Déplacements (région éloignée) (Ligne 236)</span
-                      ></label
-                    >
-                    <input type="number" id="rl1_K" step="1" />
-                  </div>
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Case L</span> —
-                      <span data-i18n="rl1BoxL">Autres avantages</span></label
-                    >
-                    <input type="number" id="rl1_L" step="1" />
-                  </div>
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Case M</span> —
-                      <span data-i18n="rl1BoxM">Commissions (Ligne 100)</span></label
-                    >
-                    <input type="number" id="rl1_M" step="1" />
-                  </div>
-                </div>
-              </fieldset>
-            </form>
-          </div>
-
-          <!-- T4 Tab -->
-          <div id="t4Tab" class="tab-content">
-            <form id="t4Form">
-              <fieldset>
-                <legend data-i18n="essentialRequired">✅ Essentiel (requis)</legend>
-                <div class="input-grid">
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Box 14</span> —
-                      <span data-i18n="t4Box14">Revenus d'emploi (Ligne 10100)</span></label
-                    >
-                    <input type="number" id="t4_14" step="100" placeholder="Ex: 60000" />
-                    <div class="hint" data-i18n="hintT4Box14">Box 14 — center-left on T4</div>
-                  </div>
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Box 44</span> —
-                      <span data-i18n="t4Box44">Cotisations syndicales (Ligne 21200)</span></label
-                    >
-                    <input type="number" id="t4_44" step="1" placeholder="Ex: 400" />
-                  </div>
-                  <div class="input-group">
-                    <label data-i18n="sinLabelT4">SIN</label>
-                    <input type="text" id="t4_sin" maxlength="11" placeholder="Ex: 123-456-789" />
-                  </div>
-                </div>
-              </fieldset>
-
-              <fieldset id="t4Deductions" style="display: none">
-                <legend data-i18n="deductions">⚠️ Déductions</legend>
-                <div class="input-grid">
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Box 17</span> —
-                      <span data-i18n="t4Box17">Cotisations RRQ (QC)</span> /
-                      <span class="box-label">Box 16</span> —
-                      <span data-i18n="t4Box16">RPC (autres)</span></label
-                    >
-                    <input type="number" id="t4_17" step="1" placeholder="QC: Box 17" />
-                    <input type="number" id="t4_16" step="1" placeholder="Elsewhere: Box 16" />
-                  </div>
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Box 55</span> —
-                      <span data-i18n="t4Box55">RPAP (QC)</span> /
-                      <span class="box-label">Box 18</span> —
-                      <span data-i18n="t4Box18">AE</span></label
-                    >
-                    <input type="number" id="t4_55" step="1" placeholder="QC: Box 55" />
-                    <input type="number" id="t4_18" step="1" placeholder="Elsewhere: Box 18" />
-                  </div>
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Box 20</span> —
-                      <span data-i18n="t4Box20">Cotisations RPA (Ligne 20700)</span></label
-                    >
-                    <input type="number" id="t4_20" step="1" />
-                  </div>
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Box 52</span> —
-                      <span data-i18n="t4Box52">Facteur d'équivalence (Ligne 20600)</span></label
-                    >
-                    <input type="number" id="t4_52" step="1" />
-                  </div>
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Box 46</span> —
-                      <span data-i18n="t4Box46">Dons de bienfaisance</span></label
-                    >
-                    <input type="number" id="t4_46" step="1" />
-                  </div>
-                </div>
-              </fieldset>
-
-              <fieldset id="t4Benefits" style="display: none">
-                <legend data-i18n="taxableBenefitsT4">
-                  🔹 Avantages imposables (déjà inclus dans Box 14)
-                </legend>
-                <div class="input-grid">
-                  <div class="input-group">
-                    <label
-                      ><span class="box-label">Boxes 30, 32, 34, 36, 38, 40</span> —
-                      <span data-i18n="t4BoxBenefits"
-                        >Avantages divers (logement, auto, prêts, etc.)</span
-                      ></label
-                    >
-                    <input type="number" id="t4_benefits" step="1" placeholder="Total si connu" />
-                  </div>
-                </div>
-              </fieldset>
-            </form>
-          </div>
-
-          <!-- Both Tab -->
-          <div id="bothTab" class="tab-content">
-            <p data-i18n="bothTabDesc">
-              Entrez les données des deux formulaires ci-dessus — utile pour les travailleurs en
-              double statut (ex: autochtone, réserviste).
-            </p>
-          </div>
-
-          <div class="surface">
-            <div class="input-group">
-              <label data-i18n="rrspContribution">Contribution RRSP ($)</label>
-              <input
-                type="number"
-                id="rrspInput"
-                step="100"
-                min="0"
-                max="31560"
-                value="0"
-                placeholder="Ex: 5000"
-              />
-              <div class="hint" data-i18n="hintRRSP">Maximum: $31,560 (2025 limit)</div>
-            </div>
-          </div>
-
-          <div class="integration">
-            <h2 data-i18n="n8nTitle">🔗 Connect to n8n</h2>
-            <p class="hint" data-i18n="n8nDesc">
-              Send pasted email/text to an n8n webhook that extracts RL-1/T4 fields and optional
-              RRSP suggestion.
-            </p>
-            <div class="input-group">
-              <label data-i18n="n8nUrlLabel">n8n webhook URL</label>
-              <input
-                type="url"
-                id="n8nUrl"
-                placeholder="https://your-n8n.example/webhook/parse-slip"
-              />
-            </div>
-            <div class="input-group">
-              <label data-i18n="n8nTextLabel">Paste email/text to parse</label>
-              <textarea
-                id="n8nText"
-                rows="4"
-                placeholder="Paste a payroll email or PDF text here"
-              ></textarea>
-            </div>
-            <div class="input-group" style="display: flex; align-items: center; gap: 0.5rem">
-              <label for="autoParseToggle" style="margin: 0; font-weight: 700">Auto‑parse</label>
-              <input type="checkbox" id="autoParseToggle" />
-              <small class="hint" id="autoParseHint"
-                >Enable auto‑parse on paste/drop (requires webhook configured)</small
-              >
-            </div>
-            <div class="action-row">
-              <button type="button" class="btn secondary" onclick="sendToN8n()" data-i18n="n8nSend">
-                🚀 Send to n8n
-              </button>
-              <button
-                type="button"
-                class="btn ghost"
-                id="applyN8nBtn"
-                onclick="applyN8nData()"
-                disabled
-                data-i18n="n8nApply"
-              >
-                ⬇️ Apply parsed fields
-              </button>
-            </div>
-            <div id="n8nStatus" class="hint"></div>
-          </div>
-
-          <div class="action-row">
-            <button
-              type="button"
-              class="btn"
-              onclick="calculate && calculate()"
-              data-i18n="estimateButton"
+          <div class="hidden md:flex items-center space-x-8">
+            <a href="#features" class="text-gray-700 hover:text-primary transition">Features</a>
+            <a href="#how-it-works" class="text-gray-700 hover:text-primary transition"
+              >How It Works</a
             >
-              Estimer les crédits
-            </button>
-            <button
-              type="button"
-              class="btn ghost"
-              id="exportBtn"
-              onclick="toggleJSON()"
-              style="display: none"
-              data-i18n="exportButton"
-            >
-              📋 Export JSON
-            </button>
-          </div>
-
-          <div id="output"></div>
-          <div id="jsonOutput" class="json-output" style="display: none"></div>
-        </div>
-      </main>
-
-      <footer
-        style="
-          background: #fff;
-          border-top: 2px solid #e2e8f0;
-          padding: 2rem 0;
-          margin-top: 3rem;
-          text-align: center;
-        "
-      >
-        <div
-          style="
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-            color: var(--muted);
-            font-size: 0.9rem;
-          "
-        >
-          <div>
-            💰 <strong style="color: #2563eb">TaxFlowAI</strong> —
-            <span data-i18n="footerBuiltBy">Construit par Ihab Saloum</span> •
-            <span data-i18n="footerOpenSource">Projet Open Source</span>
-          </div>
-          <div style="margin: 0.75rem 0">
-            <span
-              style="
-                background: rgba(37, 99, 235, 0.08);
-                padding: 0.25rem 0.6rem;
-                border-radius: 4px;
-                margin: 0 0.25rem;
-                font-size: 0.75rem;
-                color: #2563eb;
-              "
-              >JavaScript</span
-            >
-            <span
-              style="
-                background: rgba(37, 99, 235, 0.08);
-                padding: 0.25rem 0.6rem;
-                border-radius: 4px;
-                margin: 0 0.25rem;
-                font-size: 0.75rem;
-                color: #2563eb;
-              "
-              >HTML5</span
-            >
-            <span
-              style="
-                background: rgba(37, 99, 235, 0.08);
-                padding: 0.25rem 0.6rem;
-                border-radius: 4px;
-                margin: 0 0.25rem;
-                font-size: 0.75rem;
-                color: #2563eb;
-              "
-              >Québec Tax</span
-            >
-            <span
-              style="
-                background: rgba(37, 99, 235, 0.08);
-                padding: 0.25rem 0.6rem;
-                border-radius: 4px;
-                margin: 0 0.25rem;
-                font-size: 0.75rem;
-                color: #2563eb;
-              "
-              >Bilingue</span
-            >
-            <span
-              style="
-                background: rgba(37, 99, 235, 0.08);
-                padding: 0.25rem 0.6rem;
-                border-radius: 4px;
-                margin: 0 0.25rem;
-                font-size: 0.75rem;
-                color: #2563eb;
-              "
-              >100% Client-Side</span
-            >
-          </div>
-          <div>
             <a
               href="https://github.com/Isaloum/TaxFlowAI"
               target="_blank"
-              style="color: #2563eb; text-decoration: none; margin: 0 0.5rem"
-              ><span data-i18n="footerViewSource">Voir le code source</span></a
+              class="text-gray-700 hover:text-primary transition"
+              >GitHub</a
             >
-            •
             <a
-              href="https://github.com/Isaloum"
-              target="_blank"
-              style="color: #2563eb; text-decoration: none; margin: 0 0.5rem"
-              ><span data-i18n="footerMoreProjects">Plus de projets →</span></a
+              href="/app"
+              class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition cta-button"
+              >Launch App</a
+            >
+          </div>
+          <!-- Mobile menu button -->
+          <div class="md:hidden">
+            <a
+              href="/app"
+              class="bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition"
+              >Launch App</a
             >
           </div>
         </div>
-      </footer>
-    </div>
+      </div>
+    </nav>
 
-    <script src="tax-calculator-bundle.js"></script>
-    <script src="fix-calculate-browser.js"></script>
-    <script src="autoparse.js"></script>
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden py-20 md:py-32">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center fade-in">
+          <h1 class="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+            TaxFlowAI
+            <span class="block hero-gradient bg-clip-text text-transparent"
+              >Streamline Your Tax Practice</span
+            >
+          </h1>
+          <p class="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            AI-powered tax management platform for Canadian accountants and their clients
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a
+              href="/app"
+              class="bg-primary text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition cta-button shadow-lg"
+            >
+              Launch App →
+            </a>
+            <a
+              href="#features"
+              class="bg-white text-primary border-2 border-primary px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition cta-button shadow-lg"
+            >
+              View Demo
+            </a>
+          </div>
+          <div class="mt-12 flex flex-wrap justify-center gap-6 text-sm text-gray-600">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <span>Free & Open Source</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <span>Bank-Level Security</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <span>Canada-Wide Coverage</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Powerful Features for Modern Tax Practices
+          </h2>
+          <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+            Everything you need to manage your tax practice efficiently and securely
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <!-- Feature 1 -->
+          <div
+            class="feature-card bg-gradient-to-br from-blue-50 to-white p-8 rounded-xl border border-gray-200"
+          >
+            <div class="text-5xl mb-4">🤖</div>
+            <h3 class="text-xl font-bold text-gray-900 mb-3">AI-Powered Automation</h3>
+            <p class="text-gray-600">
+              Intelligent tax form processing that extracts data automatically from T4, RL-1, and
+              other Canadian tax documents.
+            </p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div
+            class="feature-card bg-gradient-to-br from-red-50 to-white p-8 rounded-xl border border-gray-200"
+          >
+            <div class="text-5xl mb-4">🇨🇦</div>
+            <h3 class="text-xl font-bold text-gray-900 mb-3">Canada-Wide Coverage</h3>
+            <p class="text-gray-600">
+              Complete support for federal and provincial tax calculations across all Canadian
+              provinces and territories.
+            </p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div
+            class="feature-card bg-gradient-to-br from-green-50 to-white p-8 rounded-xl border border-gray-200"
+          >
+            <div class="text-5xl mb-4">🔒</div>
+            <h3 class="text-xl font-bold text-gray-900 mb-3">Secure & Private</h3>
+            <p class="text-gray-600">
+              Bank-level encryption for all client data. 100% client-side processing means your data
+              never leaves your device.
+            </p>
+          </div>
+
+          <!-- Feature 4 -->
+          <div
+            class="feature-card bg-gradient-to-br from-purple-50 to-white p-8 rounded-xl border border-gray-200"
+          >
+            <div class="text-5xl mb-4">📊</div>
+            <h3 class="text-xl font-bold text-gray-900 mb-3">Real-Time Insights</h3>
+            <p class="text-gray-600">
+              Instant tax calculations and reporting with RRSP optimization and credit estimation
+              for better planning.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-20 gradient-bg">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">How It Works</h2>
+          <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+            Three simple steps to transform your tax workflow
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8 md:gap-4">
+          <!-- Step 1 -->
+          <div class="text-center relative timeline-connector">
+            <div class="bg-white p-8 rounded-xl shadow-lg feature-card">
+              <div
+                class="inline-flex items-center justify-center w-16 h-16 bg-primary text-white rounded-full text-2xl font-bold mb-6"
+              >
+                1
+              </div>
+              <h3 class="text-2xl font-bold text-gray-900 mb-4">Upload Documents</h3>
+              <p class="text-gray-600">
+                Clients securely submit their tax forms (T4, RL-1, receipts) through an encrypted
+                portal.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="text-center relative timeline-connector">
+            <div class="bg-white p-8 rounded-xl shadow-lg feature-card">
+              <div
+                class="inline-flex items-center justify-center w-16 h-16 bg-primary text-white rounded-full text-2xl font-bold mb-6"
+              >
+                2
+              </div>
+              <h3 class="text-2xl font-bold text-gray-900 mb-4">AI Processing</h3>
+              <p class="text-gray-600">
+                Our AI automatically extracts data, performs calculations, and identifies potential
+                deductions and credits.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="text-center">
+            <div class="bg-white p-8 rounded-xl shadow-lg feature-card">
+              <div
+                class="inline-flex items-center justify-center w-16 h-16 bg-primary text-white rounded-full text-2xl font-bold mb-6"
+              >
+                3
+              </div>
+              <h3 class="text-2xl font-bold text-gray-900 mb-4">Review & File</h3>
+              <p class="text-gray-600">
+                Accountants review AI-processed data, make adjustments, and file returns with
+                confidence.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 hero-gradient text-white">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-4xl md:text-5xl font-bold mb-6">Ready to Transform Your Tax Practice?</h2>
+        <p class="text-xl mb-8 opacity-90">
+          Join Canadian accountants who are saving hours every week with AI-powered automation
+        </p>
+        <a
+          href="/app/register"
+          class="inline-block bg-white text-primary px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition cta-button shadow-lg"
+        >
+          Get Started Free
+        </a>
+        <p class="mt-4 text-sm opacity-75">No credit card required</p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 py-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-4 gap-8 mb-8">
+          <!-- Brand -->
+          <div class="md:col-span-2">
+            <h3 class="text-2xl font-bold text-white mb-4">🇨🇦 TaxFlowAI</h3>
+            <p class="text-gray-400 mb-4">
+              AI-powered tax management platform for Canadian accountants and their clients.
+            </p>
+            <div class="flex gap-4">
+              <a
+                href="https://github.com/Isaloum/TaxFlowAI"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-gray-400 hover:text-white transition"
+              >
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path
+                    d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+                  />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Links -->
+          <div>
+            <h4 class="text-white font-semibold mb-4">Resources</h4>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="https://github.com/Isaloum/TaxFlowAI"
+                  target="_blank"
+                  class="hover:text-white transition"
+                  >GitHub Repository</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-white transition">Documentation (Coming Soon)</a>
+              </li>
+              <li><a href="#features" class="hover:text-white transition">Features</a></li>
+              <li><a href="#how-it-works" class="hover:text-white transition">How It Works</a></li>
+            </ul>
+          </div>
+
+          <!-- Contact -->
+          <div>
+            <h4 class="text-white font-semibold mb-4">Contact</h4>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="https://github.com/Isaloum/TaxFlowAI/issues"
+                  target="_blank"
+                  class="hover:text-white transition"
+                  >Support & Issues</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/Isaloum"
+                  target="_blank"
+                  class="hover:text-white transition"
+                  >About the Developer</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Tech Stack -->
+        <div class="border-t border-gray-800 pt-8">
+          <div class="flex flex-wrap gap-4 justify-center mb-6">
+            <span class="bg-gray-800 px-4 py-2 rounded-full text-sm">Next.js</span>
+            <span class="bg-gray-800 px-4 py-2 rounded-full text-sm">TypeScript</span>
+            <span class="bg-gray-800 px-4 py-2 rounded-full text-sm">Supabase</span>
+            <span class="bg-gray-800 px-4 py-2 rounded-full text-sm">Tailwind CSS</span>
+            <span class="bg-gray-800 px-4 py-2 rounded-full text-sm">AI-Powered</span>
+          </div>
+
+          <!-- Copyright -->
+          <div class="text-center text-gray-400 text-sm">
+            <p>
+              © 2025 TaxFlowAI. Built by
+              <a
+                href="https://github.com/Isaloum"
+                target="_blank"
+                class="text-primary hover:text-blue-400 transition"
+                >Ihab Saloum</a
+              >
+            </p>
+            <p class="mt-2">🇨🇦 Made in Canada, for Canada. Fait au Canada, pour le Canada. 🇨🇦</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Smooth Scrolling Script -->
     <script>
-      let lastN8nResult = null;
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start',
+            });
+          }
+        });
+      });
 
-      let lang = 'fr';
-      const translations = {
-        en: {
-          headerTitle: 'TaxFlowAI',
-          headerSubtitle: 'AI-Powered Tax Management for Canada 2025',
-          title: '💰 TaxFlowAI — AI-Powered Tax Management for Canada 2025',
-          subtitle:
-            'Based on <strong>RL-1-T(2025-10)</strong> and <strong>T4 (2025)</strong> from Revenu Québec and CRA.',
-          advancedMode: 'Advanced mode (all fields)',
-          tabRL1: 'RL-1 (Revenu Québec)',
-          tabT4: 'T4 (CRA)',
-          tabBoth: 'Both',
-          badge2025: '✅ 2025 Compliant',
-          essentialRequired: '✅ Essential (required)',
-          rl1BoxA: 'Employment income (Line 101)',
-          hintRL1BoxA: 'Box A — top left on RL-1',
-          rl1BoxF: 'Union dues (Line 397.1)',
-          sinLabel: 'SIN',
-          sinLabelT4: 'SIN',
-          deductions: '⚠️ Deductions',
-          rl1BoxBA: 'QPP contributions (Line 98)',
-          rl1BoxH: 'Parental insurance premium (Line 97)',
-          rl1BoxD: 'RPP contributions (Line 205)',
-          rl1BoxD1: 'Retirement arrangement (Line 207)',
-          rl1BoxN: 'Charitable donations (Line 395)',
-          taxableBenefits: '🔹 Taxable benefits (included in Box A)',
-          rl1BoxJ: 'Private health services plan (Line 381)',
-          rl1BoxK: 'Travel (remote area) (Line 236)',
-          rl1BoxL: 'Other benefits',
-          rl1BoxM: 'Commissions (Line 100)',
-          t4Box14: 'Employment income (Line 10100)',
-          hintT4Box14: 'Box 14 — center-left on T4',
-          t4Box44: 'Union dues (Line 21200)',
-          t4Box17: 'QPP contributions (QC)',
-          t4Box16: 'CPP (other provinces)',
-          t4Box55: 'QPIP (QC)',
-          t4Box18: 'EI',
-          t4Box20: 'RPP contributions (Line 20700)',
-          t4Box52: 'Pension adjustment (Line 20600)',
-          t4Box46: 'Charitable donations',
-          taxableBenefitsT4: '🔹 Taxable benefits (already included in Box 14)',
-          t4BoxBenefits: 'Various benefits (housing, car, loans, etc.)',
-          bothTabDesc:
-            'Enter data from both forms above — useful for dual-status workers (e.g., Indigenous, reservist).',
-          rrspContribution: 'RRSP Contribution ($)',
-          hintRRSP: 'Maximum: $31,560 (2025 limit)',
-          estimateButton: 'Estimate Credits',
-          exportButton: '📋 Export JSON',
-          n8nTitle: '🔗 Connect to n8n',
-          n8nDesc:
-            'Send pasted email/text to an n8n webhook that extracts RL-1/T4 fields and optional RRSP suggestion.',
-          n8nUrlLabel: 'n8n webhook URL',
-          n8nTextLabel: 'Paste email/text to parse',
-          n8nSend: '🚀 Send to n8n',
-          n8nApply: '⬇️ Apply parsed fields',
-          n8nNoResult: 'No parsed fields yet — send text to your webhook first.',
-          n8nApplied: 'Applied parsed values to the form.',
-          n8nErrorMissing: 'Please paste some text and set your n8n webhook URL.',
-          n8nErrorInvalidUrl: 'Enter a valid http(s) webhook URL.',
-          n8nErrorCall:
-            'Could not reach the n8n webhook. Double-check the URL and response format.',
-          n8nErrorPayload: 'Webhook response was missing RL-1/T4/RRSP fields.',
-          resultTitle: '🧾 Quebec + Federal Estimate (2025)',
-          grossIncome: '💼 Gross income',
-          afterRRSP: '📉 After RRSP',
-          taxSavings: '💰 Tax savings',
-          qcSection: '🇶🇨 Quebec',
-          solidarityCredit: '💰 Solidarity credit',
-          workPremium: '👷 Work premium',
-          fedSection: '🇨🇦 Federal',
-          bpaSavings: '🛡️ BPA savings',
-          cwb: '💵 CWB',
-          totalBenefit: '🎯 Total benefit',
-          cashRefund: '💸 Cash refund',
-          warnings: '💡 Tips to increase your refund:',
-          warningUnionDues: 'Add union dues (Case F) — could save $30-150 in taxes',
-          footerBuiltBy: 'Built by Ihab Saloum',
-          footerOpenSource: 'Open Source Project',
-          footerViewSource: 'View source code',
-          footerMoreProjects: 'More projects →',
-        },
-        fr: {
-          headerTitle: 'TaxFlowAI',
-          headerSubtitle: "Gestion fiscale propulsée par l'IA pour le Canada 2025",
-          title: "💰 TaxFlowAI — Gestion fiscale propulsée par l'IA pour le Canada 2025",
-          subtitle:
-            "Basé sur les documents <strong>RL-1-T(2025-10)</strong> et <strong>T4 (2025)</strong> de Revenu Québec et l'ARC.",
-          advancedMode: 'Mode avancé (tous les champs)',
-          tabRL1: 'RL-1 (Revenu Québec)',
-          tabT4: 'T4 (ARC)',
-          tabBoth: 'Les deux',
-          badge2025: '✅ Conforme 2025',
-          essentialRequired: '✅ Essentiel (requis)',
-          rl1BoxA: "Revenu d'emploi (Ligne 101)",
-          hintRL1BoxA: 'Case A — en haut à gauche du RL-1',
-          rl1BoxF: 'Cotisations syndicales (Ligne 397.1)',
-          sinLabel: 'NAS',
-          sinLabelT4: 'NAS',
-          deductions: '⚠️ Déductions',
-          rl1BoxBA: 'Cotisations RRQ (Ligne 98)',
-          rl1BoxH: "Prime d'assurance parentale (Ligne 97)",
-          rl1BoxD: 'Cotisations RPA (Ligne 205)',
-          rl1BoxD1: 'Arrangement de retraite (Ligne 207)',
-          rl1BoxN: 'Dons de bienfaisance (Ligne 395)',
-          taxableBenefits: '🔹 Avantages imposables (inclus dans la Case A)',
-          rl1BoxJ: 'Régime privé de soins de santé (Ligne 381)',
-          rl1BoxK: 'Déplacements (région éloignée) (Ligne 236)',
-          rl1BoxL: 'Autres avantages',
-          rl1BoxM: 'Commissions (Ligne 100)',
-          t4Box14: "Revenus d'emploi (Ligne 10100)",
-          hintT4Box14: 'Case 14 — au centre gauche du T4',
-          t4Box44: 'Cotisations syndicales (Ligne 21200)',
-          t4Box17: 'Cotisations RRQ (QC)',
-          t4Box16: 'RPC (autres provinces)',
-          t4Box55: 'RPAP (QC)',
-          t4Box18: 'AE',
-          t4Box20: 'Cotisations RPA (Ligne 20700)',
-          t4Box52: "Facteur d'équivalence (Ligne 20600)",
-          t4Box46: 'Dons de bienfaisance',
-          taxableBenefitsT4: '🔹 Avantages imposables (déjà inclus dans Case 14)',
-          t4BoxBenefits: 'Avantages divers (logement, auto, prêts, etc.)',
-          bothTabDesc:
-            'Entrez les données des deux formulaires ci-dessus — utile pour les travailleurs en double statut (ex: autochtone, réserviste).',
-          rrspContribution: 'Contribution RRSP ($)',
-          hintRRSP: 'Maximum : 31 560 $ (limite 2025)',
-          estimateButton: 'Estimer les crédits',
-          exportButton: '📋 Exporter JSON',
-          n8nTitle: '🔗 Se connecter à n8n',
-          n8nDesc:
-            'Envoyez un courriel/texte collé vers un webhook n8n qui extrait les cases RL-1/T4 et une suggestion RRSP optionnelle.',
-          n8nUrlLabel: 'URL du webhook n8n',
-          n8nTextLabel: 'Collez le courriel/texte à analyser',
-          n8nSend: '🚀 Envoyer à n8n',
-          n8nApply: '⬇️ Appliquer les champs extraits',
-          n8nNoResult:
-            "Aucun champ extrait pour le moment — envoyez d'abord le texte à votre webhook.",
-          n8nApplied: 'Valeurs extraites appliquées au formulaire.',
-          n8nErrorMissing: "Collez un texte et ajoutez l'URL du webhook n8n.",
-          n8nErrorInvalidUrl: 'Entrez une URL de webhook http(s) valide.',
-          n8nErrorCall:
-            "Impossible de joindre le webhook n8n. Vérifiez l'URL et le format de réponse.",
-          n8nErrorPayload: 'La réponse du webhook ne contient pas de champs RL-1/T4/RRSP.',
-          resultTitle: '🧾 Estimation Québec + Fédéral (2025)',
-          grossIncome: '💼 Revenu brut',
-          afterRRSP: '📉 Après RRSP',
-          taxSavings: "💰 Économie d'impôt",
-          qcSection: '🇶🇨 Québec',
-          solidarityCredit: '💰 Crédit solidarité',
-          workPremium: '👷 Prime au travail',
-          fedSection: '🇨🇦 Fédéral',
-          bpaSavings: '🛡️ Économies BPA',
-          cwb: '💵 PTE',
-          totalBenefit: '🎯 Avantage total',
-          cashRefund: '💸 Remboursement',
-          warnings: '💡 Conseils pour augmenter votre remboursement :',
-          warningUnionDues:
-            "Ajoutez vos cotisations syndicales (Case F) — pourrait économiser 30-150 $ d'impôt",
-          footerBuiltBy: 'Construit par Ihab Saloum',
-          footerOpenSource: 'Projet Open Source',
-          footerViewSource: 'Voir le code source',
-          footerMoreProjects: 'Plus de projets →',
-        },
+      // Add fade-in animation on scroll
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px',
       };
 
-      const _ = (key) => translations[lang][key] || key;
-
-      function setLang(l) {
-        lang = l;
-        document.getElementById('btn-en').style.fontWeight = l === 'en' ? 'bold' : 'normal';
-        document.getElementById('btn-fr').style.fontWeight = l === 'fr' ? 'bold' : 'normal';
-        document.documentElement.lang = l;
-        document.title = _('title').replace(/<[^>]*>/g, '');
-
-        document.querySelectorAll('[data-i18n]').forEach((el) => {
-          const key = el.getAttribute('data-i18n');
-          el.innerHTML = _(key);
-        });
-
-        const n8nStatus = document.getElementById('n8nStatus');
-        if (n8nStatus && n8nStatus.dataset.i18nKey) {
-          n8nStatus.textContent = _(n8nStatus.dataset.i18nKey);
-        }
-      }
-
-      function toggleMode() {
-        const advanced = document.getElementById('modeToggle').checked;
-        ['rl1Deductions', 'rl1Benefits', 't4Deductions', 't4Benefits'].forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) el.style.display = advanced ? 'block' : 'none';
-        });
-        document.getElementById('exportBtn').style.display =
-          advanced && lastCalculationData ? 'inline-block' : 'none';
-      }
-
-      function showTab(tabId, ev) {
-        ['rl1Tab', 't4Tab', 'bothTab'].forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) el.classList.toggle('active', id === `${tabId}Tab`);
-        });
-        document.querySelectorAll('.tab-btn').forEach((btn) => btn.classList.remove('active'));
-        if (ev && ev.currentTarget) ev.currentTarget.classList.add('active');
-        else if (ev && ev.target) ev.target.classList.add('active');
-      }
-
-      function toggleJSON() {
-        const jsonDiv = document.getElementById('jsonOutput');
-        if (jsonDiv.style.display === 'none') {
-          jsonDiv.style.display = 'block';
-          document.getElementById('exportBtn').textContent =
-            '✖️ ' + (lang === 'fr' ? 'Fermer JSON' : 'Close JSON');
-        } else {
-          jsonDiv.style.display = 'none';
-          document.getElementById('exportBtn').innerHTML = _('exportButton');
-        }
-      }
-
-      function getFormData() {
-        const isRL1 = document.getElementById('rl1Tab').classList.contains('active');
-
-        const data = {
-          source: isRL1 ? 'RL-1' : 'T4',
-          rl1: { A: null, F: null, sin: null },
-          t4: { 14: null, 44: null, sin: null },
-        };
-
-        if (isRL1) {
-          data.rl1.A = parseFloat(document.getElementById('rl1_A').value) || 0;
-          data.rl1.F = parseFloat(document.getElementById('rl1_F').value) || null;
-          data.rl1.sin = document.getElementById('rl1_sin').value;
-          if (document.getElementById('modeToggle').checked) {
-            data.rl1['B.A'] = parseFloat(document.getElementById('rl1_BA').value) || null;
-            data.rl1.H = parseFloat(document.getElementById('rl1_H').value) || null;
-            data.rl1.D = parseFloat(document.getElementById('rl1_D').value) || null;
-            data.rl1['D-1'] = parseFloat(document.getElementById('rl1_D1').value) || null;
-            data.rl1.N = parseFloat(document.getElementById('rl1_N').value) || null;
-            data.rl1.J = parseFloat(document.getElementById('rl1_J').value) || null;
-            data.rl1.K = parseFloat(document.getElementById('rl1_K').value) || null;
-            data.rl1.L = parseFloat(document.getElementById('rl1_L').value) || null;
-            data.rl1.M = parseFloat(document.getElementById('rl1_M').value) || null;
-          }
-        } else {
-          data.t4['14'] = parseFloat(document.getElementById('t4_14').value) || 0;
-          data.t4['44'] = parseFloat(document.getElementById('t4_44').value) || null;
-          data.t4.sin = document.getElementById('t4_sin').value;
-          if (document.getElementById('modeToggle').checked) {
-            data.t4['17'] = parseFloat(document.getElementById('t4_17').value) || null;
-            data.t4['16'] = parseFloat(document.getElementById('t4_16').value) || null;
-            data.t4['55'] = parseFloat(document.getElementById('t4_55').value) || null;
-            data.t4['18'] = parseFloat(document.getElementById('t4_18').value) || null;
-            data.t4['20'] = parseFloat(document.getElementById('t4_20').value) || null;
-            data.t4['52'] = parseFloat(document.getElementById('t4_52').value) || null;
-            data.t4['46'] = parseFloat(document.getElementById('t4_46').value) || null;
-            data.t4.benefits = parseFloat(document.getElementById('t4_benefits').value) || null;
-          }
-        }
-
-        return data;
-      }
-
-      function setN8nStatus(key, fallbackText = '') {
-        const statusEl = document.getElementById('n8nStatus');
-        if (!statusEl) return;
-        if (key) {
-          statusEl.dataset.i18nKey = key;
-          statusEl.textContent = _(key);
-        } else {
-          statusEl.dataset.i18nKey = '';
-          statusEl.textContent = fallbackText;
-        }
-      }
-
-      function isValidWebhookUrl(url) {
-        try {
-          const parsed = new URL(url);
-          return ['http:', 'https:'].includes(parsed.protocol);
-        } catch (e) {
-          return false;
-        }
-      }
-
-      function sanitizeSlipFields(raw) {
-        if (!raw || typeof raw !== 'object') return {};
-        const clean = {};
-        Object.entries(raw).forEach(([key, value]) => {
-          const normalizedKey = key.toString().replace(/[^a-zA-Z0-9]/g, '');
-          const num =
-            typeof value === 'string' ? parseFloat(value.replace(/[, ]+/g, '')) : Number(value);
-          if (normalizedKey && Number.isFinite(num)) {
-            clean[normalizedKey] = num;
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('fade-in');
           }
         });
-        return clean;
-      }
+      }, observerOptions);
 
-      function normalizeN8nPayload(payload) {
-        if (!payload || typeof payload !== 'object') {
-          return null;
-        }
-
-        if (!payload.rl1 && !payload.t4 && payload.data && typeof payload.data === 'object') {
-          payload = payload.data;
-        }
-
-        const rl1 = sanitizeSlipFields(payload.rl1);
-        const t4 = sanitizeSlipFields(payload.t4);
-        const rrspRaw = payload.rrsp;
-        const hasContent =
-          (rl1 && Object.keys(rl1).length > 0) ||
-          (t4 && Object.keys(t4).length > 0) ||
-          (rrspRaw !== undefined && rrspRaw !== null);
-        if (!hasContent) {
-          return null;
-        }
-
-        const rrsp = rrspRaw === undefined || rrspRaw === null ? null : Number(rrspRaw);
-        return {
-          rl1,
-          t4,
-          rrsp: Number.isFinite(rrsp) ? rrsp : null,
-        };
-      }
-
-      function loadSavedN8nUrl() {
-        try {
-          const saved = localStorage.getItem('n8nWebhookUrl');
-          if (saved) {
-            document.getElementById('n8nUrl').value = saved;
-          }
-        } catch (e) {
-          // ignore
-        }
-      }
-
-      async function sendToN8n() {
-        const url = document.getElementById('n8nUrl').value.trim();
-        const text = document.getElementById('n8nText').value.trim();
-        const applyBtn = document.getElementById('applyN8nBtn');
-        applyBtn.disabled = true;
-        lastN8nResult = null;
-
-        if (!url || !text) {
-          setN8nStatus('n8nErrorMissing');
-          return;
-        }
-
-        if (!isValidWebhookUrl(url)) {
-          setN8nStatus('n8nErrorInvalidUrl');
-          return;
-        }
-
-        setN8nStatus(null, lang === 'fr' ? 'Envoi au webhook n8n…' : 'Sending to n8n webhook…');
-
-        try {
-          try {
-            localStorage.setItem('n8nWebhookUrl', url);
-          } catch (e) {
-            /* ignore */
-          }
-
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text, lang, source: 'taxflowai-web' }),
-          });
-
-          if (!response.ok) throw new Error('Bad status');
-
-          const payload = await response.json();
-          const normalized = normalizeN8nPayload(payload);
-          if (!normalized) {
-            setN8nStatus('n8nErrorPayload');
-            return;
-          }
-
-          lastN8nResult = normalized;
-          applyBtn.disabled = false;
-
-          const summary = [];
-          if (normalized.rl1 && Object.keys(normalized.rl1).length > 0)
-            summary.push(`RL-1: ${Object.keys(normalized.rl1).join(', ')}`);
-          if (normalized.t4 && Object.keys(normalized.t4).length > 0)
-            summary.push(`T4: ${Object.keys(normalized.t4).join(', ')}`);
-          if (normalized.rrsp !== undefined && normalized.rrsp !== null)
-            summary.push(`RRSP: ${normalized.rrsp}`);
-
-          const statusText =
-            (lang === 'fr' ? 'Champs reçus: ' : 'Fields received: ') +
-            (summary.join(' | ') || 'OK');
-          setN8nStatus(null, statusText);
-        } catch (err) {
-          setN8nStatus('n8nErrorCall');
-        }
-      }
-
-      function applyN8nData() {
-        const applyBtn = document.getElementById('applyN8nBtn');
-        if (!lastN8nResult) {
-          setN8nStatus('n8nNoResult');
-          applyBtn.disabled = true;
-          return;
-        }
-
-        const applied = [];
-        const applyFields = (prefix, data) => {
-          if (!data) return;
-          Object.entries(data).forEach(([key, value]) => {
-            const normalizedKey = key.toString().replace(/[^a-zA-Z0-9]/g, '');
-            const el = document.getElementById(`${prefix}_${normalizedKey}`);
-            if (el && value !== undefined && value !== null && value !== '') {
-              el.value = value;
-              applied.push(`${prefix.toUpperCase()} ${key}`);
-            }
-          });
-        };
-
-        applyFields('rl1', lastN8nResult.rl1);
-        applyFields('t4', lastN8nResult.t4);
-
-        if (lastN8nResult.rrsp !== undefined && lastN8nResult.rrsp !== null) {
-          document.getElementById('rrspInput').value = lastN8nResult.rrsp;
-          applied.push('RRSP');
-        }
-
-        if (applied.length === 0) {
-          setN8nStatus('n8nNoResult');
-          applyBtn.disabled = true;
-          return;
-        }
-
-        const statusText = `${_('n8nApplied')} (${applied.join(', ')})`;
-        setN8nStatus(null, statusText);
-        if (calculate) {
-          calculate();
-        }
-      }
-
-      // Initialize calculate function
-      let calculate;
-      if (
-        typeof window.initFixCalculate === 'function' &&
-        typeof window.TaxCalculator === 'object'
-      ) {
-        calculate = window.initFixCalculate(window.TaxCalculator, _);
-        window.calculate = calculate;
-        console.log('[TaxFlowAI] Calculate function ready!');
-      } else {
-        console.error('[TaxFlowAI] Missing dependencies:', {
-          initFixCalculate: typeof window.initFixCalculate,
-          TaxCalculator: typeof window.TaxCalculator,
-        });
-      }
-
-      loadSavedN8nUrl();
-      setN8nStatus('n8nNoResult');
-      setLang('fr');
+      document.querySelectorAll('.feature-card').forEach((el) => {
+        observer.observe(el);
+      });
     </script>
   </body>
 </html>
