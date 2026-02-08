@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# TaxSyncQC Backend Setup Script
+# TaxFlowAI Backend Setup Script
 # This script automates the complete backend setup process
 
 set -e  # Exit on error
 
 echo "======================================"
-echo "  TaxSyncQC Backend Setup"
+echo "  TaxFlowAI Backend Setup"
 echo "======================================"
 echo ""
 

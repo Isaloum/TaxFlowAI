@@ -1,6 +1,6 @@
-# 📧 AWS SES Setup Guide - TaxSyncQC Email Automation
+# 📧 AWS SES Setup Guide - TaxFlowAI Email Automation
 
-Complete guide to configure AWS Simple Email Service (SES) for email automation with TaxSyncQC.
+Complete guide to configure AWS Simple Email Service (SES) for email automation with TaxFlowAI.
 
 ## 📋 Overview
 
@@ -25,7 +25,7 @@ This guide will help you:
 2. Click **"Create an AWS Account"**
 3. Fill in registration form:
    - **Email address:** Your business email
-   - **AWS account name:** TaxSyncQC (or your preferred name)
+   - **AWS account name:** TaxFlowAI (or your preferred name)
    - **Password:** Strong password
 4. Choose account type: **Personal** or **Professional**
 5. Enter payment information (required even for free tier)
@@ -257,7 +257,7 @@ For testing, verify your personal email:
 4. Click **Create access key**
 5. Select use case: **Application running outside AWS**
 6. Click **Next**
-7. Add description (optional): "TaxSyncQC Email Automation"
+7. Add description (optional): "TaxFlowAI Email Automation"
 8. Click **Create access key**
 
 ### Step 4: Save Credentials
@@ -292,12 +292,12 @@ By default, SES starts in **Sandbox mode**:
 **Use Case Details:**
 ```
 Use case description:
-TaxSyncQC is a Quebec tax calculator that sends automated email 
+TaxFlowAI is a Canadian tax calculator that sends automated email 
 notifications to users after processing their tax documents. 
 Users forward tax documents (T4, RL-1) to our system, and we send 
 back processed results with tax estimates.
 
-Website URL: https://isaloum.github.io/TaxSyncQC/
+Website URL: https://isaloum.github.io/TaxFlowAI/
 
 Email sending process:
 - Users explicitly opt-in by sending emails to our system
@@ -338,7 +338,7 @@ If you want to receive emails via SES:
 
 1. In SES Console, click **Email receiving** → **Rule sets**
 2. Click **Create rule set**
-3. Rule set name: `taxsyncqc-rules`
+3. Rule set name: `taxflowai-rules`
 4. Click **Create rule set**
 5. Click **Set as active rule set**
 
@@ -354,7 +354,7 @@ Choose action(s) for incoming emails:
 
 **Option A: Forward to SNS Topic (for webhook)**
 1. Add action: **Publish to Amazon SNS topic**
-2. Create new SNS topic: `taxsyncqc-email-incoming`
+2. Create new SNS topic: `taxflowai-email-incoming`
 3. Click **Next**
 
 **Option B: Store in S3 (for processing)**
@@ -388,7 +388,7 @@ Choose action(s) for incoming emails:
    - Scenario: **Custom**
    - From: `notifications@taxsyncqc.com`
    - To: Your verified email
-   - Subject: `Test from TaxSyncQC`
+   - Subject: `Test from TaxFlowAI`
    - Body: `This is a test email`
 5. Click **Send test email**
 6. Check your inbox
@@ -399,8 +399,8 @@ Choose action(s) for incoming emails:
 aws ses send-email \
   --from notifications@taxsyncqc.com \
   --to yourname@gmail.com \
-  --subject "TaxSyncQC Test" \
-  --text "This is a test email from TaxSyncQC" \
+  --subject "TaxFlowAI Test" \
+  --text "This is a test email from TaxFlowAI" \
   --region us-east-2
 ```
 
@@ -417,8 +417,8 @@ const params = {
     ToAddresses: ['yourname@gmail.com'],
   },
   Message: {
-    Subject: { Data: 'TaxSyncQC Test' },
-    Body: { Text: { Data: 'Test email from TaxSyncQC' } },
+    Subject: { Data: 'TaxFlowAI Test' },
+    Body: { Text: { Data: 'Test email from TaxFlowAI' } },
   },
 };
 
@@ -622,9 +622,9 @@ After completing SES setup:
 - Free tier support: Forums & documentation
 - Paid support plans: https://aws.amazon.com/premiumsupport/
 
-**TaxSyncQC Support:**
+**TaxFlowAI Support:**
 - Email: support@taxsyncqc.com
-- GitHub Issues: https://github.com/Isaloum/TaxSyncQC/issues
+- GitHub Issues: https://github.com/Isaloum/TaxFlowAI/issues
 
 ---
 

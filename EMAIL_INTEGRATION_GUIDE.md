@@ -1,8 +1,8 @@
-# 📧 Email Integration Guide - TaxSyncQC
+# 📧 Email Integration Guide - TaxFlowAI
 
 ## Overview
 
-The TaxSyncQC document automation system allows users to process tax documents (T4, RL-1, receipts) automatically through email integration. This guide explains how to set up and use the email automation features.
+The TaxFlowAI document automation system allows users to process tax documents (T4, RL-1, receipts) automatically through email integration. This guide explains how to set up and use the email automation features.
 
 ## Features
 
@@ -10,7 +10,7 @@ The TaxSyncQC document automation system allows users to process tax documents (
 ✅ **Multi-Format Support** - PDF, JPG, PNG, TXT attachments  
 ✅ **AI Document Classification** - Automatically identifies T4, RL-1, and other document types  
 ✅ **Smart Data Extraction** - Extracts tax-relevant data using pattern matching  
-✅ **Quebec Tax Focus** - Specialized support for Quebec tax slips (RL-1) and credits  
+✅ **Provincial Tax Support** - Specialized support for provincial tax slips (RL-1) and credits  
 ✅ **Automated Email Responses** - Sends processing results via email  
 ✅ **Security Features** - Secure document handling, no permanent storage  
 ✅ **Multi-Document Support** - Process multiple attachments per email  
@@ -400,7 +400,7 @@ MY_DOCUMENT: {
 
 For issues or questions:
 - 📧 Email: support@taxsyncqc.com
-- 🐛 Issues: [GitHub Issues](https://github.com/Isaloum/TaxSyncQC/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/Isaloum/TaxFlowAI/issues)
 - 📚 Documentation: This guide and AWS_SES_SETUP.md
 
 ## License

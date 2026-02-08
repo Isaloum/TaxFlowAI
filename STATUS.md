@@ -1,4 +1,4 @@
-# TaxSyncQC - Project Status Update
+# TaxFlowAI - Project Status Update
 
 **Date**: December 5, 2024  
 **Branch**: `copilot/status-update-progress`  
@@ -8,7 +8,7 @@
 
 ## 📊 Executive Summary
 
-TaxSyncQC is a **free, open-source, bilingual (FR/EN) Quebec + Federal tax credits estimator** for 2025. The project is in active development with a functional web application deployed at [https://Isaloum.github.io/TaxSyncQC](https://Isaloum.github.io/TaxSyncQC).
+TaxFlowAI is a **free, open-source, bilingual (FR/EN) Canada-wide tax credits estimator** for 2025. The project is in active development with a functional web application deployed at [https://Isaloum.github.io/TaxFlowAI](https://Isaloum.github.io/TaxFlowAI).
 
 **Current Status**: ✅ **STABLE** with minor test configuration issues
 
@@ -17,8 +17,8 @@ TaxSyncQC is a **free, open-source, bilingual (FR/EN) Quebec + Federal tax credi
 ## 🎯 Project Overview
 
 ### Purpose
-A privacy-first, client-side tax calculator that helps Quebec residents estimate:
-- Quebec Credits (Solidarity Tax Credit, Work Premium)
+A privacy-first, client-side tax calculator that helps Canadian residents estimate:
+- Provincial Credits (Solidarity Tax Credit, Work Premium)
 - Federal Credits (Basic Personal Amount, Canada Workers Benefit)
 - RRSP impact on tax savings
 
@@ -35,7 +35,7 @@ A privacy-first, client-side tax calculator that helps Quebec residents estimate
 ## 📂 Repository Structure
 
 ```
-TaxSyncQC/
+TaxFlowAI/
 ├── index.html                  # Main web UI
 ├── cli.js                      # Command-line interface
 ├── credit-calculator.js        # Quebec/Federal credit calculations
@@ -248,7 +248,7 @@ rrsp-calculator.js    |     100 |       75 |     100 |     100
 
 ## 🌐 Deployment Status
 
-**Live Site**: [https://Isaloum.github.io/TaxSyncQC](https://Isaloum.github.io/TaxSyncQC)  
+**Live Site**: [https://Isaloum.github.io/TaxFlowAI](https://Isaloum.github.io/TaxFlowAI)  
 **Hosting**: GitHub Pages  
 **Status**: ✅ ONLINE
 
@@ -276,7 +276,7 @@ rrsp-calculator.js    |     100 |       75 |     100 |     100
 
 ## 🎯 Summary & Next Steps
 
-TaxSyncQC is a **stable, functional project** with a working MVP deployed and accessible to users. The codebase is well-structured with good test coverage.
+TaxFlowAI is a **stable, functional project** with a working MVP deployed and accessible to users. The codebase is well-structured with good test coverage.
 
 **Recent Updates** (December 5, 2024):
 - ✅ Fixed test configuration to separate unit and E2E tests

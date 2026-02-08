@@ -12,7 +12,7 @@ jobs:
         run: |
           echo "Waiting for Pages to be available..."
           for i in {1..30}; do
-            status=$(curl -s -o /dev/null -w "%{http_code}" https://isaloum.github.io/TaxSyncQC/ || echo 000)
+            status=$(curl -s -o /dev/null -w "%{http_code}" https://isaloum.github.io/TaxFlowAI/ || echo 000)
             echo "Attempt $i: $status"
             if [ "$status" = "200" ]; then
               echo "Pages reachable"; exit 0;

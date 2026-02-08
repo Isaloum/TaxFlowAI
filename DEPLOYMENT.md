@@ -1,6 +1,6 @@
-# 🚀 Deployment Guide - TaxSyncQC Email Automation System
+# 🚀 Deployment Guide - TaxFlowAI Email Automation System
 
-Complete guide for deploying the email automation system to production for TaxSyncQC.
+Complete guide for deploying the email automation system to production for TaxFlowAI.
 
 ## 📋 Table of Contents
 
@@ -23,7 +23,7 @@ Complete guide for deploying the email automation system to production for TaxSy
 
 ✅ **Required Accounts:**
 - [AWS](https://aws.amazon.com) account with SES access
-- Domain access for your TaxSyncQC domain
+- Domain access for your TaxFlowAI domain
 - Deployment platform account (Vercel/Railway/Render)
 
 ✅ **Required Tools:**
@@ -72,7 +72,7 @@ vercel
 # - Set up and deploy? Yes
 # - Which scope? [Select your account]
 # - Link to existing project? No
-# - Project name? taxsyncqc-email-automation
+# - Project name? taxflowai-email-automation
 # - Directory? ./
 # - Override settings? No
 ```
@@ -112,14 +112,14 @@ vercel --prod
 
 ```bash
 # Your app will be available at:
-# https://taxsyncqc-email-automation.vercel.app
+# https://taxflowai-email-automation.vercel.app
 # or your custom domain
 ```
 
 ### 7. Configure Custom Domain (Optional)
 
 1. In Vercel Dashboard → Settings → Domains
-2. Add domain: `email.taxsyncqc.com`
+2. Add domain: `email.taxsyncqc.com` (example)
 3. Follow DNS configuration instructions
 
 ---
@@ -144,7 +144,7 @@ railway login
 # From repository root
 railway init
 
-# Project name: taxsyncqc-email-automation
+# Project name: taxflowai-email-automation
 ```
 
 ### 4. Add Environment Variables
@@ -168,7 +168,7 @@ railway up
 
 ```bash
 railway domain
-# Creates a public domain: taxsyncqc-email-automation.up.railway.app
+# Creates a public domain: taxflowai-email-automation.up.railway.app
 ```
 
 ### 7. Monitor Logs
@@ -187,7 +187,7 @@ railway logs
 2. Click "New +" → "Web Service"
 3. Connect your GitHub repository
 4. Configure:
-   - **Name**: taxsyncqc-email-automation
+   - **Name**: taxflowai-email-automation
    - **Environment**: Node
    - **Build Command**: `npm install`
    - **Start Command**: `node email-server.js`
@@ -214,7 +214,7 @@ Click "Create Web Service" - Render will automatically deploy.
 
 Your service will be available at:
 ```
-https://taxsyncqc-email-automation.onrender.com
+https://taxflowai-email-automation.onrender.com
 ```
 
 ### 5. Configure Health Check
@@ -254,7 +254,7 @@ CMD ["node", "email-server.js"]
 Build the image:
 
 ```bash
-docker build -t taxsyncqc-email-automation .
+docker build -t taxflowai-email-automation .
 ```
 
 ### 2. Run Locally (Testing)
@@ -266,13 +266,13 @@ cp .env.example .env
 
 # Run container
 docker run -d \
-  --name taxsyncqc-email \
+  --name taxflowai-email \
   -p 3000:3000 \
   --env-file .env \
-  taxsyncqc-email-automation
+  taxflowai-email-automation
 
 # Check logs
-docker logs taxsyncqc-email
+docker logs taxflowai-email
 
 # Test health endpoint
 curl http://localhost:3000/health
@@ -283,24 +283,24 @@ curl http://localhost:3000/health
 #### AWS ECS:
 ```bash
 # Tag for ECR
-docker tag taxsyncqc-email-automation:latest \
-  <account-id>.dkr.ecr.us-east-1.amazonaws.com/taxsyncqc-email-automation:latest
+docker tag taxflowai-email-automation:latest \
+  <account-id>.dkr.ecr.us-east-1.amazonaws.com/taxflowai-email-automation:latest
 
 # Push to ECR
-docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/taxsyncqc-email-automation:latest
+docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/taxflowai-email-automation:latest
 ```
 
 #### Google Cloud Run:
 ```bash
 # Tag for GCR
-docker tag taxsyncqc-email-automation gcr.io/<project-id>/taxsyncqc-email-automation
+docker tag taxflowai-email-automation gcr.io/<project-id>/taxflowai-email-automation
 
 # Push to GCR
-docker push gcr.io/<project-id>/taxsyncqc-email-automation
+docker push gcr.io/<project-id>/taxflowai-email-automation
 
 # Deploy to Cloud Run
-gcloud run deploy taxsyncqc-email-automation \
-  --image gcr.io/<project-id>/taxsyncqc-email-automation \
+gcloud run deploy taxflowai-email-automation \
+  --image gcr.io/<project-id>/taxflowai-email-automation \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated
@@ -389,7 +389,7 @@ TAXSYNC_FROM_EMAIL=notifications@yourdomain.com
 TAXSYNCAI_FROM_EMAIL=ai-alerts@yourdomain.com
 
 # Application Settings
-APP_URL=https://isaloum.github.io/TaxSyncQC/
+APP_URL=https://isaloum.github.io/TaxFlowAI/
 MAX_ATTACHMENT_SIZE=10485760
 SUPPORTED_FILE_FORMATS=.pdf,.jpg,.jpeg,.png,.txt
 
@@ -437,7 +437,7 @@ curl https://your-deployment-url.com/health
 # Expected response:
 {
   "status": "ok",
-  "service": "TaxSyncQC Email Integration",
+  "service": "TaxFlowAI Email Integration",
   "timestamp": "2025-01-16T00:00:00.000Z"
 }
 ```
@@ -464,7 +464,7 @@ Create `test-deployment.sh`:
 
 DEPLOYMENT_URL="https://your-deployment-url.com"
 
-echo "🧪 Testing TaxSyncQC Email Automation Deployment"
+echo "🧪 Testing TaxFlowAI Email Automation Deployment"
 echo "================================================"
 
 # Test 1: Health Check
@@ -506,7 +506,7 @@ railway logs
 
 **Docker:**
 ```bash
-docker logs -f taxsyncqc-email
+docker logs -f taxflowai-email
 ```
 
 ### Key Metrics to Monitor

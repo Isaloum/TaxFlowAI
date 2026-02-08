@@ -1,13 +1,13 @@
-# n8n Integration Setup Guide for TaxSyncQC
+# n8n Integration Setup Guide for TaxFlowAI
 
 ## Overview
 
-TaxSyncQC can connect to an n8n workflow to automatically parse RL-1 and T4 tax slips from pasted email text. This guide shows you how to set up the integration.
+TaxFlowAI can connect to an n8n workflow to automatically parse RL-1 and T4 tax slips from pasted email text. This guide shows you how to set up the integration.
 
 ## What You'll Need
 
 1. An n8n instance (cloud or self-hosted)
-2. The TaxSyncQC web app (already built!)
+2. The TaxFlowAI web app (already built!)
 3. 5-10 minutes to set up the workflow
 
 ## Step 1: Import the n8n Workflow
@@ -53,7 +53,7 @@ If you prefer to create the workflow manually:
    https://your-n8n-instance.com/webhook/parse-tax-slip
    ```
 
-## Step 3: Configure TaxSyncQC
+## Step 3: Configure TaxFlowAI
 
 1. Open `index.html` in your browser
 2. Scroll to the **"🔗 Connect to n8n"** section
@@ -263,7 +263,7 @@ const apiKey = $input.item.json.headers['x-api-key'];
 return apiKey === 'your-secret-key';
 ```
 
-Then in TaxSyncQC, modify the fetch call to include the header.
+Then in TaxFlowAI, modify the fetch call to include the header.
 
 ## Example Use Cases
 
@@ -334,14 +334,14 @@ Expected result:
 ## Support
 
 For issues with:
-- **TaxSyncQC**: Check the GitHub repository
+- **TaxFlowAI**: Check the GitHub repository
 - **n8n**: Visit n8n.io/docs or the n8n community forum
 - **This integration**: Review the console logs in your browser (F12)
 
 ## License
 
-This n8n workflow is provided as-is under the same license as TaxSyncQC.
+This n8n workflow is provided as-is under the same license as TaxFlowAI.
 
 ---
 
-**Ready to go!** Your TaxSyncQC app now has intelligent tax slip parsing powered by n8n! 🎉
+**Ready to go!** Your TaxFlowAI app now has intelligent tax slip parsing powered by n8n! 🎉

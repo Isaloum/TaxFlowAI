@@ -1,6 +1,6 @@
-# Contributing to TaxSyncQC
+# Contributing to TaxFlowAI
 
-Thank you for your interest in contributing to TaxSyncQC! This project helps estimate Quebec and Federal tax credits. We welcome contributions from everyone — beginners included.
+Thank you for your interest in contributing to TaxFlowAI! This project helps estimate Provincial and Federal tax credits for Canadian residents. We welcome contributions from everyone — beginners included.
 
 ## Quick start
 
@@ -8,8 +8,8 @@ Thank you for your interest in contributing to TaxSyncQC! This project helps est
 2. Clone your fork locally:
 
 ```bash
-git clone https://github.com/<your-username>/TaxSyncQC.git
-cd TaxSyncQC
+git clone https://github.com/<your-username>/TaxFlowAI.git
+cd TaxFlowAI
 ```
 
 3. Create a feature branch for your work:
@@ -87,4 +87,4 @@ We follow the existing ESLint and Prettier configuration in the repository. If y
 
 If you're new to open source or need help picking a task, comment on an issue or open a new issue titled "help wanted" or "good first issue" describing what you want to do.
 
-Thanks for contributing — your help improves TaxSyncQC for everyone!
+Thanks for contributing — your help improves TaxFlowAI for everyone!

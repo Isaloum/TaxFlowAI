@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * TaxSyncQC Backend API Test Script
+ * TaxFlowAI Backend API Test Script
  * Tests the accountant registration and login endpoints
  */
 
@@ -181,7 +181,7 @@ async function testLogin() {
  */
 async function runTests() {
   console.log(`\n${colors.bright}${colors.blue}╔═══════════════════════════════════════╗${colors.reset}`);
-  console.log(`${colors.bright}${colors.blue}║   TaxSyncQC Backend API Test Suite   ║${colors.reset}`);
+  console.log(`${colors.bright}${colors.blue}║   TaxFlowAI Backend API Test Suite   ║${colors.reset}`);
   console.log(`${colors.bright}${colors.blue}╚═══════════════════════════════════════╝${colors.reset}`);
   console.log(`\n${colors.bright}Testing server:${colors.reset} ${BASE_URL}`);
   

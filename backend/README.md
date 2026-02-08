@@ -1,10 +1,10 @@
-# TaxSyncQC Backend - Phase 1: Auth & Onboarding
+# TaxFlowAI Backend - Phase 1: Auth & Onboarding
 
-Complete backend infrastructure for TaxSyncQC authentication and user onboarding system.
+Complete backend infrastructure for TaxFlowAI authentication and user onboarding system.
 
 ## 🚀 Quick Start
 
-**New to TaxSyncQC?** Get started in under 5 minutes! See **[QUICKSTART.md](QUICKSTART.md)** for step-by-step instructions.
+**New to TaxFlowAI?** Get started in under 5 minutes! See **[QUICKSTART.md](QUICKSTART.md)** for step-by-step instructions.
 
 ### One-Command Setup
 
@@ -373,8 +373,8 @@ When an accountant creates a client:
 | `SMTP_SECURE` | Use TLS | false |
 | `SMTP_USER` | SMTP username | - |
 | `SMTP_PASS` | SMTP password (use App Password for Gmail) | - |
-| `EMAIL_FROM` | Sender email address | noreply@taxsyncqc.com |
-| `APP_NAME` | Application name | TaxSyncQC |
+| `EMAIL_FROM` | Sender email address | noreply@taxflowai.com |
+| `APP_NAME` | Application name | TaxFlowAI |
 | `LOGIN_URL` | Login page URL | http://localhost:3000/login |
 
 ## 📝 Testing the API

@@ -1,6 +1,6 @@
-# TaxSyncQC Backend - Quick Start Guide
+# TaxFlowAI Backend - Quick Start Guide
 
-Get the TaxSyncQC backend up and running in minutes with Supabase!
+Get the TaxFlowAI backend up and running in minutes with Supabase!
 
 ## 📋 Prerequisites
 
@@ -66,7 +66,7 @@ To send client invitation emails:
 2. **Generate App Password**
    - Go to [App Passwords](https://myaccount.google.com/apppasswords)
    - Select "Mail" and "Other (Custom name)"
-   - Enter "TaxSyncQC Backend"
+   - Enter "TaxFlowAI Backend"
    - Click "Generate"
    - Copy the 16-character password
 
