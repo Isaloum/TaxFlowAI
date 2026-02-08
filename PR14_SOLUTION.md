@@ -48,13 +48,13 @@ name: ci-logs-node-${{ matrix.node-version }}
 **Error Breakdown**:
 
 ```
-/home/runner/work/TaxSyncQC/TaxSyncQC/fix-calculate.js
+/home/runner/work/TaxFlowAI/TaxFlowAI/fix-calculate.js
   1:10  warning  'calculate' is defined but never used  no-unused-vars
   2:16  error    'getFormData' is not defined           no-undef
   7:16  error    'TaxCalculator' is not defined         no-undef
   ... (21 more errors)
 
-/home/runner/work/TaxSyncQC/TaxSyncQC/index.html
+/home/runner/work/TaxFlowAI/TaxFlowAI/index.html
   1:1  error  Parsing error: Unexpected token <
 
 ✖ 123 problems (122 errors, 1 warning)

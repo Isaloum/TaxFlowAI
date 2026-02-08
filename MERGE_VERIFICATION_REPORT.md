@@ -103,7 +103,7 @@ on:
 - ✅ Uses official GitHub Pages actions
 - ✅ Properly configured permissions
 - ✅ Deploys to github-pages environment
-- ✅ Accessible at: https://Isaloum.github.io/TaxSyncQC
+- ✅ Accessible at: https://Isaloum.github.io/TaxFlowAI
 
 ---
 

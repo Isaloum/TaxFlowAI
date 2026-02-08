@@ -15,7 +15,7 @@ This repository is configured to use `main` as the default branch. All CI/CD wor
 From the repository root, execute:
 
 ```bash
-cd /path/to/TaxSyncQC
+cd /path/to/TaxFlowAI
 git push origin main
 ```
 

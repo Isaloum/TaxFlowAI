@@ -1,11 +1,11 @@
 #!/bin/bash
 
-echo "🧪 TaxSyncQC - Quick Demo Test"
+echo "🧪 TaxFlowAI - Quick Demo Test"
 echo "================================"
 echo ""
 
 echo "Step 1: Starting local web server..."
-cd /home/user/TaxSyncQC
+cd /home/user/TaxFlowAI
 python3 -m http.server 8080 > /dev/null 2>&1 &
 SERVER_PID=$!
 sleep 2
@@ -37,7 +37,7 @@ echo "   http://localhost:8080/index.html"
 echo ""
 echo "Then:"
 echo "  1. Open browser console (F12)"
-echo "  2. Look for: [TaxSyncQC] Calculate function ready!"
+echo "  2. Look for: [TaxFlowAI] Calculate function ready!"
 echo "  3. Enter income in Box A: 60000"
 echo "  4. Click 'Estimate Credits' button"
 echo "  5. See results appear below!"

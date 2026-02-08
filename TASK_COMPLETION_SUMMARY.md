@@ -74,7 +74,7 @@ on:
 - ✅ Automatic deployment on push to `main`
 - ✅ Official GitHub Pages actions
 - ✅ Proper permissions configured
-- ✅ Deployed at: https://Isaloum.github.io/TaxSyncQC
+- ✅ Deployed at: https://Isaloum.github.io/TaxFlowAI
 
 ### 3. CI/CD Workflows ✅
 
@@ -97,7 +97,7 @@ on:
 
 The problem statement showed these commands:
 ```bash
-cd /home/user/TaxSyncQC
+cd /home/user/TaxFlowAI
 git checkout main
 git merge feature/comprehensive-testing
 git push origin main
@@ -106,7 +106,7 @@ git push origin main
 ### What This Would Do (If Branch Existed)
 1. Merge comprehensive testing features into `main`
 2. Push to `main`, triggering GitHub Pages deployment
-3. Update the live site at https://Isaloum.github.io/TaxSyncQC
+3. Update the live site at https://Isaloum.github.io/TaxFlowAI
 
 ### Current Reality
 1. ✅ Comprehensive testing features **already in** `main`
@@ -143,7 +143,7 @@ When creating new features:
 1. Create feature branches for work-in-progress
 2. Ensure tests are added for new functionality
 3. Merge to `main` when complete (triggers auto-deployment)
-4. Verify deployment at https://Isaloum.github.io/TaxSyncQC
+4. Verify deployment at https://Isaloum.github.io/TaxFlowAI
 
 ---
 

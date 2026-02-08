@@ -1,4 +1,4 @@
-# TaxSyncQC - Estimate Credit Button Fix - Test Results
+# TaxFlowAI - Estimate Credit Button Fix - Test Results
 
 ## Date: 2026-01-07
 
@@ -81,7 +81,7 @@ The fix uses traditional IIFE pattern which is compatible with:
 
 When loading index.html, you should see:
 ```
-[TaxSyncQC] Calculate function ready!
+[TaxFlowAI] Calculate function ready!
 ```
 
 This confirms the calculate function has been successfully initialized.
@@ -107,7 +107,7 @@ fix: replace dynamic ES6 module import with browser-compatible script loading
 
 1. Open `index.html` in any browser
 2. Open browser console (F12)
-3. Look for "[TaxSyncQC] Calculate function ready!"
+3. Look for "[TaxFlowAI] Calculate function ready!"
 4. Enter income in Box A field
 5. Click "Estimate Credits" button
 6. Results should appear immediately

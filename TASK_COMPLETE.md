@@ -2,7 +2,7 @@
 
 ## Task Completion Status: ✅ COMPLETE
 
-Successfully debugged and documented fixes for 2 failing CI errors in PR #14 (https://github.com/Isaloum/TaxSyncQC/pull/14).
+Successfully debugged and documented fixes for 2 failing CI errors in PR #14 (https://github.com/Isaloum/TaxFlowAI/pull/14).
 
 ## Issues Identified
 

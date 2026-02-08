@@ -38,7 +38,7 @@ This document verifies that the main branch has been successfully synced with th
 To verify the sync status yourself:
 
 ```bash
-cd /path/to/TaxSyncQC
+cd /path/to/TaxFlowAI
 git fetch origin
 git status
 git log origin/main --oneline -5

@@ -57,7 +57,7 @@ After PR Merge:
 To complete the task:
 1. **Merge this PR** - This will push the updates to the `main` branch
 2. **Verify workflows trigger** - CI/CD should run automatically
-3. **Confirm GitHub Pages deploys** - Site should update at https://Isaloum.github.io/TaxSyncQC
+3. **Confirm GitHub Pages deploys** - Site should update at https://Isaloum.github.io/TaxFlowAI
 
 ## Why This Approach?
 
@@ -71,7 +71,7 @@ The GitHub Pull Request workflow is used instead of direct `git push` because:
 
 You can verify the setup by running locally:
 ```bash
-cd /home/runner/work/TaxSyncQC/TaxSyncQC
+cd /home/runner/work/TaxFlowAI/TaxFlowAI
 git branch -a
 # Shows both local main and remote origin/main
 
