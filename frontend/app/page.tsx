@@ -10,7 +10,7 @@ export default function Home() {
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-xl font-bold text-white">
               T
             </div>
-            <span className="text-xl font-bold text-gray-900">TaxSyncQC</span>
+            <span className="text-xl font-bold text-gray-900">TaxFlowAI</span>
           </div>
           <div className="flex gap-3">
             <Link
@@ -38,7 +38,7 @@ export default function Home() {
           </h1>
           
           <p className="mt-6 text-lg leading-8 text-gray-600 sm:text-xl">
-            TaxSyncQC is the comprehensive platform designed for Quebec accountants
+            TaxFlowAI is the comprehensive AI-powered platform designed for Canadian accountants
             to manage clients, automate tax calculations, and synchronize data seamlessly.
           </p>
 
@@ -95,7 +95,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-blue-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 py-6 text-center text-sm text-gray-600 sm:px-6 lg:px-8">
-          <p>&copy; 2024 TaxSyncQC. Professional tax accounting platform for Quebec.</p>
+          <p>&copy; 2024 TaxFlowAI. AI-Powered Tax Management Platform for Canada.</p>
         </div>
       </footer>
     </div>

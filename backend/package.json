@@ -1,7 +1,7 @@
 {
-  "name": "taxsyncqc-backend",
+  "name": "taxflowai-backend",
   "version": "1.0.0",
-  "description": "TaxSyncQC Backend - Phase 1: Auth & Onboarding",
+  "description": "TaxFlowAI Backend - AI-Powered Tax Management Platform - Phase 1: Auth & Onboarding",
   "main": "src/server.ts",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",

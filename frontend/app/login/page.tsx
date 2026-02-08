@@ -21,7 +21,7 @@ export default function LoginPage() {
   const translations = {
     en: {
       title: 'Sign In',
-      subtitle: 'Access your TaxSyncQC account',
+      subtitle: 'Access your TaxFlowAI account',
       email: 'Email Address',
       password: 'Password',
       rememberMe: 'Remember me',
@@ -35,7 +35,7 @@ export default function LoginPage() {
     },
     fr: {
       title: 'Se Connecter',
-      subtitle: 'Accédez à votre compte TaxSyncQC',
+      subtitle: 'Accédez à votre compte TaxFlowAI',
       email: 'Adresse Email',
       password: 'Mot de Passe',
       rememberMe: 'Se souvenir de moi',
@@ -105,7 +105,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Logo/Brand */}
           <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold text-blue-600">TaxSyncQC</h1>
+            <h1 className="text-4xl font-bold text-blue-600">TaxFlowAI</h1>
             <p className="mt-2 text-gray-600">{t.subtitle}</p>
           </div>
 

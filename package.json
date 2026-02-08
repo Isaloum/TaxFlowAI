@@ -1,7 +1,7 @@
 {
-  "name": "taxsyncqc",
+  "name": "taxflowai",
   "version": "1.0.0",
-  "description": "Quebec + Federal tax credits estimator (2025) — Free, open-source, bilingual (FR/EN)",
+  "description": "TaxFlowAI - AI-Powered Tax Management for Canada (2025) — Free, open-source, bilingual (FR/EN)",
   "main": "cli.js",
   "type": "module",
   "scripts": {
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Isaloum/TaxSyncQC.git"
+    "url": "git+https://github.com/Isaloum/TaxFlowAI.git"
   },
   "keywords": [
     "quebec",
@@ -31,9 +31,9 @@
   "author": "Ihab Saloum",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Isaloum/TaxSyncQC/issues"
+    "url": "https://github.com/Isaloum/TaxFlowAI/issues"
   },
-  "homepage": "https://Isaloum.github.io/TaxSyncQC",
+  "homepage": "https://Isaloum.github.io/TaxFlowAI",
   "devDependencies": {
     "@axe-core/playwright": "^4.5.1",
     "@playwright/test": "^1.58.1",

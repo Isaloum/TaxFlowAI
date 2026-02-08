@@ -5,7 +5,7 @@ const SITE = `file://${process.cwd()}/index.html`;
 
 test('homepage loads and has title', async ({ page }) => {
   await page.goto(SITE, { waitUntil: 'domcontentloaded' });
-  await expect(page).toHaveTitle(/TaxSyncQC/);
+  await expect(page).toHaveTitle(/TaxFlowAI/);
 });
 
 test('homepage accessibility quick scan', async ({ page }) => {

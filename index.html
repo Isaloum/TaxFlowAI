@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>TaxSyncQC — Estimation officielle Québec 2025</title>
+    <title>TaxFlowAI — AI-Powered Tax Management for Canada 2025</title>
     <style>
       :root {
         --bg: #f6f8fb;
@@ -436,7 +436,7 @@
         <div class="brand">
           <span style="font-size: 1.7rem">💰</span>
           <div>
-            <div data-i18n="headerTitle">TaxSyncQC</div>
+            <div data-i18n="headerTitle">TaxFlowAI</div>
             <small class="hint" data-i18n="headerSubtitle">Crédits Québec + Fédéral 2025</small>
           </div>
         </div>
@@ -449,7 +449,7 @@
       <main role="main">
         <div class="hero">
           <div class="badge" data-i18n="badge2025">✅ Conforme 2025</div>
-          <h1 data-i18n="title">💰 TaxSyncQC — Estimation officielle Québec 2025</h1>
+          <h1 data-i18n="title">💰 TaxFlowAI — AI-Powered Tax Management for Canada 2025</h1>
           <p data-i18n="subtitle">
             Basé sur les documents <strong>RL-1-T(2025-10)</strong> et <strong>T4 (2025)</strong> de
             Revenu Québec et l'ARC.
@@ -805,7 +805,7 @@
           "
         >
           <div>
-            💰 <strong style="color: #2563eb">TaxSyncQC</strong> —
+            💰 <strong style="color: #2563eb">TaxFlowAI</strong> —
             <span data-i18n="footerBuiltBy">Construit par Ihab Saloum</span> •
             <span data-i18n="footerOpenSource">Projet Open Source</span>
           </div>
@@ -868,7 +868,7 @@
           </div>
           <div>
             <a
-              href="https://github.com/Isaloum/TaxSyncQC"
+              href="https://github.com/Isaloum/TaxFlowAI"
               target="_blank"
               style="color: #2563eb; text-decoration: none; margin: 0 0.5rem"
               ><span data-i18n="footerViewSource">Voir le code source</span></a
@@ -894,9 +894,9 @@
       let lang = 'fr';
       const translations = {
         en: {
-          headerTitle: 'TaxSyncQC',
-          headerSubtitle: 'Quebec + Federal Tax Credits 2025',
-          title: '💰 TaxSyncQC — Official Quebec 2025 Estimator',
+          headerTitle: 'TaxFlowAI',
+          headerSubtitle: 'AI-Powered Tax Management for Canada 2025',
+          title: '💰 TaxFlowAI — AI-Powered Tax Management for Canada 2025',
           subtitle:
             'Based on <strong>RL-1-T(2025-10)</strong> and <strong>T4 (2025)</strong> from Revenu Québec and CRA.',
           advancedMode: 'Advanced mode (all fields)',
@@ -973,9 +973,9 @@
           footerMoreProjects: 'More projects →',
         },
         fr: {
-          headerTitle: 'TaxSyncQC',
-          headerSubtitle: 'Crédits Québec + Fédéral 2025',
-          title: '💰 TaxSyncQC — Estimation officielle Québec 2025',
+          headerTitle: 'TaxFlowAI',
+          headerSubtitle: 'Gestion fiscale intelligente pour le Canada 2025',
+          title: '💰 TaxFlowAI — Gestion fiscale intelligente pour le Canada 2025',
           subtitle:
             "Basé sur les documents <strong>RL-1-T(2025-10)</strong> et <strong>T4 (2025)</strong> de Revenu Québec et l'ARC.",
           advancedMode: 'Mode avancé (tous les champs)',
@@ -1253,7 +1253,7 @@
           const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text, lang, source: 'taxsyncqc-web' }),
+            body: JSON.stringify({ text, lang, source: 'taxflowai-web' }),
           });
 
           if (!response.ok) throw new Error('Bad status');
@@ -1335,9 +1335,9 @@
       ) {
         calculate = window.initFixCalculate(window.TaxCalculator, _);
         window.calculate = calculate;
-        console.log('[TaxSyncQC] Calculate function ready!');
+        console.log('[TaxFlowAI] Calculate function ready!');
       } else {
-        console.error('[TaxSyncQC] Missing dependencies:', {
+        console.error('[TaxFlowAI] Missing dependencies:', {
           initFixCalculate: typeof window.initFixCalculate,
           TaxCalculator: typeof window.TaxCalculator,
         });

@@ -16,7 +16,7 @@ export default function DashboardPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-xl font-bold text-white">
                 T
               </div>
-              <span className="text-xl font-bold text-gray-900">TaxSyncQC</span>
+              <span className="text-xl font-bold text-gray-900">TaxFlowAI</span>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-600">
@@ -39,7 +39,7 @@ export default function DashboardPage() {
               Welcome, {user?.firmName || 'User'}!
             </h1>
             <p className="mt-2 text-gray-600">
-              This is your TaxSyncQC dashboard. More features coming soon!
+              This is your TaxFlowAI dashboard. More features coming soon!
             </p>
           </div>
 

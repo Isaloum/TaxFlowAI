@@ -1,4 +1,4 @@
-// Auto-parse feature for TaxSyncQC
+// Auto-parse feature for TaxFlowAI
 (function setupAutoParse() {
   function isValidWebhookUrlLocal(url) {
     try {
@@ -30,7 +30,7 @@
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, lang: window.lang || 'fr', source: 'taxsyncqc-autoparse' }),
+        body: JSON.stringify({ text, lang: window.lang || 'fr', source: 'taxflowai-autoparse' }),
       });
       if (!response.ok) throw new Error('Bad status');
       const payload = await response.json();

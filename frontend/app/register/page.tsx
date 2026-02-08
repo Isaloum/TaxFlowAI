@@ -25,7 +25,7 @@ export default function RegisterPage() {
   const translations = {
     en: {
       title: 'Create Account',
-      subtitle: 'Join TaxSyncQC as an accountant',
+      subtitle: 'Join TaxFlowAI as an accountant',
       email: 'Email Address',
       password: 'Password',
       confirmPassword: 'Confirm Password',
@@ -52,7 +52,7 @@ export default function RegisterPage() {
     },
     fr: {
       title: 'Créer un Compte',
-      subtitle: 'Rejoignez TaxSyncQC en tant que comptable',
+      subtitle: 'Rejoignez TaxFlowAI en tant que comptable',
       email: 'Adresse Email',
       password: 'Mot de Passe',
       confirmPassword: 'Confirmer le Mot de Passe',
@@ -171,7 +171,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-md">
           {/* Logo/Brand */}
           <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold text-blue-600">TaxSyncQC</h1>
+            <h1 className="text-4xl font-bold text-blue-600">TaxFlowAI</h1>
             <p className="mt-2 text-gray-600">{t.subtitle}</p>
           </div>
 

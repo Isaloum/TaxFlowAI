@@ -3,8 +3,8 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
-  title: "TaxSyncQC - Professional Tax Accounting Platform",
-  description: "Streamline your tax accounting workflow with TaxSyncQC",
+  title: "TaxFlowAI - AI-Powered Tax Management Platform",
+  description: "Streamline your tax management with TaxFlowAI - AI-powered features for Canada",
 };
 
 export default function RootLayout({

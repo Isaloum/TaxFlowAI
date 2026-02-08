@@ -29,7 +29,7 @@ export const sendClientInvitationEmail = async (
   languagePref: string
 ): Promise<void> => {
   const loginUrl = process.env.LOGIN_URL || 'http://localhost:3000/login';
-  const appName = process.env.APP_NAME || 'TaxSyncQC';
+  const appName = process.env.APP_NAME || 'TaxFlowAI';
 
   const frenchSubject = `Bienvenue sur ${appName} - Votre compte a été créé`;
   const englishSubject = `Welcome to ${appName} - Your account has been created`;
@@ -92,7 +92,7 @@ export const sendClientInvitationEmail = async (
     : `${englishBody}<hr style="margin: 40px 0; border: none; border-top: 1px solid #e5e7eb;">${frenchBody}`;
 
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM || 'noreply@taxsyncqc.com',
+    from: process.env.EMAIL_FROM || 'noreply@taxflowai.com',
     to: clientEmail,
     subject,
     html: htmlBody,

@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'ok', message: 'TaxSyncQC API is running' });
+  res.status(200).json({ status: 'ok', message: 'TaxFlowAI API is running' });
 });
 
 app.use('/api/auth', authRoutes);
@@ -37,7 +37,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 TaxSyncQC API server running on port ${PORT}`);
+  console.log(`🚀 TaxFlowAI API server running on port ${PORT}`);
   console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 CORS enabled for: ${FRONTEND_URL}`);
 });

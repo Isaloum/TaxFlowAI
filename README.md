@@ -1,10 +1,10 @@
-# 💰 TaxSyncQC
+# 💰 TaxFlowAI
 
-**Quebec + Federal Tax Credits Estimator (2025)**
+**AI-Powered Tax Management for Canada (2025)**
 
-A free, open-source, bilingual (FR/EN) tool to estimate your tax credits and RRSP impact based on your RL-1 (Quebec) or T4 (Federal) slips.
+A free, open-source, bilingual (FR/EN) tool with AI-powered features to manage your taxes, estimate credits, and optimize your RRSP impact across Canada. Powered by intelligent document processing and accurate calculations.
 
-🌐 **Live Web App:** [https://Isaloum.github.io/TaxSyncQC](https://Isaloum.github.io/TaxSyncQC)
+🌐 **Live Web App:** [https://Isaloum.github.io/TaxFlowAI](https://Isaloum.github.io/TaxFlowAI)
 
 ---
 
@@ -61,7 +61,7 @@ A free, open-source, bilingual (FR/EN) tool to estimate your tax credits and RRS
 ### Results Display
 ![Tax Credits Results](docs/screenshots/results-display.png)
 
-> **Live Demo:** Try it yourself at [https://isaloum.github.io/TaxSyncQC/](https://isaloum.github.io/TaxSyncQC/)
+> **Live Demo:** Try it yourself at [https://isaloum.github.io/TaxFlowAI/](https://isaloum.github.io/TaxFlowAI/)
 
 ---
 
@@ -84,7 +84,7 @@ A free, open-source, bilingual (FR/EN) tool to estimate your tax credits and RRS
 
 ### 🚀 **Dual Interface**
 
-- **Web UI:** Drag-and-drop interface at [isaloum.github.io/TaxSyncQC](https://isaloum.github.io/TaxSyncQC)
+- **Web UI:** Drag-and-drop interface at [isaloum.github.io/TaxFlowAI](https://isaloum.github.io/TaxFlowAI)
 - **CLI tool:** \`node cli.js --rl1 "Case A: 60000" --rrsp 5000\`
 
 ## 🔗 Connect the web app to n8n (parse email/text)
@@ -116,7 +116,7 @@ Tip: Add validation/guardrails in n8n (e.g., clamp to positive numbers, mark con
 
 ### **Web App (Recommended)**
 
-1. Visit **[https://Isaloum.github.io/TaxSyncQC](https://Isaloum.github.io/TaxSyncQC)**
+1. Visit **[https://Isaloum.github.io/TaxFlowAI](https://Isaloum.github.io/TaxFlowAI)**
 2. Choose your slip type: **RL-1** (Quebec) or **T4** (Federal)
 3. Enter your income (Box A / Box 14)
 4. Optionally: Add union dues, adjust RRSP contribution slider
@@ -191,7 +191,7 @@ Tip: Add validation/guardrails in n8n (e.g., clamp to positive numbers, mark con
 
 As an electrical engineer in Quebec, I was frustrated with expensive tax software charging $20-50/year for basic estimates with no transparency and no RRSP optimizer.
 
-So I built TaxSyncQC in **72 hours** using AI (Claude Sonnet 4.5) to give Quebecers a **free, transparent** tax estimator.
+So I built TaxFlowAI in **72 hours** using AI (Claude Sonnet 4.5) to give Canadians a **free, transparent** tax estimator with AI-powered document processing.
 
 If this saves you money, consider ⭐ starring the repo or sharing with friends!
 
@@ -205,4 +205,4 @@ This tool provides **estimates only** and is **not a substitute for professional
 
 ---
 
-**🇨🇦 Made in Quebec, for Quebec. Fait au Québec, pour le Québec. 🇨🇦**
+**🇨🇦 Made in Canada, for Canada. Fait au Canada, pour le Canada. 🇨🇦**

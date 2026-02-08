@@ -1,6 +1,6 @@
 // document-automation.js — Document processing and OCR automation for tax documents
 // Handles T4, RL-1, Uber/Lyft statements, and expense receipts
-// Adapted for TaxSyncQC from TaxSyncForDrivers
+// Adapted for TaxFlowAI from TaxSyncForDrivers
 
 // Constants
 const CONFIDENCE_NORMALIZATION_FACTOR = 3; // Normalize confidence to 0-1 range

@@ -1,4 +1,4 @@
-// API Client for TaxSyncQC Backend
+// API Client for TaxFlowAI Backend
 
 import { AuthResponse, LoginCredentials, RegisterData, User } from '@/types';
 
