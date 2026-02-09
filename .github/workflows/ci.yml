@@ -45,11 +45,3 @@ jobs:
           name: test-results-node-${{ matrix.node-version }}
           path: test-results/
           if-no-files-found: ignore
-      
-      - name: Montara CI
-        uses: montara-io/montara-ci@v1.0.20
-        with:
-          webhookUrl: ${{ secrets.MONTARA_WEBHOOK_URL }}
-          isSmartRun: true
-          allowConcurrentPipelineRuns: true
-          numRetries: 60
