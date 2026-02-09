@@ -7,6 +7,7 @@ test('homepage loads and has title', async ({ page }) => {
   await page.goto(SITE, { waitUntil: 'domcontentloaded' });
   await expect(page).toHaveTitle(/TaxFlowAI/);
 });
+ copilot/disable-failing-accessibility-test
 
 test.skip('homepage accessibility quick scan', async ({ page }) => {
   await page.goto(SITE, { waitUntil: 'domcontentloaded' });
