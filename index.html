@@ -430,6 +430,40 @@
       }
     </style>
   </head>
+ copilot/fix-accessibility-violations-again
+  <body class="scroll-smooth gradient-bg">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <span class="text-2xl font-bold text-primary">🇨🇦 TaxFlowAI</span>
+          </div>
+          <div class="hidden md:flex items-center space-x-8">
+            <a href="#features" class="text-gray-700 hover:text-primary transition">Features</a>
+            <a href="#how-it-works" class="text-gray-700 hover:text-primary transition"
+              >How It Works</a
+            >
+            <a
+              href="https://github.com/Isaloum/TaxFlowAI"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-gray-700 hover:text-primary transition"
+              >GitHub</a
+            >
+            <a
+              href="/app"
+              class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition cta-button"
+              >Launch App</a
+            >
+          </div>
+          <!-- Mobile menu button -->
+          <div class="md:hidden">
+            <a
+              href="/app"
+              class="bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition"
+              >Launch App</a
+            >
   <body>
     <div class="page">
       <header class="topbar">
@@ -438,6 +472,7 @@
           <div>
             <div data-i18n="headerTitle">TaxFlowAI</div>
             <small class="hint" data-i18n="headerSubtitle">Crédits Québec + Fédéral 2025</small>
+         main
           </div>
         </div>
         <div class="lang-toggle">
@@ -460,6 +495,68 @@
             <div class="pill">📊 RRSP & crédits majeurs</div>
           </div>
         </div>
+
+        copilot/fix-accessibility-violations-again
+          <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- Feature 1 -->
+            <div
+              class="feature-card bg-gradient-to-br from-blue-50 to-white p-8 rounded-xl border border-gray-200"
+            >
+              <div class="text-5xl mb-4" role="img" aria-label="Robot emoji">🤖</div>
+              <h3 class="text-xl font-bold text-gray-900 mb-3">AI-Powered Automation</h3>
+              <p class="text-gray-600">
+                Intelligent tax form processing that extracts data automatically from T4, RL-1, and
+                other Canadian tax documents.
+              </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div
+              class="feature-card bg-gradient-to-br from-red-50 to-white p-8 rounded-xl border border-gray-200"
+            >
+              <div class="text-5xl mb-4" role="img" aria-label="Canadian flag emoji">🇨🇦</div>
+              <h3 class="text-xl font-bold text-gray-900 mb-3">Canada-Wide Coverage</h3>
+              <p class="text-gray-600">
+                Complete support for federal and provincial tax calculations across all Canadian
+                provinces and territories.
+              </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div
+              class="feature-card bg-gradient-to-br from-green-50 to-white p-8 rounded-xl border border-gray-200"
+            >
+              <div class="text-5xl mb-4" role="img" aria-label="Lock emoji">🔒</div>
+              <h3 class="text-xl font-bold text-gray-900 mb-3">Secure & Private</h3>
+              <p class="text-gray-600">
+                Bank-level encryption for all client data. 100% client-side processing means your
+                data never leaves your device.
+              </p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div
+              class="feature-card bg-gradient-to-br from-purple-50 to-white p-8 rounded-xl border border-gray-200"
+            >
+              <div class="text-5xl mb-4" role="img" aria-label="Chart emoji">📊</div>
+              <h3 class="text-xl font-bold text-gray-900 mb-3">Real-Time Insights</h3>
+              <p class="text-gray-600">
+                Instant tax calculations and reporting with RRSP optimization and credit estimation
+                for better planning.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- How It Works Section -->
+      <section id="how-it-works" class="py-20 gradient-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">How It Works</h2>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+              Three simple steps to transform your tax workflow
+            </p>
 
         <div class="toggle">
           <label for="modeToggle">
@@ -593,6 +690,7 @@
                 </div>
               </fieldset>
             </form>
+        main
           </div>
 
           <!-- T4 Tab -->
@@ -760,6 +858,53 @@
             <div id="n8nStatus" class="hint"></div>
           </div>
 
+copilot/fix-accessibility-violations-again
+          <!-- Links -->
+          <div>
+            <h4 class="text-white font-semibold mb-4">Resources</h4>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="https://github.com/Isaloum/TaxFlowAI"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="hover:text-white transition"
+                  >GitHub Repository</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-white transition">Documentation (Coming Soon)</a>
+              </li>
+              <li><a href="#features" class="hover:text-white transition">Features</a></li>
+              <li><a href="#how-it-works" class="hover:text-white transition">How It Works</a></li>
+            </ul>
+          </div>
+
+          <!-- Contact -->
+          <div>
+            <h4 class="text-white font-semibold mb-4">Contact</h4>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="https://github.com/Isaloum/TaxFlowAI/issues"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="hover:text-white transition"
+                  >Support & Issues</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/Isaloum"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="hover:text-white transition"
+                  >About the Developer</a
+                >
+              </li>
+            </ul>
+          </div>
+
           <div class="action-row">
             <button
               type="button"
@@ -783,6 +928,7 @@
 
           <div id="output"></div>
           <div id="jsonOutput" class="json-output" style="display: none"></div>
+         main
         </div>
       </main>
 
@@ -809,6 +955,22 @@
             <span data-i18n="footerBuiltBy">Construit par Ihab Saloum</span> •
             <span data-i18n="footerOpenSource">Projet Open Source</span>
           </div>
+ copilot/fix-accessibility-violations-again
+
+          <!-- Copyright -->
+          <div class="text-center text-gray-400 text-sm">
+            <p>
+              © 2025 TaxFlowAI. Built by
+              <a
+                href="https://github.com/Isaloum"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-primary hover:text-blue-400 transition"
+                >Ihab Saloum</a
+              >
+            </p>
+            <p class="mt-2">🇨🇦 Made in Canada, for Canada. Fait au Canada, pour le Canada. 🇨🇦</p>
+
           <div style="margin: 0.75rem 0">
             <span
               style="
@@ -880,6 +1042,7 @@
               style="color: #2563eb; text-decoration: none; margin: 0 0.5rem"
               ><span data-i18n="footerMoreProjects">Plus de projets →</span></a
             >
+       main
           </div>
         </div>
       </footer>
