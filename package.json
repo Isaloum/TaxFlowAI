@@ -35,7 +35,7 @@
   },
   "homepage": "https://Isaloum.github.io/TaxFlowAI",
   "devDependencies": {
-    "@axe-core/playwright": "^4.5.1",
+    "@axe-core/playwright": "^4.11.1",
     "@playwright/test": "^1.58.1",
     "axe-core": "^4.11.1",
     "c8": "^10.1.3",
