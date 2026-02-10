@@ -136,7 +136,7 @@ export class RulesEngineService {
     if (!profile) return results;
 
     for (const rule of Object.values(INCOME_SOURCE_RULES)) {
-      const isTriggered = rule.triggerCondition(profile, client);
+      const isTriggered = rule.triggerCondition(profile);
 
       if (isTriggered) {
         const hasDoc = docTypes.includes(rule.requiredDocType);
