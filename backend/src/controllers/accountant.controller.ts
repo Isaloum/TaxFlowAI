@@ -5,6 +5,7 @@ import archiver from 'archiver';
 import axios from 'axios';
 import prisma from '../config/database';
 import { generateTemporaryPassword, sendClientInvitationEmail } from '../services/email.service';
+import { NotificationService } from '../services/notifications/notification.service';
 
 const createClientSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -452,6 +453,9 @@ export const rejectDocument = async (req: Request, res: Response) => {
         rejectionReason: reason
       }
     });
+
+    // Send rejection notification
+    await NotificationService.notifyDocumentRejected(documentId, reason);
 
     res.json({ document: updated, message: 'Document rejected' });
   } catch (error) {

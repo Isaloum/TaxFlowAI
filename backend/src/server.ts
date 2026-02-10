@@ -6,6 +6,7 @@ import accountantRoutes from './routes/accountant.routes';
 import clientRoutes from './routes/client.routes';
 import documentRoutes from './routes/document.routes';
 import validationRoutes from './routes/validation.routes';
+import { startDailyDigestCron } from './jobs/daily-digest.cron';
 
 dotenv.config();
 
@@ -44,6 +45,10 @@ app.listen(PORT, () => {
   console.log(`🚀 TaxFlowAI API server running on port ${PORT}`);
   console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 CORS enabled for: ${FRONTEND_URL}`);
+  
+  // Start cron jobs
+  startDailyDigestCron();
+  console.log('⏰ Daily digest cron job started');
 });
 
 export default app;

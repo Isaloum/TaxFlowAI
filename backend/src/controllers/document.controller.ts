@@ -3,6 +3,7 @@ import prisma from '../config/database';
 import { StorageService } from '../services/storage.service';
 import { queueDocumentExtraction } from '../services/queue.service';
 import { ValidationService } from '../services/validation.service';
+import { NotificationService } from '../services/notifications/notification.service';
 
 export class DocumentController {
   /**
@@ -69,6 +70,13 @@ export class DocumentController {
 
       // Trigger validation after upload
       await ValidationService.autoValidate(taxYear.id);
+
+      // Send notification
+      await NotificationService.notifyDocumentUploaded(
+        clientId,
+        docType,
+        year
+      );
 
       res.status(201).json({ 
         document,
