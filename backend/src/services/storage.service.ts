@@ -2,10 +2,15 @@ import { createClient } from '@supabase/supabase-js';
 import sharp from 'sharp';
 import { fromBuffer as fileTypeFromBuffer } from 'file-type';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
+// Validate required environment variables
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables are required for document storage');
+}
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET || 'tax-documents';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -19,6 +24,17 @@ const ALLOWED_MIME_TYPES = [
 ];
 
 export class StorageService {
+  /**
+   * Extract file path from Supabase Storage URL
+   */
+  private static extractFilePath(fileUrl: string): string {
+    const urlParts = fileUrl.split(`/${BUCKET_NAME}/`);
+    if (urlParts.length < 2) {
+      throw new Error('Invalid file URL');
+    }
+    return urlParts[1];
+  }
+
   /**
    * Upload file to Supabase Storage with compression
    * Cost optimization: Compress images 50-70%
@@ -44,10 +60,11 @@ export class StorageService {
     let mimeType = fileType.mime;
 
     // COST OPTIMIZATION: Compress images
+    // Converts all image formats (JPG, PNG, HEIC, etc.) to JPEG for better browser compatibility
     if (fileType.mime.startsWith('image/')) {
       buffer = await sharp(file.buffer)
         .resize(2000, 2000, { fit: 'inside', withoutEnlargement: true })
-        .jpeg({ quality: 85 }) // Convert HEIC → JPG, compress
+        .jpeg({ quality: 85 })
         .toBuffer();
       mimeType = 'image/jpeg';
     }
@@ -85,12 +102,7 @@ export class StorageService {
    * Delete file from Supabase Storage
    */
   static async deleteDocument(fileUrl: string): Promise<void> {
-    // Extract file path from URL
-    const urlParts = fileUrl.split(`/${BUCKET_NAME}/`);
-    if (urlParts.length < 2) {
-      throw new Error('Invalid file URL');
-    }
-    const filePath = urlParts[1];
+    const filePath = this.extractFilePath(fileUrl);
 
     const { error } = await supabase.storage
       .from(BUCKET_NAME)
@@ -105,11 +117,7 @@ export class StorageService {
    * Get signed download URL (expires in 1 hour)
    */
   static async getDownloadUrl(fileUrl: string): Promise<string> {
-    const urlParts = fileUrl.split(`/${BUCKET_NAME}/`);
-    if (urlParts.length < 2) {
-      throw new Error('Invalid file URL');
-    }
-    const filePath = urlParts[1];
+    const filePath = this.extractFilePath(fileUrl);
 
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)

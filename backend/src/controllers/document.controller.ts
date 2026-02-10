@@ -29,6 +29,7 @@ export class DocumentController {
       });
 
       if (!taxYear) {
+        // Create new tax year with empty profile - will be populated by client during onboarding
         taxYear = await prisma.taxYear.create({
           data: {
             clientId,
