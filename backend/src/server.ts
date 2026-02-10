@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import accountantRoutes from './routes/accountant.routes';
 import clientRoutes from './routes/client.routes';
+import documentRoutes from './routes/document.routes';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/accountant', accountantRoutes);
 app.use('/api/client', clientRoutes);
+app.use('/api/client', documentRoutes);
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({ error: 'Route not found' });

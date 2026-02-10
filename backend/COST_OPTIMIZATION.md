@@ -7,6 +7,18 @@
   - Delete documents after 3 years (configurable retention)
   - Image optimization: convert HEIC → JPG, resize large PDFs
 
+## Document Upload Cost Optimization
+
+✅ **Image Compression**: 50-70% size reduction (sharp library)
+✅ **HEIC → JPG conversion**: Better browser compatibility
+✅ **Memory storage**: No disk writes (faster, serverless-friendly)
+✅ **File size limit**: 10MB prevents abuse
+✅ **Supabase free tier**: 1GB storage (≈200-400 documents with compression)
+
+**Estimated storage per client**: 
+- 10-15 documents/year × 500KB average = ~7.5MB/client/year
+- Free tier supports ~130 clients before paid plan needed
+
 ## OCR: Tesseract First, Google Vision Fallback
 - **Primary**: Tesseract OCR (FREE, runs on server)
 - **Fallback**: Google Cloud Vision API only if Tesseract confidence < 0.70

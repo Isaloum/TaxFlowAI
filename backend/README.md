@@ -108,22 +108,27 @@ backend/
 ├── prisma/
 │   └── schema.prisma           # Database schema
 ├── scripts/
-│   └── test-api.js             # API test script
+│   ├── test-api.js             # API test script
+│   └── test-upload.js          # Document upload test script
 ├── src/
 │   ├── config/
 │   │   └── database.ts         # Prisma client configuration
 │   ├── controllers/
 │   │   ├── auth.controller.ts  # Authentication logic
 │   │   ├── accountant.controller.ts
-│   │   └── client.controller.ts
+│   │   ├── client.controller.ts
+│   │   └── document.controller.ts # Document management
 │   ├── middleware/
-│   │   └── auth.ts             # JWT authentication middleware
+│   │   ├── auth.ts             # JWT authentication middleware
+│   │   └── upload.ts           # File upload middleware
 │   ├── routes/
 │   │   ├── auth.routes.ts
 │   │   ├── accountant.routes.ts
-│   │   └── client.routes.ts
+│   │   ├── client.routes.ts
+│   │   └── document.routes.ts  # Document API routes
 │   ├── services/
-│   │   └── email.service.ts    # Email sending service
+│   │   ├── email.service.ts    # Email sending service
+│   │   └── storage.service.ts  # Supabase Storage service
 │   ├── types/
 │   │   └── express.d.ts        # TypeScript type definitions
 │   └── server.ts               # Main application entry point
@@ -208,6 +213,52 @@ If you prefer manual setup:
    ```
 
    Server will run on `http://localhost:3001`
+
+### Supabase Storage Setup
+
+For document upload functionality, you need to create a storage bucket in Supabase:
+
+1. **Create Storage Bucket:**
+   - Go to [Supabase Dashboard](https://app.supabase.com) → Your Project → Storage
+   - Click "New bucket"
+   - Name: `tax-documents`
+   - Public bucket: Yes (or configure RLS policies for private access)
+   - Click "Create bucket"
+
+2. **Configure Environment Variables:**
+   ```env
+   SUPABASE_URL=https://your-project-ref.supabase.co
+   SUPABASE_SERVICE_KEY=your-service-role-key-here
+   SUPABASE_STORAGE_BUCKET=tax-documents
+   ```
+
+   Get your credentials from:
+   - SUPABASE_URL: Supabase Dashboard → Settings → API → Project URL
+   - SUPABASE_SERVICE_KEY: Supabase Dashboard → Settings → API → service_role key (⚠️ Keep this secret!)
+
+3. **(Optional) Configure Row Level Security (RLS):**
+   
+   If you want private bucket access, add these RLS policies:
+   
+   ```sql
+   -- Allow authenticated users to upload to their own folder
+   CREATE POLICY "Users can upload to own folder"
+   ON storage.objects FOR INSERT
+   TO authenticated
+   WITH CHECK (bucket_id = 'tax-documents' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+   -- Allow users to read their own files
+   CREATE POLICY "Users can read own files"
+   ON storage.objects FOR SELECT
+   TO authenticated
+   USING (bucket_id = 'tax-documents' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+   -- Allow users to delete their own files
+   CREATE POLICY "Users can delete own files"
+   ON storage.objects FOR DELETE
+   TO authenticated
+   USING (bucket_id = 'tax-documents' AND (storage.foldername(name))[1] = auth.uid()::text);
+   ```
 
 ## 📡 API Endpoints
 
@@ -316,6 +367,36 @@ Content-Type: application/json
   "phone": "+1-514-555-0200",
   "languagePref": "en"
 }
+```
+
+#### Upload Document
+```http
+POST /api/client/tax-years/:year/documents
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+
+Form fields:
+- file: (binary) - PDF, JPG, PNG, or HEIC file (max 10MB)
+- docType: (string) - Document type (T4, RL1, T5, etc.)
+- docSubtype: (string, optional) - Employer/institution name
+```
+
+#### List Documents for Tax Year
+```http
+GET /api/client/tax-years/:year/documents
+Authorization: Bearer <token>
+```
+
+#### Delete Document
+```http
+DELETE /api/client/documents/:id
+Authorization: Bearer <token>
+```
+
+#### Get Document Download URL
+```http
+GET /api/client/documents/:id/download
+Authorization: Bearer <token>
 ```
 
 ## 🔐 Security Features
@@ -472,6 +553,9 @@ When an accountant creates a client:
 | `EMAIL_FROM` | Sender email address | noreply@taxflowai.com |
 | `APP_NAME` | Application name | TaxFlowAI |
 | `LOGIN_URL` | Login page URL | http://localhost:3000/login |
+| `SUPABASE_URL` | Supabase project URL | - |
+| `SUPABASE_SERVICE_KEY` | Supabase service role key | - |
+| `SUPABASE_STORAGE_BUCKET` | Supabase storage bucket name | tax-documents |
 
 ## 📝 Testing the API
 
