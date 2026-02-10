@@ -399,6 +399,12 @@ GET /api/client/documents/:id/download
 Authorization: Bearer <token>
 ```
 
+#### Trigger Document Extraction
+```http
+POST /api/client/documents/:id/extract
+Authorization: Bearer <token>
+```
+
 ## 🔐 Security Features
 
 ### Password Hashing
@@ -556,6 +562,16 @@ When an accountant creates a client:
 | `SUPABASE_URL` | Supabase project URL | - |
 | `SUPABASE_SERVICE_KEY` | Supabase service role key | - |
 | `SUPABASE_STORAGE_BUCKET` | Supabase storage bucket name | tax-documents |
+| `OPENAI_API_KEY` | OpenAI API key for document classification | - |
+| `GOOGLE_CLOUD_VISION_KEY_PATH` | Path to Google Vision API credentials (optional) | ./google-vision-key.json |
+| `REDIS_URL` | Redis connection URL for background queue | redis://localhost:6379 |
+| `USE_GOOGLE_VISION_FALLBACK` | Enable Google Vision API fallback | true |
+| `TESSERACT_CONFIDENCE_THRESHOLD` | Minimum confidence threshold for Tesseract | 0.70 |
+| `OPENAI_API_KEY` | OpenAI API key for document classification | - |
+| `GOOGLE_CLOUD_VISION_KEY_PATH` | Path to Google Vision API credentials (optional) | ./google-vision-key.json |
+| `REDIS_URL` | Redis connection URL for background queue | redis://localhost:6379 |
+| `USE_GOOGLE_VISION_FALLBACK` | Enable Google Vision API fallback | true |
+| `TESSERACT_CONFIDENCE_THRESHOLD` | Minimum confidence threshold for Tesseract | 0.70 |
 
 ## 📝 Testing the API
 

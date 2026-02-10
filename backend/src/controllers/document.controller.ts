@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/database';
 import { StorageService } from '../services/storage.service';
+import { queueDocumentExtraction } from '../services/queue.service';
 
 export class DocumentController {
   /**
@@ -62,7 +63,13 @@ export class DocumentController {
         }
       });
 
-      res.status(201).json({ document });
+      // Queue for background processing
+      await queueDocumentExtraction(document.id);
+
+      res.status(201).json({ 
+        document,
+        message: 'Document uploaded. Extraction in progress...'
+      });
     } catch (error: any) {
       console.error('Upload error:', error);
       res.status(500).json({ error: error.message });
@@ -175,6 +182,43 @@ export class DocumentController {
       res.json({ downloadUrl });
     } catch (error: any) {
       console.error('Download error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * POST /api/client/documents/:id/extract
+   * Manually trigger extraction (for retry or testing)
+   */
+  static async triggerExtraction(req: Request, res: Response) {
+    try {
+      const clientId = req.user!.sub;
+      const documentId = req.params.id;
+
+      // Verify ownership
+      const document = await prisma.document.findUnique({
+        where: { id: documentId },
+        include: {
+          taxYear: {
+            select: { clientId: true }
+          }
+        }
+      });
+
+      if (!document) {
+        return res.status(404).json({ error: 'Document not found' });
+      }
+
+      if (document.taxYear.clientId !== clientId) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+
+      // Queue extraction
+      await queueDocumentExtraction(documentId);
+
+      res.json({ message: 'Extraction queued' });
+    } catch (error: any) {
+      console.error('Trigger extraction error:', error);
       res.status(500).json({ error: error.message });
     }
   }
