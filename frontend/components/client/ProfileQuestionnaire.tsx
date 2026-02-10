@@ -125,7 +125,7 @@ export default function ProfileQuestionnaire({ year, initialProfile, onComplete 
             {profile.has_dependents && (
               <div className="ml-6">
                 <label className="block text-sm">Number of children:</label>
-                <input type="number" min="0" value={profile.num_children} onChange={(e) => handleChange('num_children', parseInt(e.target.value))} className="w-20 px-2 py-1 border rounded" />
+                <input type="number" min="0" value={profile.num_children} onChange={(e) => handleChange('num_children', parseInt(e.target.value) || 0)} className="w-20 px-2 py-1 border rounded" />
               </div>
             )}
           </div>

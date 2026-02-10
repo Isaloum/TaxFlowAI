@@ -127,7 +127,7 @@ export const INCOME_SOURCE_RULES = {
     code: 'INVESTMENT_T5_REQUIRED',
     triggerCondition: (profile: any) => profile.has_investment_income === true,
     requiredDocType: 'T5',
-    description: 'Investment income requires T5 or T3',
+    description: 'Investment income requires T5',
     severity: 'warning'
   }
 };
