@@ -1,81 +1,62 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import axios from 'axios';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+
+const api = axios.create({
+  baseURL: API_URL,
+  headers: { 'Content-Type': 'application/json' }
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('auth_token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
 export class APIClient {
-  private static getAuthHeaders() {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    return {
-      'Authorization': token ? `Bearer ${token}` : '',
-      'Content-Type': 'application/json'
-    };
+  static async login(email: string, password: string) {
+    const res = await api.post('/auth/login', { email, password });
+    localStorage.setItem('auth_token', res.data.token);
+    return res.data;
   }
 
-  // Tax Years
-  static async getTaxYears() {
-    const res = await fetch(`${API_URL}/client/tax-years`, {
-      headers: this.getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to fetch tax years');
-    return res.json();
+  static async register(data: any) {
+    return api.post('/auth/register', data);
   }
 
-  // Documents
-  static async uploadDocument(year: number, file: File, docType: string, docSubtype?: string) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('docType', docType);
-    if (docSubtype) formData.append('docSubtype', docSubtype);
-
-    const res = await fetch(`${API_URL}/client/tax-years/${year}/documents`, {
-      method: 'POST',
-      headers: { 'Authorization': this.getAuthHeaders()['Authorization'] },
-      body: formData
-    });
-
-    if (!res.ok) throw new Error('Upload failed');
-    return res.json();
+  static async getProfile() {
+    return api.get('/client/profile');
   }
 
-  static async getDocuments(year: number) {
-    const res = await fetch(`${API_URL}/client/tax-years/${year}/documents`, {
-      headers: this.getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to fetch documents');
-    return res.json();
-  }
-
-  static async deleteDocument(docId: string) {
-    const res = await fetch(`${API_URL}/client/documents/${docId}`, {
-      method: 'DELETE',
-      headers: this.getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Delete failed');
-    return res.json();
-  }
-
-  static async getDownloadUrl(docId: string) {
-    const res = await fetch(`${API_URL}/client/documents/${docId}/download`, {
-      headers: this.getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to get download URL');
-    return res.json();
-  }
-
-  // Validation
   static async getCompleteness(year: number) {
-    const res = await fetch(`${API_URL}/client/tax-years/${year}/completeness`, {
-      headers: this.getAuthHeaders()
+    return api.get(`/client/tax-years/${year}/completeness`);
+  }
+
+  static async uploadDocument(year: number, formData: FormData) {
+    return api.post(`/client/tax-years/${year}/documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
     });
-    if (!res.ok) throw new Error('Failed to fetch completeness');
-    return res.json();
   }
 
   static async updateProfile(year: number, profile: any) {
-    const res = await fetch(`${API_URL}/client/tax-years/${year}/update-profile`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(profile)
-    });
-    if (!res.ok) throw new Error('Profile update failed');
-    return res.json();
+    return api.put(`/client/tax-years/${year}/profile`, { profile });
+  }
+
+  static async getAccountantClients() {
+    return api.get('/accountant/clients');
+  }
+
+  static async getTaxYearDetails(taxYearId: string) {
+    return api.get(`/accountant/tax-years/${taxYearId}`);
+  }
+
+  static async approveDocument(docId: string) {
+    return api.post(`/accountant/documents/${docId}/approve`);
+  }
+
+  static async rejectDocument(docId: string, reason: string) {
+    return api.post(`/accountant/documents/${docId}/reject`, { reason });
   }
 }
+
+export default api;

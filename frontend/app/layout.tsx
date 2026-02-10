@@ -1,23 +1,17 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { AuthProvider } from "@/context/AuthContext";
+import type { Metadata } from 'next';
+import './globals.css';
+import { AuthProvider } from '@/components/AuthProvider';
 
 export const metadata: Metadata = {
-  title: "TaxFlowAI - AI-Powered Tax Management Platform",
-  description: "Streamline your tax management with TaxFlowAI - AI-powered features for Canada",
+  title: 'TaxFlowAI - Canadian Tax Document Verification',
+  description: 'Automated tax document completeness checker for Canadian accountants'
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="antialiased">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
