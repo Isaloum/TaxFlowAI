@@ -22,4 +22,9 @@ router.post(
   ValidationController.updateProfile
 );
 
+router.post(
+  '/tax-years/:year/submit',
+  ValidationController.submitForReview
+);
+
 export default router;

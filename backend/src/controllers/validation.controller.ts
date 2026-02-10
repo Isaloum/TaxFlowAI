@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/database';
 import { RulesEngineService } from '../services/rules/rules-engine.service';
+import { NotificationService } from '../services/notifications/notification.service';
 
 export class ValidationController {
   /**
@@ -108,6 +109,41 @@ export class ValidationController {
       res.json({ taxYear, message: 'Profile updated and validated' });
     } catch (error: any) {
       console.error('Profile update error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * POST /api/client/tax-years/:year/submit
+   * Client submits documents for review
+   */
+  static async submitForReview(req: Request, res: Response) {
+    try {
+      const clientId = req.user!.sub;
+      const year = parseInt(req.params.year);
+
+      const taxYear = await prisma.taxYear.findUnique({
+        where: { clientId_year: { clientId, year } }
+      });
+
+      if (!taxYear) {
+        return res.status(404).json({ error: 'Tax year not found' });
+      }
+
+      // Update status
+      await prisma.taxYear.update({
+        where: { id: taxYear.id },
+        data: {
+          status: 'submitted',
+          submittedAt: new Date()
+        }
+      });
+
+      // Notify accountant
+      await NotificationService.notifyAccountantSubmission(clientId, year);
+
+      res.json({ message: 'Submitted successfully' });
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }

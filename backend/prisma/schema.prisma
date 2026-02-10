@@ -18,6 +18,11 @@ model Accountant {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   
+  // Notification preferences
+  emailNotifications Boolean  @default(true) @map("email_notifications")
+  smsNotifications   Boolean  @default(true) @map("sms_notifications")
+  dailyDigest        Boolean  @default(true) @map("daily_digest")
+  
   clients           Client[]
   reviewedDocuments Document[]
 
@@ -37,6 +42,10 @@ model Client {
   isFirstLogin  Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  
+  // Notification preferences
+  emailNotifications Boolean  @default(true) @map("email_notifications")
+  smsNotifications   Boolean  @default(false) @map("sms_notifications")
   
   accountant    Accountant @relation(fields: [accountantId], references: [id], onDelete: Cascade)
   taxYears      TaxYear[]
@@ -117,4 +126,16 @@ model Notification {
 
   @@index([recipientId, read])
   @@map("notifications")
+}
+
+model NotificationLog {
+  id          String   @id @default(uuid())
+  recipientId String   @map("recipient_id")
+  type        String   // email, sms
+  channel     String   // document_uploaded, document_rejected, submission_ready, etc.
+  status      String   // sent, failed, pending
+  sentAt      DateTime @default(now()) @map("sent_at")
+  metadata    Json     @default("{}")
+
+  @@map("notification_logs")
 }
