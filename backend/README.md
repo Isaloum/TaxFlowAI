@@ -504,9 +504,10 @@ The system compares current year documents with previous year to flag potentiall
 
 ### Completeness Scoring
 Documents are scored 0-100% based on validation results:
-- **Pass**: +1 point
-- **Warning**: -1 point
-- **Error**: -2 points
+- **Starting score**: 100%
+- **Each warning**: Deducts penalty based on total validations (e.g., 1 warning out of 5 validations = -20%)
+- **Each error**: Deducts double penalty (e.g., 1 error out of 5 validations = -40%)
+- **No validations triggered**: 100% (all requirements met)
 
 ## 🔐 Security Features
 

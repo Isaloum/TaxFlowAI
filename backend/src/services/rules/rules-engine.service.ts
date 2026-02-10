@@ -247,7 +247,8 @@ export class RulesEngineService {
   private static calculateCompletenessScore(
     results: ValidationResult[]
   ): number {
-    if (results.length === 0) return 0;
+    // If no validations triggered, consider complete
+    if (results.length === 0) return 100;
 
     const errors = results.filter(
       (r) => r.status === 'fail' && r.severity === 'error'
