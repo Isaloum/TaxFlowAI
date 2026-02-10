@@ -1,5 +1,5 @@
 import prisma from '../../config/database';
-import { QUEBEC_PAIRING_RULES, SUPPORTING_DOC_RULES } from './quebec-rules';
+import { QUEBEC_PAIRING_RULES, SUPPORTING_DOC_RULES, INCOME_SOURCE_RULES } from './quebec-rules';
 
 interface ValidationResult {
   ruleCode: string;
@@ -37,7 +37,16 @@ export class RulesEngineService {
       results.push(...this.validateQuebecPairing(taxYear.documents));
     }
 
-    // 2. Supporting Document Rules
+    // 2. Income Source Rules (profile-based)
+    results.push(
+      ...this.validateIncomeSourceRules(
+        taxYear.documents,
+        taxYear.profile as any,
+        taxYear.client
+      )
+    );
+
+    // 3. Supporting Document Rules
     results.push(
       ...this.validateSupportingDocs(
         taxYear.documents,
@@ -46,10 +55,10 @@ export class RulesEngineService {
       )
     );
 
-    // 3. Basic Income Source Validation
+    // 4. Basic Income Source Validation
     results.push(...this.validateIncomeSources(taxYear.documents));
 
-    // 4. Year-over-Year Comparison (if previous year exists)
+    // 5. Year-over-Year Comparison (if previous year exists)
     const previousYearResults = await this.validateYearOverYear(
       taxYear.clientId,
       taxYear.year,
@@ -113,6 +122,48 @@ export class RulesEngineService {
   }
 
   /**
+   * Validate income source documents based on profile
+   */
+  private static validateIncomeSourceRules(
+    documents: any[],
+    profile: any,
+    client: any
+  ): ValidationResult[] {
+    const results: ValidationResult[] = [];
+    const docTypes = documents.map((d) => d.docType);
+
+    // Skip if no profile data
+    if (!profile) return results;
+
+    for (const rule of Object.values(INCOME_SOURCE_RULES)) {
+      const isTriggered = rule.triggerCondition(profile);
+
+      if (isTriggered) {
+        const hasDoc = docTypes.includes(rule.requiredDocType);
+
+        if (!hasDoc) {
+          results.push({
+            ruleCode: rule.code,
+            status: rule.severity === 'warning' ? 'warning' : 'fail',
+            message: rule.description,
+            missingDocType: rule.requiredDocType,
+            severity: rule.severity as 'error' | 'warning'
+          });
+        } else {
+          results.push({
+            ruleCode: rule.code,
+            status: 'pass',
+            message: `${rule.requiredDocType} uploaded`,
+            severity: 'info'
+          });
+        }
+      }
+    }
+
+    return results;
+  }
+
+  /**
    * Validate supporting documents based on profile
    */
   private static validateSupportingDocs(
@@ -122,6 +173,9 @@ export class RulesEngineService {
   ): ValidationResult[] {
     const results: ValidationResult[] = [];
     const docTypes = documents.map((d) => d.docType);
+
+    // Skip if no profile data
+    if (!profile) return results;
 
     for (const rule of Object.values(SUPPORTING_DOC_RULES)) {
       const isTriggered = rule.triggerCondition(profile, client);

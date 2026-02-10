@@ -102,3 +102,32 @@ export const SUPPORTING_DOC_RULES = {
     severity: 'error'
   }
 };
+
+/**
+ * Income Source Rules
+ * Triggered by profile data - if user indicates they have a certain income type,
+ * require appropriate documentation
+ */
+export const INCOME_SOURCE_RULES = {
+  EMPLOYMENT_T4: {
+    code: 'EMPLOYMENT_T4_REQUIRED',
+    triggerCondition: (profile: any) => profile.has_employment_income === true,
+    requiredDocType: 'T4',
+    description: 'Employment income requires T4',
+    severity: 'error'
+  },
+  SELF_EMPLOYMENT_T2125: {
+    code: 'SELF_EMPLOYMENT_T2125_REQUIRED',
+    triggerCondition: (profile: any) => profile.has_self_employment === true,
+    requiredDocType: 'T2125',
+    description: 'Self-employment income requires T2125',
+    severity: 'error'
+  },
+  INVESTMENT_T5: {
+    code: 'INVESTMENT_T5_REQUIRED',
+    triggerCondition: (profile: any) => profile.has_investment_income === true,
+    requiredDocType: 'T5',
+    description: 'Investment income requires T5',
+    severity: 'warning'
+  }
+};

@@ -41,7 +41,10 @@ export class ValidationController {
         completenessScore: taxYear.completenessScore,
         documentsUploaded: taxYear.documents.length,
         validations: taxYear.validations,
-        lastChecked: taxYear.validations[0]?.checkedAt || null
+        lastChecked: taxYear.validations[0]?.checkedAt || null,
+        taxYear: {
+          profile: taxYear.profile
+        }
       });
     } catch (error: any) {
       console.error('Completeness check error:', error);

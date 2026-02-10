@@ -61,6 +61,16 @@ export default function TaxYearPage() {
         <h1 className="text-3xl font-bold">Tax Year {year}</h1>
       </div>
 
+      {/* Profile prompt */}
+      {!completeness?.taxYear?.profile && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <p className="text-yellow-800 font-semibold mb-2">⚠️ Complete your profile first</p>
+          <button onClick={() => router.push(`/client/tax-year/${year}/profile`)} className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">
+            Complete Profile
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Upload & Documents */}
         <div className="lg:col-span-2 space-y-6">
