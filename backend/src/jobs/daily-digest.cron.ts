@@ -1,4 +1,4 @@
-import cron from 'node-cron';
+import * as cron from 'node-cron';
 import { PrismaClient } from '@prisma/client';
 import { NotificationService } from '../services/notifications/notification.service';
 
