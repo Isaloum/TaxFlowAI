@@ -49,7 +49,7 @@ model TaxYear {
   year              Int
   status            String   @default("draft") // draft, submitted, reviewed, complete
   profile           Json     @default("{}") // income types, family info, province-specific data
-  completenessScore Int      @default(0) @map("completeness_score") // 0-100%
+  completenessScore Int      @default(0) @map("completeness_score") // 0-100% (validate in application layer)
   submittedAt       DateTime? @map("submitted_at")
   reviewedAt        DateTime? @map("reviewed_at")
   createdAt         DateTime @default(now()) @map("created_at")
@@ -74,7 +74,7 @@ model Document {
   mimeType             String?   @map("mime_type")
   extractedData        Json      @default("{}") @map("extracted_data") // OCR results
   extractionStatus     String    @default("pending") @map("extraction_status") // pending, processing, success, failed
-  extractionConfidence Decimal?  @map("extraction_confidence") @db.Decimal(3, 2) // 0.00 to 1.00
+  extractionConfidence Decimal?  @map("extraction_confidence") @db.Decimal(3, 2) // 0.00 to 1.00 (validate in application layer)
   uploadedAt           DateTime  @default(now()) @map("uploaded_at")
 
   taxYear TaxYear @relation(fields: [taxYearId], references: [id], onDelete: Cascade)
