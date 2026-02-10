@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../config/database';
 import { StorageService } from '../services/storage.service';
 import { queueDocumentExtraction } from '../services/queue.service';
+import { ValidationService } from '../services/validation.service';
 
 export class DocumentController {
   /**
@@ -66,6 +67,9 @@ export class DocumentController {
       // Queue for background processing
       await queueDocumentExtraction(document.id);
 
+      // Trigger validation after upload
+      await ValidationService.autoValidate(taxYear.id);
+
       res.status(201).json({ 
         document,
         message: 'Document uploaded. Extraction in progress...'
@@ -121,7 +125,7 @@ export class DocumentController {
         where: { id: documentId },
         include: {
           taxYear: {
-            select: { clientId: true }
+            select: { clientId: true, id: true }
           }
         }
       });
@@ -134,6 +138,9 @@ export class DocumentController {
         return res.status(403).json({ error: 'Unauthorized' });
       }
 
+      // Store taxYear id before deletion
+      const taxYearId = document.taxYear.id;
+
       // Delete from storage
       await StorageService.deleteDocument(document.fileUrl);
 
@@ -141,6 +148,9 @@ export class DocumentController {
       await prisma.document.delete({
         where: { id: documentId }
       });
+
+      // Re-validate after deletion
+      await ValidationService.autoValidate(taxYearId);
 
       res.json({ message: 'Document deleted' });
     } catch (error: any) {

@@ -405,6 +405,110 @@ POST /api/client/documents/:id/extract
 Authorization: Bearer <token>
 ```
 
+### Validation (`/api/client`)
+
+#### Get Completeness Status
+```http
+GET /api/client/tax-years/:year/completeness
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "year": 2025,
+  "status": "draft",
+  "completenessScore": 65,
+  "documentsUploaded": 4,
+  "validations": [
+    {
+      "ruleCode": "QUEBEC_T4_RL1_PAIR",
+      "status": "fail",
+      "message": "Missing RL-1 for ABC Corporation. Quebec residents must have matching provincial slip.",
+      "missingDocType": "RL1"
+    },
+    {
+      "ruleCode": "QUEBEC_T5_RL3_PAIR",
+      "status": "pass",
+      "message": "T5 and RL3 pair complete"
+    }
+  ],
+  "lastChecked": "2026-02-10T01:30:00Z"
+}
+```
+
+#### Manually Trigger Validation
+```http
+POST /api/client/tax-years/:year/validate
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "completenessScore": 65,
+  "results": [
+    {
+      "ruleCode": "QUEBEC_T4_RL1_PAIR",
+      "status": "fail",
+      "message": "Missing RL-1 for ABC Corporation. Quebec residents must have matching provincial slip.",
+      "missingDocType": "RL1",
+      "severity": "error"
+    }
+  ]
+}
+```
+
+#### Update Tax Year Profile
+```http
+POST /api/client/tax-years/:year/update-profile
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "has_rrsp_contributions": true,
+  "has_childcare_expenses": false,
+  "has_medical_expenses": true,
+  "has_donations": false,
+  "claims_home_office": false
+}
+```
+
+**Note:** Validation runs automatically after document upload/delete and profile updates.
+
+## 🔍 Validation Rules Engine
+
+### Quebec Federal/Provincial Pairing Rules
+The system automatically validates that Quebec residents have matching federal and provincial tax slips:
+
+- **T4 ↔ RL-1**: Employment income
+- **T4A ↔ RL-2**: Pension, retirement, annuity income
+- **T5 ↔ RL-3**: Investment income
+- **T3 ↔ RL-16**: Trust income
+- **T5008 ↔ RL-18**: Securities transactions
+- **T2202 ↔ RL-8**: Tuition fees
+- **T4RSP ↔ RL-2**: RRSP income
+
+### Supporting Document Rules
+Based on tax year profile, the system validates required supporting documents:
+
+- **RRSP Contributions** → Requires RRSP receipts
+- **Childcare Expenses** → Requires childcare receipts
+- **Childcare Expenses (Quebec)** → Requires RL-24
+- **Medical Expenses** → Requires medical receipts (warning)
+- **Charitable Donations** → Requires donation receipts
+- **Home Office Claims** → Requires T2200 from employer
+
+### Year-over-Year Comparison
+The system compares current year documents with previous year to flag potentially missing recurring documents (T4, T5, T4A, RL slips).
+
+### Completeness Scoring
+Documents are scored 0-100% based on validation results:
+- **Starting score**: 100%
+- **Each warning**: Deducts penalty based on total validations (e.g., 1 warning out of 5 validations = -20%)
+- **Each error**: Deducts double penalty (e.g., 1 error out of 5 validations = -40%)
+- **No validations triggered**: 100% (all requirements met)
+
 ## 🔐 Security Features
 
 ### Password Hashing

@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.routes';
 import accountantRoutes from './routes/accountant.routes';
 import clientRoutes from './routes/client.routes';
 import documentRoutes from './routes/document.routes';
+import validationRoutes from './routes/validation.routes';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/accountant', accountantRoutes);
 app.use('/api/client', clientRoutes);
 app.use('/api/client', documentRoutes);
+app.use('/api/client', validationRoutes);
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({ error: 'Route not found' });
