@@ -18,7 +18,8 @@ model Accountant {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   
-  clients      Client[]
+  clients           Client[]
+  reviewedDocuments Document[]
 
   @@map("accountants")
 }
@@ -47,13 +48,14 @@ model TaxYear {
   id                String   @id @default(uuid())
   clientId          String   @map("client_id")
   year              Int
-  status            String   @default("draft") // draft, submitted, reviewed, complete
+  status            String   @default("draft") // draft, submitted, in_review, completed, archived
   profile           Json     @default("{}") // income types, family info, province-specific data
   completenessScore Int      @default(0) @map("completeness_score") // 0-100% (validate in application layer)
   submittedAt       DateTime? @map("submitted_at")
   reviewedAt        DateTime? @map("reviewed_at")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
+  reviewNotes       String?  @map("review_notes") // Accountant notes
 
   client      Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
   documents   Document[]
@@ -76,8 +78,15 @@ model Document {
   extractionStatus     String    @default("pending") @map("extraction_status") // pending, processing, success, failed
   extractionConfidence Decimal?  @map("extraction_confidence") @db.Decimal(3, 2) // 0.00 to 1.00 (validate in application layer)
   uploadedAt           DateTime  @default(now()) @map("uploaded_at")
+  
+  // Accountant review fields
+  reviewStatus         String    @default("pending") @map("review_status") // pending, approved, rejected
+  reviewedBy           String?   @map("reviewed_by") // accountant ID
+  reviewedAt           DateTime? @map("reviewed_at")
+  rejectionReason      String?   @map("rejection_reason")
 
-  taxYear TaxYear @relation(fields: [taxYearId], references: [id], onDelete: Cascade)
+  taxYear  TaxYear     @relation(fields: [taxYearId], references: [id], onDelete: Cascade)
+  reviewer Accountant? @relation(fields: [reviewedBy], references: [id])
 
   @@map("documents")
 }

@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import argon2 from 'argon2';
 import { z } from 'zod';
+import archiver from 'archiver';
+import axios from 'axios';
 import prisma from '../config/database';
 import { generateTemporaryPassword, sendClientInvitationEmail } from '../services/email.service';
 
@@ -183,6 +185,347 @@ export const deleteClient = async (req: Request, res: Response) => {
     res.status(200).json({ message: 'Client deleted successfully' });
   } catch (error) {
     console.error('Delete client error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * GET /api/accountant/dashboard-stats
+ */
+export const getDashboardStats = async (req: Request, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'accountant') {
+      return res.status(403).json({ error: 'Only accountants can view dashboard stats' });
+    }
+
+    const accountantId = req.user.sub;
+
+    const [totalClients, pendingReview, completed, inProgress] = await Promise.all([
+      prisma.client.count({ where: { accountantId } }),
+      prisma.taxYear.count({
+        where: {
+          client: { accountantId },
+          status: 'submitted'
+        }
+      }),
+      prisma.taxYear.count({
+        where: {
+          client: { accountantId },
+          status: 'completed'
+        }
+      }),
+      prisma.taxYear.count({
+        where: {
+          client: { accountantId },
+          status: 'in_review'
+        }
+      })
+    ]);
+
+    res.json({
+      totalClients,
+      pendingReview,
+      completed,
+      inProgress
+    });
+  } catch (error) {
+    console.error('Dashboard stats error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * GET /api/accountant/clients-with-tax-years
+ * List all clients with their latest tax year status
+ */
+export const getClientsWithTaxYears = async (req: Request, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'accountant') {
+      return res.status(403).json({ error: 'Only accountants can view clients' });
+    }
+
+    const accountantId = req.user.sub;
+
+    const clients = await prisma.client.findMany({
+      where: { accountantId },
+      include: {
+        taxYears: {
+          orderBy: { year: 'desc' },
+          take: 1,
+          include: {
+            documents: {
+              select: {
+                id: true,
+                reviewStatus: true
+              }
+            },
+            validations: true
+          }
+        }
+      },
+      orderBy: { lastName: 'asc' }
+    });
+
+    const clientSummaries = clients.map((client) => {
+      const latestYear = client.taxYears[0];
+      const pendingDocs = latestYear?.documents.filter(
+        (d) => d.reviewStatus === 'pending'
+      ).length || 0;
+
+      return {
+        id: client.id,
+        name: `${client.firstName} ${client.lastName}`,
+        email: client.email,
+        province: client.province,
+        latestYear: latestYear?.year,
+        status: latestYear?.status || 'no_data',
+        completenessScore: latestYear?.completenessScore || 0,
+        documentsCount: latestYear?.documents.length || 0,
+        pendingReview: pendingDocs,
+        submittedAt: latestYear?.submittedAt
+      };
+    });
+
+    res.json({ clients: clientSummaries });
+  } catch (error) {
+    console.error('Get clients with tax years error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * GET /api/accountant/clients/:clientId/years
+ * Get all tax years for a specific client
+ */
+export const getClientTaxYears = async (req: Request, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'accountant') {
+      return res.status(403).json({ error: 'Only accountants can view client tax years' });
+    }
+
+    const accountantId = req.user.sub;
+    const clientId = req.params.clientId;
+
+    const client = await prisma.client.findFirst({
+      where: { id: clientId, accountantId },
+      include: {
+        taxYears: {
+          orderBy: { year: 'desc' },
+          include: {
+            documents: true,
+            validations: true
+          }
+        }
+      }
+    });
+
+    if (!client) {
+      return res.status(404).json({ error: 'Client not found' });
+    }
+
+    res.json({ client });
+  } catch (error) {
+    console.error('Get tax years error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * GET /api/accountant/tax-years/:taxYearId
+ * Get detailed tax year info
+ */
+export const getTaxYearDetails = async (req: Request, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'accountant') {
+      return res.status(403).json({ error: 'Only accountants can view tax year details' });
+    }
+
+    const accountantId = req.user.sub;
+    const taxYearId = req.params.taxYearId;
+
+    const taxYear = await prisma.taxYear.findFirst({
+      where: {
+        id: taxYearId,
+        client: { accountantId }
+      },
+      include: {
+        client: true,
+        documents: {
+          orderBy: { uploadedAt: 'desc' }
+        },
+        validations: {
+          orderBy: { checkedAt: 'desc' }
+        }
+      }
+    });
+
+    if (!taxYear) {
+      return res.status(404).json({ error: 'Tax year not found' });
+    }
+
+    res.json({ taxYear });
+  } catch (error) {
+    console.error('Get tax year details error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * POST /api/accountant/documents/:documentId/approve
+ */
+export const approveDocument = async (req: Request, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'accountant') {
+      return res.status(403).json({ error: 'Only accountants can approve documents' });
+    }
+
+    const accountantId = req.user.sub;
+    const documentId = req.params.documentId;
+
+    const document = await prisma.document.findFirst({
+      where: {
+        id: documentId,
+        taxYear: {
+          client: { accountantId }
+        }
+      }
+    });
+
+    if (!document) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    const updated = await prisma.document.update({
+      where: { id: documentId },
+      data: {
+        reviewStatus: 'approved',
+        reviewedBy: accountantId,
+        reviewedAt: new Date(),
+        rejectionReason: null
+      }
+    });
+
+    res.json({ document: updated, message: 'Document approved' });
+  } catch (error) {
+    console.error('Approve document error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * POST /api/accountant/documents/:documentId/reject
+ */
+export const rejectDocument = async (req: Request, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'accountant') {
+      return res.status(403).json({ error: 'Only accountants can reject documents' });
+    }
+
+    const accountantId = req.user.sub;
+    const documentId = req.params.documentId;
+    const { reason } = req.body;
+
+    if (!reason) {
+      return res.status(400).json({ error: 'Rejection reason required' });
+    }
+
+    const document = await prisma.document.findFirst({
+      where: {
+        id: documentId,
+        taxYear: {
+          client: { accountantId }
+        }
+      }
+    });
+
+    if (!document) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    const updated = await prisma.document.update({
+      where: { id: documentId },
+      data: {
+        reviewStatus: 'rejected',
+        reviewedBy: accountantId,
+        reviewedAt: new Date(),
+        rejectionReason: reason
+      }
+    });
+
+    res.json({ document: updated, message: 'Document rejected' });
+  } catch (error) {
+    console.error('Reject document error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * GET /api/accountant/tax-years/:taxYearId/download-package
+ * Download all documents as ZIP
+ */
+export const downloadTaxPackage = async (req: Request, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'accountant') {
+      return res.status(403).json({ error: 'Only accountants can download tax packages' });
+    }
+
+    const accountantId = req.user.sub;
+    const taxYearId = req.params.taxYearId;
+
+    const taxYear = await prisma.taxYear.findFirst({
+      where: {
+        id: taxYearId,
+        client: { accountantId }
+      },
+      include: {
+        client: true,
+        documents: true
+      }
+    });
+
+    if (!taxYear) {
+      return res.status(404).json({ error: 'Tax year not found' });
+    }
+
+    if (taxYear.documents.length === 0) {
+      return res.status(400).json({ error: 'No documents to download' });
+    }
+
+    const archive = archiver('zip', { zlib: { level: 9 } });
+
+    res.attachment(
+      `${taxYear.client.lastName}_${taxYear.client.firstName}_${taxYear.year}.zip`
+    );
+    archive.pipe(res);
+
+    for (const doc of taxYear.documents) {
+      try {
+        const response = await axios.get(doc.fileUrl, {
+          responseType: 'arraybuffer'
+        });
+
+        const filename = doc.originalFilename || `${doc.docType}_${doc.id}.pdf`;
+        archive.append(Buffer.from(response.data), { name: filename });
+      } catch (error) {
+        console.error(`Failed to download ${doc.id}:`, error);
+      }
+    }
+
+    const metadata = {
+      client: `${taxYear.client.firstName} ${taxYear.client.lastName}`,
+      year: taxYear.year,
+      completenessScore: taxYear.completenessScore,
+      documentsCount: taxYear.documents.length,
+      generatedAt: new Date().toISOString()
+    };
+
+    archive.append(JSON.stringify(metadata, null, 2), {
+      name: 'metadata.json'
+    });
+
+    await archive.finalize();
+  } catch (error) {
+    console.error('Download package error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
