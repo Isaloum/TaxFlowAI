@@ -1,6 +1,11 @@
-# TaxFlowAI Backend - Phase 1: Auth & Onboarding
+# TaxFlowAI Backend
 
-Complete backend infrastructure for TaxFlowAI authentication and user onboarding system.
+Complete backend infrastructure for TaxFlowAI authentication, user onboarding, and document verification system.
+
+## Phases
+
+- **Phase 1: Auth & Onboarding** ✅ - Complete authentication and user management
+- **Phase 2: Document Verification** 🔄 - Tax year tracking, document storage, OCR, validation rules
 
 ## 🚀 Quick Start
 
@@ -30,6 +35,8 @@ npm run dev
 ---
 
 ## 🎯 Features
+
+### Phase 1: Auth & Onboarding ✅
 
 - **Authentication System**
   - Accountant registration and login
@@ -61,6 +68,38 @@ npm run dev
   - Bilingual email templates (French/English)
   - Automatic temporary password generation
   - Client invitation emails
+
+### Phase 2: Document Verification 🔄
+
+- **Tax Year Tracking**
+  - Multi-year client history management
+  - Tax year status tracking (draft, submitted, reviewed, complete)
+  - Client profile data per tax year
+  - Completeness scoring system
+
+- **Document Management**
+  - Document upload and storage (Supabase Storage)
+  - Document type classification (T4, RL1, T5, etc.)
+  - OCR extraction with confidence scoring
+  - Support for multiple file types
+
+- **Validation System**
+  - Automated completeness checks
+  - Province-specific validation rules
+  - Missing document detection
+  - Validation result tracking
+
+- **Notification System**
+  - Real-time notifications for accountants and clients
+  - Client submission alerts
+  - Missing document notifications
+  - Read/unread status tracking
+
+- **Cost Optimization**
+  - Tesseract OCR with Google Vision fallback
+  - GPT-4o-mini for document classification
+  - Supabase free tier optimization
+  - See [COST_OPTIMIZATION.md](COST_OPTIMIZATION.md) for details
 
 ## 📁 Project Structure
 
@@ -317,7 +356,9 @@ When an accountant creates a client:
 
 ## 🗄️ Database Schema
 
-### Accountant
+### Phase 1: Core Tables
+
+#### Accountant
 - `id` (String, CUID)
 - `email` (String, unique)
 - `passwordHash` (String)
@@ -328,7 +369,7 @@ When an accountant creates a client:
 - `updatedAt` (DateTime)
 - `clients` (Relation to Client[])
 
-### Client
+#### Client
 - `id` (String, CUID)
 - `accountantId` (String, foreign key)
 - `email` (String, unique)
@@ -342,6 +383,61 @@ When an accountant creates a client:
 - `createdAt` (DateTime)
 - `updatedAt` (DateTime)
 - `accountant` (Relation to Accountant)
+- `taxYears` (Relation to TaxYear[])
+
+### Phase 2: Document Verification Tables
+
+#### TaxYear
+- `id` (String, UUID)
+- `clientId` (String, foreign key)
+- `year` (Int)
+- `status` (String: draft/submitted/reviewed/complete)
+- `profile` (JSON: income types, family info, province data)
+- `completenessScore` (Int: 0-100%)
+- `submittedAt` (DateTime, nullable)
+- `reviewedAt` (DateTime, nullable)
+- `createdAt` (DateTime)
+- `updatedAt` (DateTime)
+- `client` (Relation to Client)
+- `documents` (Relation to Document[])
+- `validations` (Relation to Validation[])
+- Unique constraint: [clientId, year]
+
+#### Document
+- `id` (String, UUID)
+- `taxYearId` (String, foreign key)
+- `docType` (String: T4, RL1, T5, etc.)
+- `docSubtype` (String, nullable: employer/institution)
+- `originalFilename` (String, nullable)
+- `fileUrl` (String: Supabase Storage URL)
+- `fileSizeBytes` (Int, nullable)
+- `mimeType` (String, nullable)
+- `extractedData` (JSON: OCR results)
+- `extractionStatus` (String: pending/processing/success/failed)
+- `extractionConfidence` (Decimal: 0.00-1.00)
+- `uploadedAt` (DateTime)
+- `taxYear` (Relation to TaxYear)
+
+#### Validation
+- `id` (String, UUID)
+- `taxYearId` (String, foreign key)
+- `ruleCode` (String: e.g., "QUEBEC_T4_RL1_PAIR")
+- `status` (String: pass/fail/warning)
+- `message` (String, nullable)
+- `missingDocType` (String, nullable)
+- `checkedAt` (DateTime)
+- `taxYear` (Relation to TaxYear)
+
+#### Notification
+- `id` (String, UUID)
+- `recipientId` (String)
+- `recipientType` (String: 'accountant' or 'client')
+- `type` (String: notification type)
+- `title` (String)
+- `body` (String, nullable)
+- `read` (Boolean, default: false)
+- `createdAt` (DateTime)
+- Index: [recipientId, read]
 
 ## 🛠️ Development
 

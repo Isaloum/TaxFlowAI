@@ -38,6 +38,74 @@ model Client {
   updatedAt     DateTime  @updatedAt
   
   accountant    Accountant @relation(fields: [accountantId], references: [id], onDelete: Cascade)
+  taxYears      TaxYear[]
 
   @@map("clients")
+}
+
+model TaxYear {
+  id                String   @id @default(uuid())
+  clientId          String   @map("client_id")
+  year              Int
+  status            String   @default("draft") // draft, submitted, reviewed, complete
+  profile           Json     @default("{}") // income types, family info, province-specific data
+  completenessScore Int      @default(0) @map("completeness_score") // 0-100% (validate in application layer)
+  submittedAt       DateTime? @map("submitted_at")
+  reviewedAt        DateTime? @map("reviewed_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  client      Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  documents   Document[]
+  validations Validation[]
+
+  @@unique([clientId, year])
+  @@map("tax_years")
+}
+
+model Document {
+  id                   String    @id @default(uuid())
+  taxYearId            String    @map("tax_year_id")
+  docType              String    @map("doc_type") // T4, RL1, T5, etc.
+  docSubtype           String?   @map("doc_subtype") // employer/institution name
+  originalFilename     String?   @map("original_filename")
+  fileUrl              String    @map("file_url") // Supabase Storage URL
+  fileSizeBytes        Int?      @map("file_size_bytes")
+  mimeType             String?   @map("mime_type")
+  extractedData        Json      @default("{}") @map("extracted_data") // OCR results
+  extractionStatus     String    @default("pending") @map("extraction_status") // pending, processing, success, failed
+  extractionConfidence Decimal?  @map("extraction_confidence") @db.Decimal(3, 2) // 0.00 to 1.00 (validate in application layer)
+  uploadedAt           DateTime  @default(now()) @map("uploaded_at")
+
+  taxYear TaxYear @relation(fields: [taxYearId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+model Validation {
+  id              String   @id @default(uuid())
+  taxYearId       String   @map("tax_year_id")
+  ruleCode        String   @map("rule_code") // e.g., "QUEBEC_T4_RL1_PAIR"
+  status          String   // pass, fail, warning
+  message         String?
+  missingDocType  String?  @map("missing_doc_type") // e.g., "RL1"
+  checkedAt       DateTime @default(now()) @map("checked_at")
+
+  taxYear TaxYear @relation(fields: [taxYearId], references: [id], onDelete: Cascade)
+
+  @@map("validations")
+}
+
+model Notification {
+  id            String   @id @default(uuid())
+  recipientId   String   @map("recipient_id")
+  recipientType String   @map("recipient_type") // 'accountant' or 'client'
+  type          String   // 'client_submitted', 'missing_docs', etc.
+  title         String
+  body          String?
+  read          Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([recipientId, read])
+  @@map("notifications")
 }
