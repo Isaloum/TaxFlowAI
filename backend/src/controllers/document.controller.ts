@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../config/database';
 import { StorageService } from '../services/storage.service';
 import { queueDocumentExtraction } from '../services/queue.service';
+import { ValidationService } from '../services/validation.service';
 
 export class DocumentController {
   /**
@@ -65,6 +66,9 @@ export class DocumentController {
 
       // Queue for background processing
       await queueDocumentExtraction(document.id);
+
+      // Trigger validation after upload
+      await ValidationService.autoValidate(taxYear.id);
 
       res.status(201).json({ 
         document,
@@ -141,6 +145,9 @@ export class DocumentController {
       await prisma.document.delete({
         where: { id: documentId }
       });
+
+      // Re-validate after deletion
+      await ValidationService.autoValidate(document.taxYear.id);
 
       res.json({ message: 'Document deleted' });
     } catch (error: any) {
