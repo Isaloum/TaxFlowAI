@@ -51,4 +51,9 @@ router.get(
   DocumentController.downloadDocument
 );
 
+router.post(
+  '/documents/:id/extract',
+  DocumentController.triggerExtraction
+);
+
 export default router;

@@ -19,6 +19,31 @@
 - 10-15 documents/year × 500KB average = ~7.5MB/client/year
 - Free tier supports ~130 clients before paid plan needed
 
+## OCR + AI Extraction Costs
+
+### Per-Document Cost Breakdown (Avg)
+- **Tesseract OCR**: $0 (70-80% of documents)
+- **Google Vision fallback**: $0.0015 (20-30% of documents)
+- **GPT-4o-mini classification**: $0.0002
+- **Redis queue**: $0 (self-hosted) or ~$0.001 (managed)
+
+**Average cost per document**: ~$0.0005
+
+### Monthly Cost Estimates
+| Clients | Docs/Month | Total Cost |
+|---------|------------|------------|
+| 50      | 500        | $0.25      |
+| 100     | 1,000      | $0.50      |
+| 500     | 5,000      | $2.50      |
+| 1,000   | 10,000     | $5.00      |
+
+### Cost Optimizations Implemented
+✅ Tesseract first (FREE) before paid API
+✅ GPT-4o-mini instead of GPT-4 (30x cheaper)
+✅ Caching extracted data in DB
+✅ Batch processing via queue (no redundant calls)
+✅ Low temperature for consistent results (fewer retries)
+
 ## OCR: Tesseract First, Google Vision Fallback
 - **Primary**: Tesseract OCR (FREE, runs on server)
 - **Fallback**: Google Cloud Vision API only if Tesseract confidence < 0.70
