@@ -214,6 +214,52 @@ If you prefer manual setup:
 
    Server will run on `http://localhost:3001`
 
+### Supabase Storage Setup
+
+For document upload functionality, you need to create a storage bucket in Supabase:
+
+1. **Create Storage Bucket:**
+   - Go to [Supabase Dashboard](https://app.supabase.com) → Your Project → Storage
+   - Click "New bucket"
+   - Name: `tax-documents`
+   - Public bucket: Yes (or configure RLS policies for private access)
+   - Click "Create bucket"
+
+2. **Configure Environment Variables:**
+   ```env
+   SUPABASE_URL=https://your-project-ref.supabase.co
+   SUPABASE_SERVICE_KEY=your-service-role-key-here
+   SUPABASE_STORAGE_BUCKET=tax-documents
+   ```
+
+   Get your credentials from:
+   - SUPABASE_URL: Supabase Dashboard → Settings → API → Project URL
+   - SUPABASE_SERVICE_KEY: Supabase Dashboard → Settings → API → service_role key (⚠️ Keep this secret!)
+
+3. **(Optional) Configure Row Level Security (RLS):**
+   
+   If you want private bucket access, add these RLS policies:
+   
+   ```sql
+   -- Allow authenticated users to upload to their own folder
+   CREATE POLICY "Users can upload to own folder"
+   ON storage.objects FOR INSERT
+   TO authenticated
+   WITH CHECK (bucket_id = 'tax-documents' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+   -- Allow users to read their own files
+   CREATE POLICY "Users can read own files"
+   ON storage.objects FOR SELECT
+   TO authenticated
+   USING (bucket_id = 'tax-documents' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+   -- Allow users to delete their own files
+   CREATE POLICY "Users can delete own files"
+   ON storage.objects FOR DELETE
+   TO authenticated
+   USING (bucket_id = 'tax-documents' AND (storage.foldername(name))[1] = auth.uid()::text);
+   ```
+
 ## 📡 API Endpoints
 
 ### Authentication (`/api/auth`)
