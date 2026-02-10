@@ -241,7 +241,8 @@ export class RulesEngineService {
 
   /**
    * Calculate completeness score (0-100)
-   * Formula: (pass + warnings) / total * 100
+   * Formula: Based on percentage of passing validations
+   * Errors count more heavily than warnings
    */
   private static calculateCompletenessScore(
     results: ValidationResult[]
@@ -254,11 +255,11 @@ export class RulesEngineService {
     const warnings = results.filter((r) => r.status === 'warning').length;
     const passes = results.filter((r) => r.status === 'pass').length;
 
-    // Weight: errors = -2, warnings = -1, passes = +1
-    const score = Math.max(
-      0,
-      Math.min(100, ((passes - errors * 2 - warnings) / results.length) * 100)
-    );
+    // Calculate score: 100% if all pass, deduct points for warnings and errors
+    // Each warning deducts (100 / results.length) points
+    // Each error deducts (200 / results.length) points (double penalty)
+    const totalPenalty = (warnings * 100 + errors * 200) / results.length;
+    const score = Math.max(0, Math.min(100, 100 - totalPenalty));
 
     return Math.round(score);
   }
