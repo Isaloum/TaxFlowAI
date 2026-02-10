@@ -1,9 +1,13 @@
 import twilio = require('twilio');
 
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+// Validate required environment variables
+if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
+  console.warn('Twilio credentials not configured. SMS notifications will be disabled.');
+}
+
+const client = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN
+  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  : null;
 const FROM_PHONE = process.env.TWILIO_PHONE_NUMBER;
 
 export class SMSService {
@@ -11,7 +15,7 @@ export class SMSService {
    * Send SMS notification
    */
   static async sendSMS(to: string, message: string): Promise<void> {
-    if (!FROM_PHONE) {
+    if (!client || !FROM_PHONE) {
       console.warn('Twilio not configured, skipping SMS');
       return;
     }

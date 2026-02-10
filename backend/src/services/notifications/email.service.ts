@@ -1,13 +1,24 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Validate required environment variables
+if (!process.env.RESEND_API_KEY) {
+  console.warn('Resend API key not configured. Email notifications will be disabled.');
+}
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@taxflowai.com';
 
 export class EmailService {
   /**
    * Send welcome email to new client
+   * Note: Reserved for future use - not currently called
    */
   static async sendWelcomeEmail(to: string, firstName: string): Promise<void> {
+    if (!resend) {
+      console.warn('Resend not configured, skipping email');
+      return;
+    }
+    
     await resend.emails.send({
       from: FROM_EMAIL,
       to,
@@ -32,6 +43,11 @@ export class EmailService {
     docType: string,
     year: number
   ): Promise<void> {
+    if (!resend) {
+      console.warn('Resend not configured, skipping email');
+      return;
+    }
+    
     await resend.emails.send({
       from: FROM_EMAIL,
       to,
@@ -55,6 +71,11 @@ export class EmailService {
     reason: string,
     year: number
   ): Promise<void> {
+    if (!resend) {
+      console.warn('Resend not configured, skipping email');
+      return;
+    }
+    
     await resend.emails.send({
       from: FROM_EMAIL,
       to,
@@ -80,6 +101,11 @@ export class EmailService {
     year: number,
     missingDocs: string[]
   ): Promise<void> {
+    if (!resend) {
+      console.warn('Resend not configured, skipping email');
+      return;
+    }
+    
     const docList = missingDocs.map((doc) => `<li>${doc}</li>`).join('');
 
     await resend.emails.send({
@@ -105,6 +131,11 @@ export class EmailService {
     year: number,
     clientId: string
   ): Promise<void> {
+    if (!resend) {
+      console.warn('Resend not configured, skipping email');
+      return;
+    }
+    
     await resend.emails.send({
       from: FROM_EMAIL,
       to,
@@ -126,6 +157,11 @@ export class EmailService {
     pendingCount: number,
     clients: Array<{ name: string; year: number; id: string }>
   ): Promise<void> {
+    if (!resend) {
+      console.warn('Resend not configured, skipping email');
+      return;
+    }
+    
     const clientList = clients
       .map(
         (c) =>

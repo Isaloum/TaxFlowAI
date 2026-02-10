@@ -1,8 +1,10 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../config/database';
 import { EmailService } from './email.service';
 import { SMSService } from './sms.service';
 
-const prisma = new PrismaClient();
+interface NotificationMetadata {
+  [key: string]: string | number | boolean | null;
+}
 
 export class NotificationService {
   /**
@@ -13,7 +15,7 @@ export class NotificationService {
     type: 'email' | 'sms',
     channel: string,
     status: 'sent' | 'failed',
-    metadata: any = {}
+    metadata: NotificationMetadata = {}
   ): Promise<void> {
     await prisma.notificationLog.create({
       data: {
