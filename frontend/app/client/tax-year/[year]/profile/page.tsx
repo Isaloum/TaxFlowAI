@@ -32,7 +32,7 @@ export default function ProfilePage() {
     try {
       const res = await APIClient.getCompleteness(year);
       if (res.data.taxYear?.profile) {
-        setProfile({ ...profile, ...res.data.taxYear.profile });
+        setProfile(prev => ({ ...prev, ...res.data.taxYear.profile }));
       }
     } catch (error) {
       console.error('Load profile error:', error);
@@ -53,7 +53,7 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       await APIClient.updateProfile(year, profile);
-      alert('Profile saved!');
+      alert(`Tax profile for ${year} saved successfully!`);
       router.push(`/client/tax-year/${year}`);
     } catch (error: any) {
       alert(`Save failed: ${error.message}`);
@@ -147,7 +147,7 @@ export default function ProfilePage() {
               {profile.has_dependents && (
                 <div className="ml-6">
                   <label className="block text-sm mb-1">Number of children:</label>
-                  <input type="number" min="0" value={profile.num_children} onChange={(e) => handleChange('num_children', parseInt(e.target.value))}
+                  <input type="number" min="0" value={profile.num_children} onChange={(e) => handleChange('num_children', parseInt(e.target.value) || 0)}
                          className="w-20 px-2 py-1 border rounded" />
                 </div>
               )}

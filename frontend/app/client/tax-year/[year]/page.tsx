@@ -40,7 +40,7 @@ export default function TaxYearPage() {
     try {
       await APIClient.uploadDocument(year, formData);
       setSelectedFile(null);
-      alert('Document uploaded successfully!');
+      alert(`${docType} document uploaded successfully!`);
       loadCompleteness();
     } catch (error: any) {
       alert(`Upload failed: ${error.response?.data?.error || error.message}`);
@@ -49,7 +49,22 @@ export default function TaxYearPage() {
     }
   };
 
-  const hasProfile = completeness?.taxYear?.profile && Object.keys(completeness.taxYear.profile).length > 0;
+  // Check if profile is actually filled out (at least one field is true)
+  const hasProfile = completeness?.taxYear?.profile && (
+    completeness.taxYear.profile.has_employment_income ||
+    completeness.taxYear.profile.has_self_employment ||
+    completeness.taxYear.profile.has_investment_income ||
+    completeness.taxYear.profile.has_rental_income ||
+    completeness.taxYear.profile.has_rrsp_contributions ||
+    completeness.taxYear.profile.has_childcare_expenses ||
+    completeness.taxYear.profile.has_tuition ||
+    completeness.taxYear.profile.has_medical_expenses ||
+    completeness.taxYear.profile.has_donations ||
+    completeness.taxYear.profile.claims_home_office ||
+    completeness.taxYear.profile.has_moving_expenses ||
+    completeness.taxYear.profile.is_married ||
+    completeness.taxYear.profile.has_dependents
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
