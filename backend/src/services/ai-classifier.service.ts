@@ -44,6 +44,24 @@ const DOCUMENT_TEMPLATES = {
       'box_b_canadian_dividends'
     ]
   },
+  T4A: {
+    fields: [
+      'payer_name',
+      'recipient_sin',
+      'box_16_pension_income',
+      'box_18_lump_sum_payments',
+      'box_48_fees_for_services'
+    ]
+  },
+  T2202: {
+    fields: [
+      'institution_name',
+      'student_name',
+      'months_full_time',
+      'months_part_time',
+      'tuition_fees'
+    ]
+  },
   RECEIPT: {
     fields: ['vendor_name', 'amount', 'date', 'category', 'description']
   }
@@ -83,7 +101,7 @@ Respond ONLY with valid JSON in this format:
 }
 
 Rules:
-- docType must be one of: T4, RL1, T5, RL3, T4A, RL2, T2202, RL8, T3, RL16, T5008, RL18, RRSP_RECEIPT, CHILDCARE_RECEIPT, DONATION_RECEIPT, MEDICAL_RECEIPT, UNKNOWN
+- docType must be one of: T4, RL1, T5, RL3, T4A, T2202, RECEIPT, UNKNOWN
 - confidence is 0-1 (how certain you are about the classification)
 - extractedData contains only fields relevant to that document type
 - Amounts should be numeric strings without $ or commas
