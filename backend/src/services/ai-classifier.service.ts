@@ -80,7 +80,7 @@ export class AIClassifierService {
     const prompt = `You are a Canadian tax document classifier and data extractor.
 
 Given the OCR text below, determine:
-1. Document type (T4, RL-1, T5, RL-3, T2202, RL-8, RECEIPT, or UNKNOWN)
+1. Document type (T4, RL1, T5, RL3, T4A, T2202, RECEIPT, or UNKNOWN)
 2. Extract relevant fields based on document type
 
 OCR Text:
@@ -106,7 +106,7 @@ Rules:
 - extractedData contains only fields relevant to that document type
 - Amounts should be numeric strings without $ or commas
 - If a field is not found, omit it from extractedData (don't use null)
-- For Quebec slips (RL-*), use French field names from the document`;
+- For Quebec slips (RL1, RL3, etc.), use French field names from the document`;
 
     try {
       const completion = await openai.chat.completions.create({
