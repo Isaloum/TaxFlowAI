@@ -16,6 +16,7 @@ interface ClientSummary {
   email: string;
   province: string;
   latestYear?: number;
+  latestTaxYearId?: string;
   status: string;
   completenessScore: number;
   documentsCount: number;
@@ -213,9 +214,9 @@ export default function AccountantDashboard() {
                       >
                         View
                       </button>
-                      {client.latestYear && (
+                      {client.latestTaxYearId && (
                         <button
-                          onClick={() => router.push(`/accountant/review/${client.id}/${client.latestYear}`)}
+                          onClick={() => router.push(`/accountant/review/${client.latestTaxYearId}`)}
                           className="text-green-600 hover:text-green-900"
                         >
                           Review

@@ -278,6 +278,7 @@ export const getClientsWithTaxYears = async (req: Request, res: Response) => {
         email: client.email,
         province: client.province,
         latestYear: latestYear?.year,
+        latestTaxYearId: latestYear?.id,
         status: latestYear?.status || 'no_data',
         completenessScore: latestYear?.completenessScore || 0,
         documentsCount: latestYear?.documents.length || 0,
