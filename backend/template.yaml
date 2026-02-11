@@ -14,7 +14,6 @@ Globals:
         SUPABASE_SERVICE_KEY: !Ref SupabaseServiceKey
         OPENAI_API_KEY: !Ref OpenAIKey
         SES_EMAIL: notifications@isaloumapps.com
-        AWS_REGION: us-east-1
         NODE_ENV: production
 
 Parameters:
