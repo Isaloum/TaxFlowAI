@@ -12,11 +12,21 @@ const router = Router();
 router.post('/welcome', async (req, res) => {
   try {
     const { to, name } = req.body;
+    
+    if (!to || !name) {
+      return res.status(400).json({ error: 'Missing required fields: to and name' });
+    }
+    
     await SESEmailService.sendWelcomeEmail(to, name);
     res.json({ success: true, message: 'Welcome email sent' });
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error sending welcome email:', error);
-    res.status(500).json({ error: 'Failed to send welcome email' });
+    res.status(500).json({ 
+      error: 'Failed to send welcome email', 
+      details: errorMessage,
+      retryable: true
+    });
   }
 });
 
@@ -24,11 +34,23 @@ router.post('/welcome', async (req, res) => {
 router.post('/document-processed', async (req, res) => {
   try {
     const { to, documentName, classification } = req.body;
+    
+    if (!to || !documentName || !classification) {
+      return res.status(400).json({ 
+        error: 'Missing required fields: to, documentName, and classification' 
+      });
+    }
+    
     await SESEmailService.sendDocumentProcessedEmail(to, documentName, classification);
     res.json({ success: true, message: 'Document processed email sent' });
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error sending document processed email:', error);
-    res.status(500).json({ error: 'Failed to send document processed email' });
+    res.status(500).json({ 
+      error: 'Failed to send document processed email', 
+      details: errorMessage,
+      retryable: true
+    });
   }
 });
 

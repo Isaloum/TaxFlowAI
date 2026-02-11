@@ -33,6 +33,10 @@ Parameters:
     Type: String
     NoEcho: true
     Description: OpenAI API key for document classification
+  AllowedOrigin:
+    Type: String
+    Default: "'https://isaloumapps.com,https://www.isaloumapps.com'"
+    Description: Allowed CORS origins (comma-separated)
 
 Resources:
   TaxFlowAPI:
@@ -40,7 +44,7 @@ Resources:
     Properties:
       StageName: prod
       Cors:
-        AllowOrigin: "'https://isaloumapps.com'"
+        AllowOrigin: !Ref AllowedOrigin
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
         AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
         AllowCredentials: true

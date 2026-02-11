@@ -69,8 +69,9 @@ export class SESEmailService {
       await sesClient.send(command);
       console.log(`Welcome email sent successfully to ${to}`);
     } catch (error) {
-      console.error('Error sending welcome email:', error);
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Failed to send welcome email to ${to}:`, errorMessage, error);
+      throw new Error(`Failed to send welcome email to ${to}: ${errorMessage}`);
     }
   }
 
@@ -144,8 +145,9 @@ export class SESEmailService {
       await sesClient.send(command);
       console.log(`Document processed email sent successfully to ${to}`);
     } catch (error) {
-      console.error('Error sending document processed email:', error);
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Failed to send document processed email to ${to} for document ${documentName}:`, errorMessage, error);
+      throw new Error(`Failed to send document processed email to ${to} for document "${documentName}": ${errorMessage}`);
     }
   }
 
@@ -184,8 +186,9 @@ export class SESEmailService {
       await sesClient.send(command);
       console.log(`Notification email sent successfully to ${to}`);
     } catch (error) {
-      console.error('Error sending notification email:', error);
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Failed to send notification email to ${to} with subject "${subject}":`, errorMessage, error);
+      throw new Error(`Failed to send notification email to ${to} with subject "${subject}": ${errorMessage}`);
     }
   }
 }
