@@ -1,0 +1,41 @@
+# SAM Configuration for TaxFlowAI Backend Deployment
+# 
+# ⚠️ WARNING: This file contains sensitive credentials!
+# - Database passwords
+# - API keys
+# - Service role keys
+#
+# In production environments, use:
+# - AWS Secrets Manager for credential storage
+# - GitHub Secrets for CI/CD deployments
+# - Environment-specific config files
+#
+# This configuration is provided for deployment convenience
+# but should NOT be used as-is in production with sensitive data.
+
+version = 0.1
+
+[default.global.parameters]
+stack_name = "taxflowai-backend"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = [
+  "DatabaseUrl=postgresql://postgres:@@Pierre32Lea@@@db.swkqwqtgbxymyhcnhmfv.supabase.co:5432/postgres",
+  "SupabaseUrl=https://swkqwqtgbxymyhcnhmfv.supabase.co",
+  "SupabaseServiceKey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3a3F3cXRnYnh5bXloY25obWZ2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDE3MTA3NywiZXhwIjoyMDg1NzQ3MDc3fQ.ytKdZlus3oOrMyxumVuxon5Oau-nnqKv7X4FdgC5T6Q",
+  "OpenAIKey=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",
+  "AllowedOrigin='https://main.d2gxcp91k7yq8u.amplifyapp.com'"
+]
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = false
+resolve_s3 = true
+s3_prefix = "taxflowai-backend"
+region = "us-east-1"
+image_repositories = []

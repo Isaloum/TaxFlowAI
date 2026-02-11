@@ -155,6 +155,13 @@ sam deploy
 
 SAM will use the saved configuration from `samconfig.toml`.
 
+> ⚠️ **Security Note:** The `samconfig.toml` file contains sensitive credentials (database passwords, API keys). In production environments, consider:
+> - Using AWS Secrets Manager or Parameter Store for credentials
+> - Adding `samconfig.toml` to `.gitignore` if credentials are sensitive
+> - Using environment-specific config files (e.g., `samconfig.prod.toml`)
+> 
+> For this project, credentials are included in the repository for deployment convenience, but this is **not recommended for production applications** with sensitive data.
+
 ### Step 4: Get API Endpoint
 
 After successful deployment, SAM outputs the API Gateway endpoint:
