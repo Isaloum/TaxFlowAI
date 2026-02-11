@@ -1,0 +1,12 @@
+version = 0.1
+
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "taxflowai-backend"
+s3_bucket = "taxflowai-sam-artifacts"
+s3_prefix = "taxflowai-backend"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = false
+resolve_s3 = true

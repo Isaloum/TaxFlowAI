@@ -23,6 +23,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.474.0",
     "@google-cloud/vision": "^4.3.2",
     "@prisma/client": "^5.8.0",
     "@supabase/supabase-js": "^2.39.0",
@@ -42,6 +43,7 @@
     "nodemailer": "^7.0.7",
     "openai": "^4.28.0",
     "resend": "^3.2.0",
+    "serverless-http": "^3.2.0",
     "sharp": "^0.33.2",
     "tesseract.js": "^5.0.4",
     "twilio": "^5.0.0",

@@ -28,3 +28,11 @@ npm-debug.log*
 test-results/
 playwright-report/
 *.backup
+
+# AWS SAM
+.aws-sam/
+samconfig.toml
+
+# Build artifacts
+dist/
+build/
