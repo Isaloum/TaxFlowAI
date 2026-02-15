@@ -92,7 +92,7 @@ jobs:
               elif line.strip() == '# DynamoDB Table for Users':
                   userstable_start = i
 
-          if userstable_start and outputs_start and userstable_start > outputs_start:
+          if userstable_start and outputs_start and resources_start and userstable_start > outputs_start:
               userstable_section = lines[userstable_start:]
               before_userstable = lines[:userstable_start]
               new_lines = before_userstable[:outputs_start] + ['\n'] + userstable_section + ['\n'] + before_userstable[outputs_start:]
