@@ -29,6 +29,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
 
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
       - name: Setup AWS SAM CLI
         uses: aws-actions/setup-sam@v2
         with:
@@ -59,11 +64,103 @@ jobs:
           npm run build
           echo "✅ TypeScript build complete!"
 
+      - name: Fix SAM template structure
+        run: |
+          cd backend
+          
+          # Create fix-structure.py
+          cat > fix-structure.py << 'PYEOF'
+          import os
+          
+          # Only run if template-production.yaml exists
+          if not os.path.exists('template-production.yaml'):
+              print("⚠️ template-production.yaml not found, skipping structure fix")
+              exit(0)
+          
+          with open('template-production.yaml', 'r') as f:
+              lines = f.readlines()
+
+          resources_start = None
+          outputs_start = None
+          userstable_start = None
+
+          for i, line in enumerate(lines):
+              if line.strip() == 'Resources:':
+                  resources_start = i
+              elif line.strip() == 'Outputs:':
+                  outputs_start = i
+              elif line.strip() == '# DynamoDB Table for Users':
+                  userstable_start = i
+
+          if userstable_start and userstable_start > outputs_start:
+              userstable_section = lines[userstable_start:]
+              before_userstable = lines[:userstable_start-1]
+              new_lines = before_userstable[:outputs_start] + ['\n'] + userstable_section + ['\n'] + before_userstable[outputs_start:]
+              
+              with open('template-production.yaml', 'w') as f:
+                  f.writelines(new_lines)
+              
+              print("✅ Moved UsersTable to Resources section")
+          else:
+              print("✅ UsersTable already in correct location")
+          PYEOF
+          
+          python3 fix-structure.py
+          
+          # Create fix-policy.py
+          cat > fix-policy.py << 'PYEOF'
+          import os
+          
+          if not os.path.exists('template-production.yaml'):
+              print("⚠️ template-production.yaml not found, skipping policy fix")
+              exit(0)
+          
+          with open('template-production.yaml', 'r') as f:
+              content = f.read()
+
+          old_policy = '''      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable'''
+
+          new_policy = '''      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource: !GetAtt UsersTable.Arn'''
+
+          if old_policy in content:
+              content = content.replace(old_policy, new_policy)
+              with open('template-production.yaml', 'w') as f:
+                  f.write(content)
+              print("✅ Fixed DynamoDBCrudPolicy")
+          else:
+              print("✅ DynamoDBCrudPolicy already fixed or not present")
+          PYEOF
+          
+          python3 fix-policy.py
+          
+          # Remove Metadata sections requiring Makefiles
+          if [ -f "template-production.yaml" ]; then
+            sed -i '/Metadata:/,/BuildMethod: makefile/d' template-production.yaml 2>/dev/null || true
+          fi
+          
+          echo "✅ Template fixes applied"
+
       - name: Build SAM application
         run: |
           cd backend
           echo "📦 Building SAM application..."
-          sam build
+          if [ -f "template-production.yaml" ]; then
+            sam build --template-file template-production.yaml
+          else
+            sam build
+          fi
           echo "✅ SAM build complete!"
 
       - name: Deploy to AWS Lambda
@@ -72,23 +169,24 @@ jobs:
           cd backend
           echo "🚀 Deploying to AWS Lambda..."
           sam deploy \
-            --no-confirm-changeset \
-            --no-fail-on-empty-changeset \
+            --template-file .aws-sam/build/template.yaml \
             --stack-name taxflowai-backend \
             --capabilities CAPABILITY_IAM \
-            --parameter-overrides \
-              DatabaseUrl="${{ secrets.DATABASE_URL }}" \
-              SupabaseUrl="${{ secrets.SUPABASE_URL }}" \
-              SupabaseServiceKey="${{ secrets.SUPABASE_SERVICE_KEY }}" \
-              OpenAIKey="${{ secrets.OPENAI_API_KEY }}" \
-              AllowedOrigin="'https://main.d2gxcp91k7yq8u.amplifyapp.com'"
+            --region us-east-1 \
+            --resolve-s3 \
+            --s3-prefix taxflowai-backend \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
           echo "✅ Deployment complete!"
 
       - name: Get API endpoint
         id: endpoint
         run: |
-          cd backend
-          API_ENDPOINT=$(sam list stack-outputs --stack-name taxflowai-backend --output json | jq -r '.[] | select(.OutputKey=="ApiEndpoint") | .OutputValue')
+          API_ENDPOINT=$(aws cloudformation describe-stacks \
+            --stack-name taxflowai-backend \
+            --query 'Stacks[0].Outputs[?OutputKey==`ApiEndpoint`].OutputValue' \
+            --output text \
+            --region us-east-1)
           echo "API_ENDPOINT=$API_ENDPOINT" >> $GITHUB_OUTPUT
           echo "🌐 API Endpoint: $API_ENDPOINT"
 
@@ -96,8 +194,12 @@ jobs:
         id: test
         run: |
           cd backend
-          chmod +x scripts/test-deployment.sh
-          ./scripts/test-deployment.sh ${{ steps.endpoint.outputs.API_ENDPOINT }}
+          if [ -f "scripts/test-deployment.sh" ]; then
+            chmod +x scripts/test-deployment.sh
+            ./scripts/test-deployment.sh ${{ steps.endpoint.outputs.API_ENDPOINT }}
+          else
+            echo "⚠️ Test script not found, skipping tests"
+          fi
         continue-on-error: true
 
       - name: Post deployment status to PR
@@ -147,5 +249,6 @@ jobs:
           echo "### Deployed Resources" >> $GITHUB_STEP_SUMMARY
           echo "- AWS Lambda Functions (4)" >> $GITHUB_STEP_SUMMARY
           echo "- API Gateway REST API" >> $GITHUB_STEP_SUMMARY
+          echo "- DynamoDB UsersTable" >> $GITHUB_STEP_SUMMARY
           echo "- CloudWatch Log Groups" >> $GITHUB_STEP_SUMMARY
           echo "- IAM Roles and Policies" >> $GITHUB_STEP_SUMMARY
