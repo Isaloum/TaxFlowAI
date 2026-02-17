@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import argon2 from 'argon2';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { z } from 'zod';
 import prisma from '../config/database';
 
@@ -53,6 +53,7 @@ export const registerAccountant = async (req: Request, res: Response) => {
       },
     });
 
+    const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN as any };
     const token = jwt.sign(
       {
         sub: accountant.id.toString(),
@@ -60,7 +61,7 @@ export const registerAccountant = async (req: Request, res: Response) => {
         role: 'accountant',
       },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      signOptions
     );
 
     res.status(201).json({
@@ -96,6 +97,7 @@ export const login = async (req: Request, res: Response) => {
       const isValidPassword = await argon2.verify(accountant.passwordHash, validatedData.password);
 
       if (isValidPassword) {
+        const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN as any };
         const token = jwt.sign(
           {
             sub: accountant.id.toString(),
@@ -103,7 +105,7 @@ export const login = async (req: Request, res: Response) => {
             role: 'accountant',
           },
           JWT_SECRET,
-          { expiresIn: JWT_EXPIRES_IN }
+          signOptions
         );
 
         return res.status(200).json({
@@ -129,6 +131,7 @@ export const login = async (req: Request, res: Response) => {
       const isValidPassword = await argon2.verify(client.passwordHash, validatedData.password);
 
       if (isValidPassword) {
+        const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN as any };
         const token = jwt.sign(
           {
             sub: client.id.toString(),
@@ -136,7 +139,7 @@ export const login = async (req: Request, res: Response) => {
             role: 'client',
           },
           JWT_SECRET,
-          { expiresIn: JWT_EXPIRES_IN }
+          signOptions
         );
 
         return res.status(200).json({
