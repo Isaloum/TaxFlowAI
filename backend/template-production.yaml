@@ -1,0 +1,248 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: TaxFlowAI Backend - Production Ready
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+  
+  DatabaseUrl:
+    Type: String
+    NoEcho: true
+    Description: PostgreSQL connection string
+  
+  SupabaseUrl:
+    Type: String
+    Description: Supabase project URL
+  
+  SupabaseServiceKey:
+    Type: String
+    NoEcho: true
+    Description: Supabase service role key
+  
+  OpenAIKey:
+    Type: String
+    NoEcho: true
+    Description: OpenAI API key
+  
+  JwtSecret:
+    Type: String
+    NoEcho: true
+    Description: JWT signing secret
+  
+  AllowedOrigin:
+    Type: String
+    Default: "*"
+    Description: CORS allowed origin
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 30
+    MemorySize: 1024
+    Environment:
+      Variables:
+        NODE_ENV: !Ref Environment
+        DATABASE_URL: !Ref DatabaseUrl
+        SUPABASE_URL: !Ref SupabaseUrl
+        SUPABASE_SERVICE_KEY: !Ref SupabaseServiceKey
+        OPENAI_API_KEY: !Ref OpenAIKey
+        JWT_SECRET: !Ref JwtSecret
+        ALLOWED_ORIGIN: !Ref AllowedOrigin
+  
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+      AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+      AllowOrigin: !Sub "'${AllowedOrigin}'"
+
+Resources:
+  # API Gateway
+  TaxFlowAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: !Sub "'${AllowedOrigin}'"
+
+  # Auth Lambda
+  AuthFunction:
+    Description: Authentication and user management - Updated Feb 13 2026
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda-handlers/auth/
+      Handler: index.handler
+      Runtime: nodejs18.x
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTable
+          JWT_SECRET: !Sub '{{resolve:secretsmanager:taxflowai/jwt-secret:SecretString:secret}}'
+          JWT_EXPIRES_IN: '24h'
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource: !GetAtt UsersTable.Arn
+      Events:
+        AuthProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /auth/{proxy+}
+            Method: ANY
+        AuthRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /auth
+            Method: ANY
+  # Documents Lambda
+  DocumentsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda-handlers/documents/
+      Handler: index.handler
+      Events:
+        DocumentsProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /documents/{proxy+}
+            Method: ANY
+        DocumentsRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /documents
+            Method: ANY
+
+  # Users Lambda
+  UsersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda-handlers/users/
+      Handler: index.handler
+      Events:
+        UsersProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /users/{proxy+}
+            Method: ANY
+        UsersRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /users
+            Method: ANY
+
+  # Notifications Lambda
+  NotificationsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda-handlers/notifications/
+      Handler: index.handler
+      Events:
+        NotificationsProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /notifications/{proxy+}
+            Method: ANY
+        NotificationsRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /notifications
+            Method: ANY
+
+  # CloudWatch Log Groups
+  AuthFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AuthFunction}
+      RetentionInDays: 7
+
+  DocumentsFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${DocumentsFunction}
+      RetentionInDays: 7
+
+  UsersFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${UsersFunction}
+      RetentionInDays: 7
+
+  NotificationsFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${NotificationsFunction}
+      RetentionInDays: 7
+
+
+  # DynamoDB Table for Users
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: taxflowai-users
+      BillingMode: PAY_PER_REQUEST  # Serverless pricing - only pay for what you use
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: email-index
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: production
+        - Key: Application
+          Value: taxflowai
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${TaxFlowAPI}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/"
+    Export:
+      Name: !Sub "${AWS::StackName}-ApiEndpoint"
+  
+  AuthFunctionArn:
+    Description: Auth Lambda ARN
+    Value: !GetAtt AuthFunction.Arn
+  
+  DocumentsFunctionArn:
+    Description: Documents Lambda ARN
+    Value: !GetAtt DocumentsFunction.Arn
+  
+  UsersFunctionArn:
+    Description: Users Lambda ARN
+    Value: !GetAtt UsersFunction.Arn
+  
+  NotificationsFunctionArn:
+    Description: Notifications Lambda ARN
+    Value: !GetAtt NotificationsFunction.Arn
