@@ -64,7 +64,22 @@ jobs:
       - name: Deploy to AWS Lambda
         run: |
           cd backend
-          sam deploy --config-file samconfig.toml
+          sam deploy \
+            --stack-name taxflowai-backend \
+            --capabilities CAPABILITY_IAM \
+            --region us-east-1 \
+            --resolve-s3 \
+            --s3-prefix taxflowai-backend \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              Environment=prod \
+              DatabaseUrl="${{ secrets.DATABASE_URL }}" \
+              SupabaseUrl="${{ secrets.SUPABASE_URL }}" \
+              SupabaseServiceKey="${{ secrets.SUPABASE_SERVICE_KEY }}" \
+              OpenAIKey="${{ secrets.OPENAI_API_KEY }}" \
+              JwtSecret="${{ secrets.JWT_SECRET }}" \
+              AllowedOrigin="*"
 
       - name: Get API endpoint
         id: endpoint
