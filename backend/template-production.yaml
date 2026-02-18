@@ -119,6 +119,15 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - src/lambda/auth.ts
+        External:
+          - argon2
+          - sharp
+          - '@mapbox/node-pre-gyp'
+          - mock-aws-s3
+          - aws-sdk
+          - nock
+          - tesseract.js
+          - '@google-cloud/vision'
 
   # Documents Lambda
   DocumentsFunction:
@@ -147,6 +156,15 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - src/lambda/documents.ts
+        External:
+          - argon2
+          - sharp
+          - '@mapbox/node-pre-gyp'
+          - mock-aws-s3
+          - aws-sdk
+          - nock
+          - tesseract.js
+          - '@google-cloud/vision'
 
   # Users Lambda
   UsersFunction:
@@ -175,6 +193,15 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - src/lambda/users.ts
+        External:
+          - argon2
+          - sharp
+          - '@mapbox/node-pre-gyp'
+          - mock-aws-s3
+          - aws-sdk
+          - nock
+          - tesseract.js
+          - '@google-cloud/vision'
 
   # Notifications Lambda
   NotificationsFunction:
@@ -203,6 +230,15 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - src/lambda/notifications.ts
+        External:
+          - argon2
+          - sharp
+          - '@mapbox/node-pre-gyp'
+          - mock-aws-s3
+          - aws-sdk
+          - nock
+          - tesseract.js
+          - '@google-cloud/vision'
 
   # CloudWatch Log Groups
   AuthFunctionLogGroup:
