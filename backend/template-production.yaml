@@ -62,6 +62,33 @@ Globals:
       AllowOrigin: !Sub "'${AllowedOrigin}'"
 
 Resources:
+  # DynamoDB - defined first so Lambda functions can reference it
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: taxflowai-users
+      BillingMode: PAY_PER_REQUEST  # Serverless pricing - only pay for what you use
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: email-index
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: production
+        - Key: Application
+          Value: taxflowai
+
   # API Gateway
   TaxFlowAPI:
     Type: AWS::Serverless::Api
@@ -267,32 +294,6 @@ Resources:
 
 
   # DynamoDB Table for Users
-  UsersTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: taxflowai-users
-      BillingMode: PAY_PER_REQUEST  # Serverless pricing - only pay for what you use
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-        - AttributeName: email
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      GlobalSecondaryIndexes:
-        - IndexName: email-index
-          KeySchema:
-            - AttributeName: email
-              KeyType: HASH
-          Projection:
-            ProjectionType: ALL
-      Tags:
-        - Key: Environment
-          Value: production
-        - Key: Application
-          Value: taxflowai
-
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL
