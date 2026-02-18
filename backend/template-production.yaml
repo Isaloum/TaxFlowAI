@@ -65,8 +65,9 @@ Resources:
   # DynamoDB - defined first so Lambda functions can reference it
   UsersTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
-      TableName: taxflowai-users
       BillingMode: PAY_PER_REQUEST  # Serverless pricing - only pay for what you use
       AttributeDefinitions:
         - AttributeName: id
