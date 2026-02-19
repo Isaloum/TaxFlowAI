@@ -1,4 +1,8 @@
+copilot/add-db-seed-workflow
+name: Seed Database
+
 name: Database Seed
+main
 
 on:
   workflow_dispatch:
@@ -11,7 +15,10 @@ jobs:
       contents: read
     
     steps:
+copilot/add-db-seed-workflow
+      - name: Checkout
       - name: Checkout code
+ main
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -31,11 +38,16 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma generate
 
+ copilot/add-db-seed-workflow
+      - name: Seed database
+
       - name: Run database seed
+ main
         working-directory: backend
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run db:seed
-
-      - name: Verify seed success
+ copilot/add-db-seed-workflow
+ - name: Verify seed success
         run: echo "✅ Database seeded successfully with test user ihab@taxflowai.com"
+main
