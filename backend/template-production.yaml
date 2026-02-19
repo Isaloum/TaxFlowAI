@@ -42,7 +42,7 @@ Parameters:
 
 Globals:
   Function:
-    Runtime: nodejs18.x
+    Runtime: nodejs20.x
     Timeout: 30
     MemorySize: 1024
     Environment:
@@ -101,7 +101,7 @@ Resources:
     Properties:
       CodeUri: ./
       Handler: src/lambda/auth.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 512
       Environment:

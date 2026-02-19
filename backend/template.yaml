@@ -4,7 +4,7 @@ Description: TaxFlowAI Backend API - Serverless Lambda Functions
 
 Globals:
   Function:
-    Runtime: nodejs18.x
+    Runtime: nodejs20.x
     Timeout: 30
     MemorySize: 1024
     Environment:
