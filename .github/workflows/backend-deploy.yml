@@ -65,6 +65,19 @@ jobs:
           cd backend
           sam build --template-file template-production.yaml
 
+      - name: Copy Prisma engine to Lambda packages
+        run: |
+          for func in AuthFunction DocumentsFunction UsersFunction NotificationsFunction; do
+            BUILD_DIR="backend/.aws-sam/build/$func"
+            if [ -d "$BUILD_DIR" ]; then
+              mkdir -p "$BUILD_DIR/node_modules/.prisma/client"
+              mkdir -p "$BUILD_DIR/node_modules/@prisma/client"
+              cp -r backend/node_modules/.prisma/client/. "$BUILD_DIR/node_modules/.prisma/client/"
+              cp -r backend/node_modules/@prisma/client/. "$BUILD_DIR/node_modules/@prisma/client/"
+              echo "✅ Copied Prisma to $func"
+            fi
+          done
+
       - name: Deploy to AWS Lambda
         run: |
           cd backend

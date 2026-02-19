@@ -149,6 +149,7 @@ Resources:
           - nock
           - tesseract.js
           - '@google-cloud/vision'
+          - '@prisma/client'
 
   # Documents Lambda
   DocumentsFunction:
@@ -185,6 +186,7 @@ Resources:
           - nock
           - tesseract.js
           - '@google-cloud/vision'
+          - '@prisma/client'
 
   # Users Lambda
   UsersFunction:
@@ -221,6 +223,7 @@ Resources:
           - nock
           - tesseract.js
           - '@google-cloud/vision'
+          - '@prisma/client'
 
   # Notifications Lambda
   NotificationsFunction:
@@ -257,6 +260,7 @@ Resources:
           - nock
           - tesseract.js
           - '@google-cloud/vision'
+          - '@prisma/client'
 
   # CloudWatch Log Groups
   AuthFunctionLogGroup:
