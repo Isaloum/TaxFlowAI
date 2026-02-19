@@ -322,6 +322,7 @@ Resources:
           - nock
           - tesseract.js
           - '@google-cloud/vision'
+          - '@prisma/client'
 
   HealthFunctionLogGroup:
     Type: AWS::Logs::LogGroup

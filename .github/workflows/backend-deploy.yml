@@ -67,7 +67,7 @@ jobs:
 
       - name: Copy Prisma engine to Lambda packages
         run: |
-          for func in AuthFunction DocumentsFunction UsersFunction NotificationsFunction; do
+          for func in AuthFunction DocumentsFunction UsersFunction NotificationsFunction HealthFunction; do
             BUILD_DIR="backend/.aws-sam/build/$func"
             if [ -d "$BUILD_DIR" ]; then
               mkdir -p "$BUILD_DIR/node_modules/.prisma/client"
