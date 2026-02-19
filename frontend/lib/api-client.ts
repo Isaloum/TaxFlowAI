@@ -27,41 +27,41 @@ export class APIClient {
   }
 
   static async getProfile() {
-    return api.get('/client/profile');
+    return api.get('/users/client/profile');
   }
 
   static async getCompleteness(year: number) {
-    return api.get(`/client/tax-years/${year}/completeness`);
+    return api.get(`/users/client/tax-years/${year}/completeness`);
   }
 
   static async uploadDocument(year: number, formData: FormData) {
-    return api.post(`/client/tax-years/${year}/documents`, formData, {
+    return api.post(`/users/client/tax-years/${year}/documents`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   }
 
   static async updateProfile(year: number, profile: any) {
-    return api.put(`/client/tax-years/${year}/profile`, { profile });
+    return api.put(`/users/client/tax-years/${year}/profile`, { profile });
   }
 
   static async getAccountantClients() {
-    return api.get('/accountant/clients');
+    return api.get('/users/accountant/clients');
   }
 
   static async getClientTaxYears(clientId: string) {
-    return api.get(`/accountant/clients/${clientId}/years`);
+    return api.get(`/users/accountant/clients/${clientId}/years`);
   }
 
   static async getTaxYearDetails(taxYearId: string) {
-    return api.get(`/accountant/tax-years/${taxYearId}`);
+    return api.get(`/users/accountant/tax-years/${taxYearId}`);
   }
 
   static async approveDocument(docId: string) {
-    return api.post(`/accountant/documents/${docId}/approve`);
+    return api.post(`/users/accountant/documents/${docId}/approve`);
   }
 
   static async rejectDocument(docId: string, reason: string) {
-    return api.post(`/accountant/documents/${docId}/reject`, { reason });
+    return api.post(`/users/accountant/documents/${docId}/reject`, { reason });
   }
 }
 
