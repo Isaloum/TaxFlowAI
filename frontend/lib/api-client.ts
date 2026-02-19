@@ -19,6 +19,7 @@ export class APIClient {
   static async login(email: string, password: string) {
     const res = await api.post('/auth/login', { email, password });
     localStorage.setItem('auth_token', res.data.token);
+    localStorage.setItem('auth_user', JSON.stringify(res.data.user));
     return res.data;
   }
 

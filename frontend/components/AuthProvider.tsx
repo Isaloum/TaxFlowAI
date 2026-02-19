@@ -26,14 +26,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       if (typeof window !== 'undefined') {
         const token = localStorage.getItem('auth_token');
-        if (token) {
-          const res = await APIClient.getProfile();
-          setUser(res.data);
+        const userData = localStorage.getItem('auth_user');
+        if (token && userData) {
+          setUser(JSON.parse(userData));
         }
       }
     } catch (error) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
       }
     } finally {
       setLoading(false);
@@ -48,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
     setUser(null);
     router.push('/login');
   };
