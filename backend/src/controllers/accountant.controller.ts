@@ -83,12 +83,12 @@ export const createClient = async (req: Request, res: Response) => {
         createdAt: client.createdAt,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors[0].message });
     }
-    console.error('Create client error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Create client error:', JSON.stringify({ message: error?.message, code: error?.code, meta: error?.meta }));
+    res.status(500).json({ error: error?.message || 'Internal server error', code: error?.code });
   }
 };
 
