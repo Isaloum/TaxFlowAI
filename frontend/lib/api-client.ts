@@ -45,8 +45,23 @@ export class APIClient {
     return api.put(`/users/client/tax-years/${year}/profile`, { profile });
   }
 
+  static async createClient(data: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    province: string;
+    phone?: string;
+    languagePref: 'en' | 'fr';
+  }) {
+    return api.post('/users/accountant/clients', data);
+  }
+
   static async getAccountantClients() {
     return api.get('/users/accountant/clients');
+  }
+
+  static async getClientById(clientId: string) {
+    return api.get(`/users/accountant/clients/${clientId}`);
   }
 
   static async getClientTaxYears(clientId: string) {
