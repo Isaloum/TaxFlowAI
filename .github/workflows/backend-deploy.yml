@@ -96,7 +96,10 @@ jobs:
               SupabaseServiceKey="${{ secrets.SUPABASE_SERVICE_KEY }}" \
               OpenAIKey="${{ secrets.OPENAI_API_KEY }}" \
               JwtSecret="${{ secrets.JWT_SECRET }}" \
-              AllowedOrigin="*"
+              AllowedOrigin="*" \
+              SmtpUser="${{ secrets.SMTP_USER }}" \
+              SmtpPass="${{ secrets.SMTP_PASS }}" \
+              LoginUrl="https://www.isaloumapps.com/login"
 
       - name: Get API endpoint
         id: endpoint

@@ -40,6 +40,37 @@ Parameters:
     Default: "*"
     Description: CORS allowed origin
 
+  SmtpHost:
+    Type: String
+    Default: smtp.gmail.com
+    Description: SMTP server host
+
+  SmtpPort:
+    Type: String
+    Default: "587"
+    Description: SMTP server port
+
+  SmtpUser:
+    Type: String
+    Default: ""
+    Description: SMTP username (email address)
+
+  SmtpPass:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: SMTP password (Gmail App Password)
+
+  EmailFrom:
+    Type: String
+    Default: noreply@isaloumapps.com
+    Description: From email address
+
+  LoginUrl:
+    Type: String
+    Default: https://www.isaloumapps.com/login
+    Description: Client login URL for invitation emails
+
 Globals:
   Function:
     Runtime: nodejs20.x
@@ -54,6 +85,14 @@ Globals:
         OPENAI_API_KEY: !Ref OpenAIKey
         JWT_SECRET: !Ref JwtSecret
         ALLOWED_ORIGIN: !Ref AllowedOrigin
+        SMTP_HOST: !Ref SmtpHost
+        SMTP_PORT: !Ref SmtpPort
+        SMTP_SECURE: "false"
+        SMTP_USER: !Ref SmtpUser
+        SMTP_PASS: !Ref SmtpPass
+        EMAIL_FROM: !Ref EmailFrom
+        LOGIN_URL: !Ref LoginUrl
+        APP_NAME: TaxFlowAI
   
 Resources:
   # DynamoDB - defined first so Lambda functions can reference it
