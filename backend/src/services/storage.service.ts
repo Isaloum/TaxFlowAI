@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import sharp from 'sharp';
-import { fromBuffer as fileTypeFromBuffer } from 'file-type';
+// sharp & file-type are dynamic imports — they are External in esbuild
+// (not bundled) and must not be imported at module level or Lambda crashes
 
 // Validate required environment variables
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -50,7 +50,8 @@ export class StorageService {
       throw new Error('File size exceeds 10MB limit');
     }
 
-    // Validate file type
+    // Validate file type (dynamic import — not bundled)
+    const { fromBuffer: fileTypeFromBuffer } = await import('file-type');
     const fileType = await fileTypeFromBuffer(file.buffer);
     if (!fileType || !ALLOWED_MIME_TYPES.includes(fileType.mime)) {
       throw new Error(`Invalid file type. Allowed: PDF, JPG, PNG, HEIC`);
@@ -59,9 +60,9 @@ export class StorageService {
     let buffer = file.buffer;
     let mimeType = fileType.mime;
 
-    // COST OPTIMIZATION: Compress images
-    // Converts all image formats (JPG, PNG, HEIC, etc.) to JPEG for better browser compatibility
+    // COST OPTIMIZATION: Compress images (dynamic import — not bundled)
     if (fileType.mime.startsWith('image/')) {
+      const sharp = (await import('sharp')).default;
       buffer = await sharp(file.buffer)
         .resize(2000, 2000, { fit: 'inside', withoutEnlargement: true })
         .jpeg({ quality: 85 })
