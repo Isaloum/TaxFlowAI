@@ -236,6 +236,12 @@ export default function TaxYearClient() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [docType,      setDocType]      = useState('T4');
   const [province,     setProvince]     = useState('QC');
+  const [toast,        setToast]        = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   const loadCompleteness = async () => {
     try {
@@ -274,10 +280,10 @@ export default function TaxYearClient() {
       if (!uploadRes.ok) throw new Error(`Storage upload failed: ${uploadRes.status}`);
       await APIClient.confirmUpload(documentId);
       setSelectedFile(null);
-      alert(`${docType} uploaded successfully!`);
+      showToast(`${docType} uploaded successfully!`);
       loadCompleteness();
     } catch (error: any) {
-      alert(`Upload failed: ${error.response?.data?.error || error.message}`);
+      showToast(error.response?.data?.error || error.message, 'error');
     } finally {
       setUploading(false);
     }
@@ -303,12 +309,33 @@ export default function TaxYearClient() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow mb-6">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold">Tax Year {year}</h1>
-          <button onClick={() => router.push('/client/dashboard')} className="text-blue-600 hover:text-blue-700">
-            ← Back to Dashboard
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 shadow-lg rounded-xl px-4 py-3 text-sm flex items-center gap-2 border ${
+          toast.type === 'success'
+            ? 'bg-white border-green-200 text-green-700'
+            : 'bg-white border-red-200 text-red-700'
+        }`}>
+          {toast.type === 'success' ? '✅' : '❌'} {toast.msg}
+        </div>
+      )}
+
+      <nav className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button onClick={() => router.push('/client/dashboard')}
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 transition">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Dashboard
           </button>
+          <span className="text-gray-300">/</span>
+          <h1 className="text-base font-bold text-gray-900">Tax Year {year}</h1>
+        </div>
+        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
         </div>
       </nav>
 
