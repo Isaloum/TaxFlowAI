@@ -9,6 +9,4 @@ app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use('/documents', documentRoutes);
 
-export const handler = serverless(app, {
-  binary: ['multipart/form-data', '*/*'],
-});
+export const handler = serverless(app);
