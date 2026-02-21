@@ -1,5 +1,7 @@
 import Queue from 'bull';
-import { ExtractionService } from './extraction.service';
+// ExtractionService is a dynamic import — it pulls in tesseract.js and
+// @google-cloud/vision which are External (not bundled) and crash Lambda if
+// imported at module level
 
 // Lazy queue — only created if REDIS_URL is set (not in Lambda without Redis)
 let extractionQueue: Queue.Queue | null = null;
@@ -21,6 +23,7 @@ function getQueue(): Queue.Queue | null {
     extractionQueue.process(async (job) => {
       const { documentId } = job.data;
       console.log(`🔄 Processing extraction job for document ${documentId}`);
+      const { ExtractionService } = await import('./extraction.service');
       await ExtractionService.processDocument(documentId);
       return { documentId, status: 'success' };
     });
@@ -50,7 +53,9 @@ export async function queueDocumentExtraction(documentId: string) {
   } else {
     // No Redis — run extraction directly (fire-and-forget)
     console.log(`⚡ No Redis, running extraction directly for ${documentId}`);
-    ExtractionService.processDocument(documentId).catch((err) =>
+    import('./extraction.service').then(({ ExtractionService }) =>
+      ExtractionService.processDocument(documentId)
+    ).catch((err) =>
       console.error(`Extraction failed for ${documentId}:`, err)
     );
   }
