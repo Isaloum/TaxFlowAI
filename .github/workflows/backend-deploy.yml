@@ -64,7 +64,7 @@ jobs:
         working-directory: backend
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npx prisma db push --skip-generate
+        run: npx prisma db push --skip-generate --accept-data-loss
 
       - name: Build SAM application
         run: |
