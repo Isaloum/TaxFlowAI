@@ -33,14 +33,25 @@ export default function TaxYearClient() {
     if (!selectedFile) return;
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-    formData.append('docType', docType);
-
     try {
-      await APIClient.uploadDocument(year, formData);
+      // Step 1: get signed URL
+      const presignRes = await APIClient.presignUpload(year, {
+        docType,
+        filename: selectedFile.name,
+        mimeType: selectedFile.type,
+        fileSize: selectedFile.size,
+      });
+      const { signedUrl, documentId } = presignRes.data;
+
+      // Step 2: upload directly to Supabase (no API Gateway)
+      const uploadRes = await APIClient.uploadToSignedUrl(signedUrl, selectedFile);
+      if (!uploadRes.ok) throw new Error(`Storage upload failed: ${uploadRes.status}`);
+
+      // Step 3: confirm + trigger processing
+      await APIClient.confirmUpload(documentId);
+
       setSelectedFile(null);
-      alert(`${docType} document uploaded successfully!`);
+      alert(`${docType} uploaded successfully!`);
       loadCompleteness();
     } catch (error: any) {
       alert(`Upload failed: ${error.response?.data?.error || error.message}`);

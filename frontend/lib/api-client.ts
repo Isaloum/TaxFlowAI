@@ -35,10 +35,25 @@ export class APIClient {
     return api.get(`/users/client/tax-years/${year}/completeness`);
   }
 
-  static async uploadDocument(year: number, formData: FormData) {
-    return api.post(`/documents/tax-years/${year}/documents`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+  // Step 1: get signed URL from Lambda (JSON only — no binary through API Gateway)
+  static async presignUpload(year: number, meta: {
+    docType: string; filename: string; mimeType: string; fileSize: number;
+  }) {
+    return api.post(`/documents/tax-years/${year}/presign`, meta);
+  }
+
+  // Step 2: upload file directly to Supabase (bypasses API Gateway entirely)
+  static async uploadToSignedUrl(signedUrl: string, file: File) {
+    return fetch(signedUrl, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': file.type },
     });
+  }
+
+  // Step 3: tell Lambda the upload is done — triggers processing
+  static async confirmUpload(documentId: string) {
+    return api.post(`/documents/documents/${documentId}/confirm`);
   }
 
   static async updateProfile(year: number, profile: any) {

@@ -7,6 +7,101 @@ import { NotificationService } from '../services/notifications/notification.serv
 
 export class DocumentController {
   /**
+   * POST /documents/tax-years/:year/presign
+   * Step 1: Get a signed upload URL — client uploads directly to Supabase
+   */
+  static async presignUpload(req: Request, res: Response) {
+    try {
+      const clientId = req.user!.sub;
+      const year = parseInt(req.params.year);
+      const { docType, filename, mimeType, fileSize } = req.body;
+
+      if (!docType || !filename || !mimeType) {
+        return res.status(400).json({ error: 'docType, filename and mimeType are required' });
+      }
+
+      if (fileSize && fileSize > 10 * 1024 * 1024) {
+        return res.status(400).json({ error: 'File size exceeds 10MB limit' });
+      }
+
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif'];
+      if (!allowedTypes.includes(mimeType)) {
+        return res.status(400).json({ error: 'Invalid file type. Allowed: PDF, JPG, PNG, HEIC' });
+      }
+
+      // Get or create TaxYear
+      let taxYear = await prisma.taxYear.findUnique({
+        where: { clientId_year: { clientId, year } }
+      });
+      if (!taxYear) {
+        taxYear = await prisma.taxYear.create({
+          data: { clientId, year, profile: {}, status: 'draft' }
+        });
+      }
+
+      // Create signed upload URL
+      const { signedUrl, filePath } = await StorageService.createSignedUploadUrl(
+        clientId, year, docType, mimeType
+      );
+
+      // Pre-create document record (status: pending_upload)
+      const publicUrl = StorageService.getPublicUrl(filePath);
+      const document = await prisma.document.create({
+        data: {
+          taxYearId: taxYear.id,
+          docType,
+          originalFilename: filename,
+          fileUrl: publicUrl,
+          fileSizeBytes: fileSize || null,
+          mimeType,
+          extractionStatus: 'pending',
+          reviewStatus: 'pending',
+        }
+      });
+
+      res.json({ signedUrl, documentId: document.id });
+    } catch (error: any) {
+      console.error('Presign error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * POST /documents/:documentId/confirm
+   * Step 2: Client finished uploading — trigger processing
+   */
+  static async confirmUpload(req: Request, res: Response) {
+    try {
+      const clientId = req.user!.sub;
+      const { documentId } = req.params;
+
+      const document = await prisma.document.findUnique({
+        where: { id: documentId },
+        include: { taxYear: true }
+      });
+
+      if (!document) {
+        return res.status(404).json({ error: 'Document not found' });
+      }
+      if (document.taxYear.clientId !== clientId) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+
+      // Queue extraction + validate + notify
+      await queueDocumentExtraction(documentId);
+      await ValidationService.autoValidate(document.taxYearId);
+      await NotificationService.notifyDocumentUploaded(
+        clientId, document.docType, document.taxYear.year
+      );
+
+      res.json({ document, message: 'Upload confirmed. Processing started.' });
+    } catch (error: any) {
+      console.error('Confirm upload error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
    * POST /api/client/tax-years/:year/documents
    * Upload a document for a specific tax year
    */

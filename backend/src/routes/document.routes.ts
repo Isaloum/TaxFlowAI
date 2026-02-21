@@ -29,6 +29,10 @@ router.use(authenticateToken);
 router.use(requireRole('client'));
 router.use(documentLimiter);
 
+// Presigned upload flow (no binary through API Gateway)
+router.post('/tax-years/:year/presign', DocumentController.presignUpload);
+router.post('/documents/:documentId/confirm', DocumentController.confirmUpload);
+
 router.post(
   '/tax-years/:year/documents',
   uploadLimiter,

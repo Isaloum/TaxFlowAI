@@ -99,6 +99,39 @@ export class StorageService {
   }
 
   /**
+   * Create a signed upload URL so the client can upload directly to Supabase
+   * (bypasses API Gateway — no binary/multipart issues)
+   */
+  static async createSignedUploadUrl(
+    clientId: string,
+    year: number,
+    docType: string,
+    mimeType: string
+  ): Promise<{ signedUrl: string; filePath: string }> {
+    const timestamp = Date.now();
+    const ext = mimeType === 'application/pdf' ? 'pdf' : 'jpg';
+    const filePath = `clients/${clientId}/${year}/${docType}-${timestamp}.${ext}`;
+
+    const { data, error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .createSignedUploadUrl(filePath);
+
+    if (error || !data) {
+      throw new Error(`Failed to create upload URL: ${error?.message}`);
+    }
+
+    return { signedUrl: data.signedUrl, filePath };
+  }
+
+  /**
+   * Get public URL for a file path
+   */
+  static getPublicUrl(filePath: string): string {
+    const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
+    return data.publicUrl;
+  }
+
+  /**
    * Delete file from Supabase Storage
    */
   static async deleteDocument(fileUrl: string): Promise<void> {
