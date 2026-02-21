@@ -4,20 +4,244 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { APIClient } from '@/lib/api-client';
 
+// ─── Document type definitions ───────────────────────────────────────────────
+
+type DocOption = { value: string; label: string };
+type DocGroup  = { label: string; options: DocOption[] };
+
+const FEDERAL_SLIPS: DocGroup = {
+  label: 'Federal Slips (All Provinces)',
+  options: [
+    { value: 'T4',       label: 'T4 – Employment Income' },
+    { value: 'T4A',      label: 'T4A – Pension / Retirement / Other Income' },
+    { value: 'T4A_P',    label: 'T4A(P) – CPP / QPP Benefits' },
+    { value: 'T4A_OAS',  label: 'T4A(OAS) – Old Age Security' },
+    { value: 'T4E',      label: 'T4E – Employment Insurance (EI)' },
+    { value: 'T4RSP',    label: 'T4RSP – RRSP Income' },
+    { value: 'T4RIF',    label: 'T4RIF – RRIF Income' },
+    { value: 'T5',       label: 'T5 – Investment Income (Dividends / Interest)' },
+    { value: 'T3',       label: 'T3 – Trust / Mutual Fund Income' },
+    { value: 'T5008',    label: 'T5008 – Securities Transactions' },
+    { value: 'T5013',    label: 'T5013 – Partnership Income' },
+    { value: 'T2202',    label: 'T2202 – Tuition Certificate' },
+    { value: 'T1007',    label: 'T1007 – Workers Compensation Benefits' },
+    { value: 'T4PS',     label: 'T4PS – Employee Profit Sharing' },
+  ],
+};
+
+const QC_RL_SLIPS: DocGroup = {
+  label: 'Quebec RL Slips (Quebec Residents)',
+  options: [
+    { value: 'RL1',  label: 'RL-1 – Employment & Other Income' },
+    { value: 'RL2',  label: 'RL-2 – Retirement / Pension Income' },
+    { value: 'RL3',  label: 'RL-3 – Investment Income' },
+    { value: 'RL5',  label: 'RL-5 – Benefits & Allocations' },
+    { value: 'RL6',  label: 'RL-6 – Dividends from Quebec Companies' },
+    { value: 'RL8',  label: 'RL-8 – Tuition (Quebec)' },
+    { value: 'RL10', label: 'RL-10 – EI & QPIP Benefits' },
+    { value: 'RL11', label: 'RL-11 – RRSP / RRIF Income' },
+    { value: 'RL15', label: 'RL-15 – Professional / Self-Employment Income' },
+    { value: 'RL16', label: 'RL-16 – Trust Income' },
+    { value: 'RL22', label: 'RL-22 – Employee Benefits' },
+    { value: 'RL24', label: 'RL-24 – Childcare Assistance' },
+    { value: 'RL25', label: 'RL-25 – Amounts Paid to Residents of Canada' },
+    { value: 'RL31', label: 'RL-31 – Rental Housing' },
+    { value: 'SolidarityCredit', label: 'Solidarity Tax Credit Statement (Revenu Québec)' },
+  ],
+};
+
+const PROVINCE_SPECIFIC: Record<string, DocGroup> = {
+  ON: {
+    label: 'Ontario Provincial',
+    options: [
+      { value: 'OTB',   label: 'Ontario Trillium Benefit (OTB) Statement' },
+      { value: 'ODSP',  label: 'Ontario Works / ODSP Statement' },
+      { value: 'OEPTC', label: 'Ontario Energy & Property Tax Credit' },
+      { value: 'NOEC',  label: 'Northern Ontario Energy Credit' },
+    ],
+  },
+  BC: {
+    label: 'British Columbia Provincial',
+    options: [
+      { value: 'BCClimateAction',   label: 'BC Climate Action Tax Credit' },
+      { value: 'BCHRenovation',     label: 'BC Seniors\u2019 Home Renovation Tax Credit' },
+      { value: 'BCTrainingCredit',  label: 'BC Training Tax Credit' },
+      { value: 'BCFamilyBenefit',   label: 'BC Family Benefit Statement' },
+    ],
+  },
+  AB: {
+    label: 'Alberta Provincial (No Provincial Income Tax)',
+    options: [
+      { value: 'ACFB',   label: 'Alberta Child & Family Benefit (ACFB) Statement' },
+      { value: 'ABSeniors', label: 'Alberta Seniors\u2019 Benefit Statement' },
+      { value: 'ABASBRebate', label: 'Alberta Affordability Payments Statement' },
+    ],
+  },
+  MB: {
+    label: 'Manitoba Provincial',
+    options: [
+      { value: 'MBPropertyTax',  label: 'Manitoba Education Property Tax Credit' },
+      { value: 'MBFarmlandTax',  label: 'Manitoba Farmland School Tax Rebate' },
+      { value: 'MBGreenEnergy',  label: 'Manitoba Green Energy Equipment Tax Credit' },
+    ],
+  },
+  SK: {
+    label: 'Saskatchewan Provincial',
+    options: [
+      { value: 'SKLowIncome',  label: 'Saskatchewan Low-Income Tax Credit (SLITC)' },
+      { value: 'SKFarmCredit', label: 'Saskatchewan Farm & Small Business Credit' },
+    ],
+  },
+  NS: {
+    label: 'Nova Scotia Provincial',
+    options: [
+      { value: 'NSAffordableLiving', label: 'NS Affordable Living Tax Credit' },
+      { value: 'NSHARP',             label: 'Heating Assistance Rebate Program (HARP)' },
+      { value: 'NSSeniors',          label: 'NS Seniors\u2019 Care Grant Statement' },
+    ],
+  },
+  NB: {
+    label: 'New Brunswick Provincial',
+    options: [
+      { value: 'NBHSTCredit',    label: 'NB Harmonized Sales Tax Credit' },
+      { value: 'NBLowIncome',    label: 'NB Low-Income Tax Reduction Statement' },
+      { value: 'NBRenovation',   label: 'NB Seniors\u2019 Home Renovation Tax Credit' },
+    ],
+  },
+  PE: {
+    label: 'Prince Edward Island Provincial',
+    options: [
+      { value: 'PEISalesTax',   label: 'PEI Sales Tax Credit Statement' },
+      { value: 'PEIPropertyTax',label: 'PEI Property Tax Credit' },
+    ],
+  },
+  NL: {
+    label: 'Newfoundland & Labrador Provincial',
+    options: [
+      { value: 'NLIncomeSupplement', label: 'NL Income Supplement Statement' },
+      { value: 'NLSeniors',          label: 'NL Seniors\u2019 Benefit Statement' },
+      { value: 'NLChildBenefit',     label: 'NL Child Benefit Statement' },
+    ],
+  },
+  NT: {
+    label: 'Northwest Territories',
+    options: [
+      { value: 'NTCostOfLiving', label: 'NT Cost of Living Tax Credit' },
+    ],
+  },
+  NU: {
+    label: 'Nunavut',
+    options: [
+      { value: 'NUCostOfLiving', label: 'Nunavut Cost of Living Tax Credit' },
+    ],
+  },
+  YT: {
+    label: 'Yukon',
+    options: [
+      { value: 'YTCarbonRebate', label: 'Yukon Government Carbon Price Rebate' },
+      { value: 'YTChildBenefit', label: 'Yukon Child Benefit Statement' },
+    ],
+  },
+};
+
+const CONTRIBUTIONS: DocGroup = {
+  label: 'Contributions & Savings',
+  options: [
+    { value: 'RRSP', label: 'RRSP Contribution Receipt' },
+    { value: 'TFSA', label: 'TFSA Contribution Receipt' },
+    { value: 'FHSA', label: 'FHSA – First Home Savings Account' },
+    { value: 'HBP',  label: 'HBP – Home Buyers\u2019 Plan Repayment' },
+    { value: 'LLP',  label: 'LLP – Lifelong Learning Plan Repayment' },
+    { value: 'RESP', label: 'RESP Contribution Receipt' },
+  ],
+};
+
+const DEDUCTIONS: DocGroup = {
+  label: 'Deductions & Credits',
+  options: [
+    { value: 'Medical',      label: 'Medical Expenses Receipts' },
+    { value: 'Donations',    label: 'Charitable Donation Receipts' },
+    { value: 'Childcare',    label: 'Childcare Receipts (Daycare / Babysitter)' },
+    { value: 'Tuition',      label: 'Tuition Receipts / Student Fees' },
+    { value: 'Moving',       label: 'Moving Expense Receipts' },
+    { value: 'HomeOffice',   label: 'Home Office Expenses (T2200 / TP-64.3)' },
+    { value: 'Union',        label: 'Union / Professional Dues' },
+    { value: 'Tools',        label: 'Tradesperson\u2019s Tools Receipts' },
+    { value: 'Clergy',       label: 'Clergy Residence Deduction' },
+    { value: 'AdoptionExp',  label: 'Adoption Expense Receipts' },
+  ],
+};
+
+const SELF_EMPLOYMENT: DocGroup = {
+  label: 'Self-Employment & Business',
+  options: [
+    { value: 'BusinessIncome',   label: 'Business / Self-Employment Income Summary' },
+    { value: 'BusinessExpenses', label: 'Business Expense Receipts' },
+    { value: 'T2125',            label: 'T2125 – Business & Professional Activities' },
+    { value: 'T2042',            label: 'T2042 – Farming Income' },
+    { value: 'T2121',            label: 'T2121 – Fishing Income' },
+    { value: 'GST_HST',          label: 'GST / HST / QST Return' },
+  ],
+};
+
+const RENTAL_CAPITAL: DocGroup = {
+  label: 'Rental & Capital Gains',
+  options: [
+    { value: 'RentalIncome',  label: 'Rental Income / Expense Summary' },
+    { value: 'T776',          label: 'T776 – Statement of Real Estate Rentals' },
+    { value: 'CapitalGains',  label: 'Capital Gains / Losses Statement' },
+    { value: 'ACB',           label: 'Adjusted Cost Base (ACB) Report' },
+    { value: 'T1255',         label: 'T1255 – Disposition of Principal Residence' },
+  ],
+};
+
+const OTHER: DocGroup = {
+  label: 'Other',
+  options: [
+    { value: 'ForeignIncome',        label: 'Foreign Income / Assets (T1135)' },
+    { value: 'SocialAssistance',     label: 'Social Assistance / Welfare Statement' },
+    { value: 'WorkersComp',          label: 'Workers\u2019 Compensation Statement' },
+    { value: 'DisabilityTaxCredit',  label: 'Disability Tax Credit Certificate (T2201)' },
+    { value: 'CaregiverAmount',      label: 'Caregiver / Infirm Dependent Documents' },
+    { value: 'ID',                   label: 'Government ID / SIN Card' },
+    { value: 'Other',                label: 'Other Document' },
+  ],
+};
+
+function getDocGroups(province: string): DocGroup[] {
+  const groups: DocGroup[] = [FEDERAL_SLIPS];
+  if (province === 'QC') groups.push(QC_RL_SLIPS);
+  const provGroup = PROVINCE_SPECIFIC[province];
+  if (provGroup) groups.push(provGroup);
+  groups.push(CONTRIBUTIONS, DEDUCTIONS, SELF_EMPLOYMENT, RENTAL_CAPITAL, OTHER);
+  return groups;
+}
+
+// ─── Province labels ──────────────────────────────────────────────────────────
+const PROVINCE_NAMES: Record<string, string> = {
+  AB: 'Alberta', BC: 'British Columbia', MB: 'Manitoba', NB: 'New Brunswick',
+  NL: 'Newfoundland & Labrador', NS: 'Nova Scotia', NT: 'Northwest Territories',
+  NU: 'Nunavut', ON: 'Ontario', PE: 'Prince Edward Island', QC: 'Quebec',
+  SK: 'Saskatchewan', YT: 'Yukon',
+};
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function TaxYearClient() {
-  const params = useParams();
-  const router = useRouter();
-  const year = parseInt(params.year as string);
+  const params  = useParams();
+  const router  = useRouter();
+  const year    = parseInt(params.year as string);
 
   const [completeness, setCompleteness] = useState<any>(null);
-  const [uploading, setUploading] = useState(false);
+  const [uploading,    setUploading]    = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [docType, setDocType] = useState('T4');
+  const [docType,      setDocType]      = useState('T4');
+  const [province,     setProvince]     = useState('QC');
 
   const loadCompleteness = async () => {
     try {
       const res = await APIClient.getCompleteness(year);
       setCompleteness(res.data);
+      if (res.data.province) setProvince(res.data.province);
     } catch (error: any) {
       console.error('Load error:', error);
     }
@@ -28,13 +252,17 @@ export default function TaxYearClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year]);
 
+  // Reset docType to first option of new province when province changes
+  useEffect(() => {
+    const groups = getDocGroups(province);
+    if (groups[0]?.options[0]) setDocType(groups[0].options[0].value);
+  }, [province]);
+
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) return;
-
     setUploading(true);
     try {
-      // Step 1: get signed URL
       const presignRes = await APIClient.presignUpload(year, {
         docType,
         filename: selectedFile.name,
@@ -42,14 +270,9 @@ export default function TaxYearClient() {
         fileSize: selectedFile.size,
       });
       const { signedUrl, documentId } = presignRes.data;
-
-      // Step 2: upload directly to Supabase (no API Gateway)
       const uploadRes = await APIClient.uploadToSignedUrl(signedUrl, selectedFile);
       if (!uploadRes.ok) throw new Error(`Storage upload failed: ${uploadRes.status}`);
-
-      // Step 3: confirm + trigger processing
       await APIClient.confirmUpload(documentId);
-
       setSelectedFile(null);
       alert(`${docType} uploaded successfully!`);
       loadCompleteness();
@@ -62,19 +285,21 @@ export default function TaxYearClient() {
 
   const hasProfile = completeness?.taxYear?.profile && (
     completeness.taxYear.profile.has_employment_income ||
-    completeness.taxYear.profile.has_self_employment ||
+    completeness.taxYear.profile.has_self_employment   ||
     completeness.taxYear.profile.has_investment_income ||
-    completeness.taxYear.profile.has_rental_income ||
-    completeness.taxYear.profile.has_rrsp_contributions ||
-    completeness.taxYear.profile.has_childcare_expenses ||
-    completeness.taxYear.profile.has_tuition ||
-    completeness.taxYear.profile.has_medical_expenses ||
-    completeness.taxYear.profile.has_donations ||
-    completeness.taxYear.profile.claims_home_office ||
-    completeness.taxYear.profile.has_moving_expenses ||
-    completeness.taxYear.profile.is_married ||
+    completeness.taxYear.profile.has_rental_income     ||
+    completeness.taxYear.profile.has_rrsp_contributions||
+    completeness.taxYear.profile.has_childcare_expenses||
+    completeness.taxYear.profile.has_tuition           ||
+    completeness.taxYear.profile.has_medical_expenses  ||
+    completeness.taxYear.profile.has_donations         ||
+    completeness.taxYear.profile.claims_home_office    ||
+    completeness.taxYear.profile.has_moving_expenses   ||
+    completeness.taxYear.profile.is_married            ||
     completeness.taxYear.profile.has_dependents
   );
+
+  const docGroups = getDocGroups(province);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -102,6 +327,14 @@ export default function TaxYearClient() {
 
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h2 className="text-xl font-bold mb-4">Upload Documents</h2>
+
+          {/* Province indicator */}
+          <div className="flex items-center gap-2 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+            <span className="text-sm text-blue-700">
+              📍 Showing document types for <strong>{PROVINCE_NAMES[province] ?? province}</strong>
+            </span>
+          </div>
+
           <form onSubmit={handleUpload} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">Document Type</label>
@@ -109,78 +342,18 @@ export default function TaxYearClient() {
                 value={docType}
                 onChange={(e) => setDocType(e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg"
+                size={1}
               >
-                <optgroup label="── Federal Slips ──">
-                  <option value="T4">T4 – Employment Income</option>
-                  <option value="T4A">T4A – Pension / Retirement / Other Income</option>
-                  <option value="T4A_P">T4A(P) – CPP / QPP Benefits</option>
-                  <option value="T4A_OAS">T4A(OAS) – Old Age Security</option>
-                  <option value="T4E">T4E – Employment Insurance (EI)</option>
-                  <option value="T4RSP">T4RSP – RRSP Income</option>
-                  <option value="T4RIF">T4RIF – RRIF Income</option>
-                  <option value="T5">T5 – Investment Income (Dividends / Interest)</option>
-                  <option value="T3">T3 – Trust / Mutual Fund Income</option>
-                  <option value="T5008">T5008 – Securities Transactions</option>
-                  <option value="T5013">T5013 – Partnership Income</option>
-                  <option value="T2202">T2202 – Tuition Certificate</option>
-                  <option value="T1007">T1007 – Workers Compensation</option>
-                </optgroup>
-                <optgroup label="── Quebec RL Slips ──">
-                  <option value="RL1">RL-1 – Employment &amp; Other Income (Quebec)</option>
-                  <option value="RL2">RL-2 – Retirement / Pension Income</option>
-                  <option value="RL3">RL-3 – Investment Income</option>
-                  <option value="RL5">RL-5 – Benefits &amp; Allocations</option>
-                  <option value="RL6">RL-6 – Dividends from Quebec Companies</option>
-                  <option value="RL8">RL-8 – Tuition (Quebec)</option>
-                  <option value="RL10">RL-10 – EI &amp; QPIP Benefits</option>
-                  <option value="RL11">RL-11 – RRSP / RRIF Income</option>
-                  <option value="RL15">RL-15 – Professional / Self-Employment Income</option>
-                  <option value="RL16">RL-16 – Trust Income</option>
-                  <option value="RL22">RL-22 – Employee Benefits</option>
-                  <option value="RL24">RL-24 – Childcare Assistance</option>
-                  <option value="RL25">RL-25 – Amounts Paid to Residents of Canada</option>
-                  <option value="RL31">RL-31 – Rental Housing</option>
-                </optgroup>
-                <optgroup label="── Contributions &amp; Receipts ──">
-                  <option value="RRSP">RRSP Contribution Receipt</option>
-                  <option value="TFSA">TFSA Contribution Receipt</option>
-                  <option value="FHSA">FHSA – First Home Savings Account</option>
-                  <option value="HBP">HBP – Home Buyers&apos; Plan Repayment</option>
-                  <option value="LLP">LLP – Lifelong Learning Plan Repayment</option>
-                </optgroup>
-                <optgroup label="── Deductions &amp; Credits ──">
-                  <option value="Medical">Medical Expenses Receipts</option>
-                  <option value="Donations">Charitable Donation Receipts</option>
-                  <option value="Childcare">Childcare Receipts (Daycare / Babysitter)</option>
-                  <option value="Tuition">Tuition Receipts / Student Fees</option>
-                  <option value="Moving">Moving Expense Receipts</option>
-                  <option value="HomeOffice">Home Office Expenses</option>
-                  <option value="Union">Union / Professional Dues</option>
-                  <option value="Tools">Tradesperson&apos;s Tools</option>
-                </optgroup>
-                <optgroup label="── Self-Employment &amp; Business ──">
-                  <option value="BusinessIncome">Business / Self-Employment Income Statement</option>
-                  <option value="BusinessExpenses">Business Expense Receipts</option>
-                  <option value="T2125">T2125 – Business &amp; Professional Activities</option>
-                  <option value="T2042">T2042 – Farming Income</option>
-                  <option value="GST_HST">GST / HST / QST Return</option>
-                </optgroup>
-                <optgroup label="── Rental &amp; Capital Gains ──">
-                  <option value="RentalIncome">Rental Income / Expense Summary</option>
-                  <option value="T776">T776 – Statement of Real Estate Rentals</option>
-                  <option value="CapitalGains">Capital Gains / Losses Statement</option>
-                  <option value="ACB">Adjusted Cost Base (ACB) Report</option>
-                </optgroup>
-                <optgroup label="── Other ──">
-                  <option value="ForeignIncome">Foreign Income / Assets (T1135)</option>
-                  <option value="SocialAssistance">Social Assistance / Welfare Statement</option>
-                  <option value="WorkersComp">Workers&apos; Compensation Statement</option>
-                  <option value="DisabilityTaxCredit">Disability Tax Credit Certificate (T2201)</option>
-                  <option value="ID">Government ID / SIN Card</option>
-                  <option value="Other">Other Document</option>
-                </optgroup>
+                {docGroups.map((group) => (
+                  <optgroup key={group.label} label={`── ${group.label} ──`}>
+                    {group.options.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </optgroup>
+                ))}
               </select>
             </div>
+
             <div>
               <label className="block text-sm font-medium mb-2">Select File</label>
               <input
@@ -190,6 +363,7 @@ export default function TaxYearClient() {
                 accept=".pdf,.jpg,.jpeg,.png"
               />
             </div>
+
             <button
               type="submit"
               disabled={!selectedFile || uploading}
@@ -212,7 +386,7 @@ export default function TaxYearClient() {
                 <div
                   className="bg-blue-600 h-2 rounded-full transition-all"
                   style={{ width: `${completeness.completenessScore}%` }}
-                ></div>
+                />
               </div>
             </div>
 
@@ -222,8 +396,20 @@ export default function TaxYearClient() {
                 <ul className="space-y-2">
                   {completeness.documents.map((doc: any, idx: number) => (
                     <li key={idx} className="flex items-center justify-between bg-gray-50 p-3 rounded">
-                      <span className="text-sm">{doc.docType} - {doc.filename}</span>
-                      <span className="text-xs text-gray-500">{new Date(doc.uploadedAt).toLocaleDateString()}</span>
+                      <div>
+                        <span className="text-sm font-medium">{doc.docType}</span>
+                        <span className="text-sm text-gray-500 ml-2">– {doc.filename}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          doc.reviewStatus === 'approved' ? 'bg-green-100 text-green-700' :
+                          doc.reviewStatus === 'rejected' ? 'bg-red-100 text-red-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {doc.reviewStatus}
+                        </span>
+                        <span className="text-xs text-gray-400">{new Date(doc.uploadedAt).toLocaleDateString()}</span>
+                      </div>
                     </li>
                   ))}
                 </ul>

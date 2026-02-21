@@ -63,6 +63,11 @@ export const getTaxYearCompleteness = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid year' });
     }
 
+    const client = await prisma.client.findUnique({
+      where: { id: clientId },
+      select: { province: true },
+    });
+
     let taxYear = await prisma.taxYear.findFirst({
       where: { clientId, year },
       include: { documents: true, validations: true },
@@ -77,6 +82,7 @@ export const getTaxYearCompleteness = async (req: Request, res: Response) => {
 
     return res.json({
       taxYear,
+      province: client?.province || 'QC',
       completenessScore: taxYear.completenessScore,
       documents: taxYear.documents.map((d) => ({
         id: d.id,
