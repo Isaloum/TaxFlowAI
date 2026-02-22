@@ -85,22 +85,45 @@ Every upload goes through:
 
 ---
 
+## ✅ Session 3 — Completed (commit 03a7523)
+
+### Accountant Sees Scan Results (fixed + upgraded)
+- **Bug fixed**: documents weren't showing at all — backend returns `taxYear.documents`, not `documents` at root
+- Each doc now shows: scan badge (⏳/✓/⚠️/❌), extracted taxpayer name, tax year, employer/payer, key dollar amounts
+- Orange row highlight + full mismatch description when AI detects wrong doc type or wrong year
+- Rejection reason shown inline on each rejected doc
+- Summary bar shows "X docs need attention" pill
+
+### Client Rejection Alert
+- Red banner at top of client dashboard when any doc is rejected
+- Tells client to click the year to fix it
+
+### Submit for Review Button
+- Appears on tax year page once profile is done + at least 1 doc uploaded
+- Sets `taxYear.status = 'submitted'`, stamps `submittedAt`
+- Button disabled while docs are still scanning
+- Replaced by blue "File submitted" confirmation after submission
+- Backend: `POST /api/client/tax-years/:year/submit`
+
+---
+
 ## 🔜 Next Steps (Priority Order)
 
-### 1. Accountant Document Review UI ← **most critical**
-Accountants need a UI to approve or reject each document with notes.
-The DB already has `reviewStatus`, `rejectionReason`, `reviewedBy`, `reviewedAt`.
-Just needs a frontend panel.
+### 1. Accountant "Mark as Complete" + client final notification
+Accountant should be able to mark a tax year as `completed` (all docs approved, return filed).
+Client sees a green "Your return is complete" banner.
 
-### 2. Client Notification on Review
-When accountant approves/rejects, client should see a clear alert on their dashboard.
+### 2. Email notification when accountant approves/rejects
+Currently `NotificationService.notifyDocumentRejected` exists but may not send real emails.
+Wire it to SES so client gets an email with the rejection reason.
 
-### 3. "Submit for Review" Button
-Client explicitly marks their file as ready → accountant gets notified.
+### 3. Accountant notes / comments on a tax year
+Free-text note field on the accountant client page (e.g. "missing T4 from employer #2").
+Stored in `TaxYear.notes` (needs migration).
 
-### 4. Accountant Sees Scan Results
-Accountant client detail page should show OCR-extracted data (name, year, key fields)
-alongside any mismatch warnings — so accountant knows at a glance if a doc is valid.
+### 4. Duplicate RL10 fix in QC_RL_SLIPS dropdown
+Linter introduced a duplicate `{ value: 'RL10' }` entry in `TaxYearClient.tsx` — two different
+labels both mapped to `RL10`. Rename one to the correct value.
 
 ---
 
