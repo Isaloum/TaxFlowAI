@@ -14,7 +14,7 @@ export class DocumentController {
     try {
       const clientId = req.user!.sub;
       const year = parseInt(req.params.year);
-      const { docType, filename, mimeType, fileSize } = req.body;
+      const { docType, filename, mimeType, fileSize, docSubtype } = req.body;
 
       if (!docType || !filename || !mimeType) {
         return res.status(400).json({ error: 'docType, filename and mimeType are required' });
@@ -50,6 +50,7 @@ export class DocumentController {
         data: {
           taxYearId: taxYear.id,
           docType,
+          docSubtype: docSubtype || null,   // e.g. "McDonald's" for T4, "Uber" for gig
           originalFilename: filename,
           fileUrl: publicUrl,
           fileSizeBytes: fileSize || null,

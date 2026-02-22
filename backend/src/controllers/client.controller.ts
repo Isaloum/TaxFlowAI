@@ -42,6 +42,7 @@ export const getProfile = async (req: Request, res: Response) => {
               select: {
                 id: true,
                 docType: true,
+                docSubtype: true,
                 originalFilename: true,
                 uploadedAt: true,
                 reviewStatus: true,
@@ -104,6 +105,7 @@ export const getTaxYearCompleteness = async (req: Request, res: Response) => {
         return {
           id:                   d.id,
           docType:              d.docType,
+          docSubtype:           d.docSubtype,
           filename:             d.originalFilename,
           uploadedAt:           d.uploadedAt,
           reviewStatus:         d.reviewStatus,

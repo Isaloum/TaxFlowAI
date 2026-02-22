@@ -340,6 +340,34 @@ function buildChecklist(profile: any, province: string, uploadedTypes: Set<strin
   return items;
 }
 
+
+// Doc types that can have multiple uploads (multiple employers, platforms, etc.)
+const MULTI_UPLOAD_TYPES = new Set([
+  'T4','T4A','T5','T5008','T4FHSA','RC210',
+  'RL1','RL2','RL3','RL16','RL18','RL24','RL25','RL32',
+  'GigPlatformReport','VehicleLog',
+]);
+
+// Placeholder text for the label field per doc type
+const LABEL_PLACEHOLDER: Record<string, string> = {
+  T4: "Employer name (e.g. McDonald's)",
+  T4A: 'Payer name (e.g. Pension plan name)',
+  T5: 'Institution (e.g. RBC, Desjardins)',
+  T5008: 'Institution name',
+  T4FHSA: 'Institution name',
+  RC210: 'Institution name',
+  RL1: "Employer name (e.g. McDonald's)",
+  RL2: 'Payer name',
+  RL3: 'Institution name',
+  RL16: 'Trust / fund name',
+  RL18: 'Institution name',
+  RL24: 'Childcare provider name',
+  RL25: 'Landlord / co-op name',
+  RL32: 'Institution name',
+  GigPlatformReport: 'Platform name (e.g. Uber, Lyft, DoorDash)',
+  VehicleLog: 'Vehicle (e.g. Toyota Corolla 2019)',
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function TaxYearClient() {
   const params  = useParams();
@@ -353,6 +381,7 @@ export default function TaxYearClient() {
   const [province,     setProvince]     = useState('QC');
   const [toast,        setToast]        = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [submitting,   setSubmitting]   = useState(false);
+  const [docLabel,     setDocLabel]     = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
@@ -417,12 +446,14 @@ export default function TaxYearClient() {
         filename: selectedFile.name,
         mimeType: selectedFile.type,
         fileSize: selectedFile.size,
+        docSubtype: docLabel.trim() || undefined,
       });
       const { signedUrl, documentId } = presignRes.data;
       const uploadRes = await APIClient.uploadToSignedUrl(signedUrl, selectedFile);
       if (!uploadRes.ok) throw new Error(`Storage upload failed: ${uploadRes.status}`);
       await APIClient.confirmUpload(documentId);
       setSelectedFile(null);
+      setDocLabel('');
       if (fileInputRef.current) fileInputRef.current.value = '';
       showToast(`${docType} uploaded successfully!`);
       loadCompleteness();
@@ -571,6 +602,23 @@ export default function TaxYearClient() {
                 </select>
               </div>
 
+
+              {/* Label field — only for multi-upload doc types */}
+              {MULTI_UPLOAD_TYPES.has(docType) && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Label <span className="text-gray-400 font-normal">(optional — helps tell copies apart)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={docLabel}
+                    onChange={(e) => setDocLabel(e.target.value)}
+                    placeholder={LABEL_PLACEHOLDER[docType] || 'e.g. name or description'}
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                  />
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium mb-2">Select File</label>
                 <input
@@ -616,82 +664,91 @@ export default function TaxYearClient() {
             {checklist.length > 0 ? (
               <ul className="space-y-2 mb-4">
                 {checklist.map((item, idx) => {
-                  const uploaded  = uploadedDocs.find((d: any) => d.docType === item.docType);
-                  const revStatus = uploaded?.reviewStatus ?? null;
-                  const scanStatus = uploaded?.extractionStatus ?? null;
-                  const hasIssue  = uploaded?.typeMismatch || uploaded?.yearMismatch || scanStatus === 'failed';
+                  // All uploaded copies of this doc type
+                  const uploadedList = uploadedDocs.filter((d: any) => d.docType === item.docType);
+                  const isMulti = MULTI_UPLOAD_TYPES.has(item.docType);
+                  const anyIssue = uploadedList.some((d: any) => d.typeMismatch || d.yearMismatch || d.extractionStatus === 'failed');
+                  const anyRejected = uploadedList.some((d: any) => d.reviewStatus === 'rejected');
 
-                  // Row background
+                  // Row background (based on worst state)
                   let rowBg = 'bg-gray-50 border-gray-100';
                   if (item.uploaded) {
-                    if (hasIssue)            rowBg = 'bg-orange-50 border-orange-200';
-                    else if (revStatus === 'rejected') rowBg = 'bg-red-50 border-red-200';
-                    else                     rowBg = 'bg-green-50 border-green-100';
+                    if (anyIssue)        rowBg = 'bg-orange-50 border-orange-200';
+                    else if (anyRejected) rowBg = 'bg-red-50 border-red-200';
+                    else                 rowBg = 'bg-green-50 border-green-100';
                   }
 
                   return (
-                    <li key={idx} className={`flex items-start justify-between p-3 rounded-lg border gap-3 ${rowBg}`}>
-                      {/* Left: icon + label */}
-                      <div className="flex items-start gap-3 min-w-0">
-                        {item.uploaded ? (
-                          hasIssue ? (
-                            <span className="text-orange-500 text-base flex-shrink-0 mt-0.5">⚠️</span>
+                    <li key={idx} className={`p-3 rounded-lg border ${rowBg}`}>
+                      {/* ── Header row ── */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 min-w-0">
+                          {item.uploaded ? (
+                            anyIssue ? (
+                              <span className="text-orange-500 text-base flex-shrink-0 mt-0.5">⚠️</span>
+                            ) : (
+                              <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                            )
                           ) : (
-                            <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                          )
-                        ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0 mt-0.5" />
-                        )}
-                        <div className="min-w-0">
-                          <p className={`text-sm font-medium ${hasIssue ? 'text-orange-800' : item.uploaded ? 'text-green-800' : 'text-gray-700'}`}>
+                            <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0 mt-0.5" />
+                          )}
+                          <p className={`text-sm font-medium ${anyIssue ? 'text-orange-800' : item.uploaded ? 'text-green-800' : 'text-gray-700'}`}>
                             {item.label}
+                            {uploadedList.length > 1 && (
+                              <span className="ml-2 text-[11px] font-normal bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
+                                {uploadedList.length} uploaded
+                              </span>
+                            )}
                           </p>
-                          {uploaded && (
-                            <p className="text-xs text-gray-400 truncate">
-                              {uploaded.filename} · {new Date(uploaded.uploadedAt).toLocaleDateString()}
-                              {uploaded.taxpayerName && ` · ${uploaded.taxpayerName}`}
-                            </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          {!item.uploaded && (
+                            <span className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Missing</span>
+                          )}
+                          {item.uploaded && isMulti && (
+                            <button
+                              onClick={() => { setDocType(item.docType); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                              className="text-[11px] text-blue-600 hover:underline"
+                            >
+                              + Add another
+                            </button>
                           )}
                         </div>
                       </div>
 
-                      {/* Right: badges stacked */}
-                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        {/* Scan / verification badges — shown first if issues */}
-                        {scanStatus === 'pending' || scanStatus === 'processing' ? (
-                          <span className="text-[11px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full animate-pulse">⏳ Scanning…</span>
-                        ) : scanStatus === 'failed' ? (
-                          <span className="text-[11px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full">❌ Unreadable</span>
-                        ) : uploaded?.typeMismatch ? (
-                          <span className="text-[11px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">
-                            ⚠️ Wrong doc — AI sees {uploaded.extractedDocType}
-                          </span>
-                        ) : uploaded?.yearMismatch ? (
-                          <span className="text-[11px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">
-                            ⚠️ Wrong year — doc shows {uploaded.extractedYear}
-                          </span>
-                        ) : null}
-
-                        {/* Review status badge */}
-                        {revStatus === 'approved' && (
-                          <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">✓ Approved</span>
-                        )}
-                        {revStatus === 'rejected' && (
-                          <span className="text-[11px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">✗ Needs correction</span>
-                        )}
-                        {revStatus === 'pending' && !hasIssue && scanStatus === 'success' && (
-                          <span className="text-[11px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-medium">✓ Verified</span>
-                        )}
-                        {revStatus === 'pending' && !hasIssue && scanStatus !== 'success' && !scanStatus && (
-                          <span className="text-[11px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-medium">✓ Received</span>
-                        )}
-
-                        {!item.uploaded && (
-                          <span className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Missing</span>
-                        )}
-                      </div>
+                      {/* ── Sub-rows: one per uploaded copy ── */}
+                      {uploadedList.length > 0 && (
+                        <ul className="mt-2 space-y-1 pl-8">
+                          {uploadedList.map((doc: any) => {
+                            const scan = doc.extractionStatus;
+                            const hasIssue = doc.typeMismatch || doc.yearMismatch || scan === 'failed';
+                            return (
+                              <li key={doc.id} className="flex items-center justify-between gap-2">
+                                <span className="text-xs text-gray-500 truncate">
+                                  {doc.docSubtype ? <strong className="text-gray-700">{doc.docSubtype}</strong> : doc.filename ?? doc.docType}
+                                  {doc.docSubtype && <span className="text-gray-400"> — {doc.filename}</span>}
+                                </span>
+                                <div className="flex items-center gap-1 flex-shrink-0">
+                                  {(scan === 'pending' || scan === 'processing') && (
+                                    <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full animate-pulse">⏳ Scanning…</span>
+                                  )}
+                                  {scan === 'failed' && <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">❌ Unreadable</span>}
+                                  {doc.typeMismatch && <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full">⚠️ Wrong doc</span>}
+                                  {doc.yearMismatch && !doc.typeMismatch && <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full">⚠️ Wrong year</span>}
+                                  {!hasIssue && scan === 'success' && <span className="text-[10px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded-full">✓ Verified</span>}
+                                  {doc.reviewStatus === 'approved' && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">✓ Approved</span>}
+                                  {doc.reviewStatus === 'rejected' && <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">✗ Rejected</span>}
+                                  {doc.reviewStatus === 'pending' && !hasIssue && scan !== 'pending' && scan !== 'processing' && (
+                                    <span className="text-[10px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded-full">✓ Received</span>
+                                  )}
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
                     </li>
                   );
                 })}

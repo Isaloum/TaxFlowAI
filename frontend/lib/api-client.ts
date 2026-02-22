@@ -41,7 +41,7 @@ export class APIClient {
 
   // Step 1: get signed URL from Lambda (JSON only — no binary through API Gateway)
   static async presignUpload(year: number, meta: {
-    docType: string; filename: string; mimeType: string; fileSize: number;
+    docType: string; filename: string; mimeType: string; fileSize: number; docSubtype?: string;
   }) {
     return api.post(`/documents/tax-years/${year}/presign`, meta);
   }
