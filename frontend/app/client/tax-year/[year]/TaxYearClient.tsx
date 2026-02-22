@@ -340,107 +340,149 @@ export default function TaxYearClient() {
       </nav>
 
       <div className="container mx-auto px-6 max-w-4xl">
-        {!hasProfile && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <p className="text-yellow-800 font-medium">Please complete your tax profile first</p>
+
+        {/* ── STEP 1: Profile required ─────────────────────────────────── */}
+        {!hasProfile ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-50 rounded-2xl mb-4">
+              <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Step 1 — Complete your tax profile</h2>
+            <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto">
+              Tell us about your income sources and deductions so we can show you exactly which documents to upload.
+            </p>
             <button
               onClick={() => router.push(`/client/tax-year/${year}/profile`)}
-              className="mt-2 bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
+              className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition"
             >
-              Complete Profile
+              Start profile
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </button>
+          </div>
+
+        ) : (
+          /* ── STEP 2: Upload documents ──────────────────────────────────── */
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Step 2 — Upload Documents</h2>
+              <button
+                onClick={() => router.push(`/client/tax-year/${year}/profile`)}
+                className="text-xs text-blue-600 hover:underline"
+              >
+                Edit profile
+              </button>
+            </div>
+
+            {/* Province indicator */}
+            <div className="flex items-center gap-2 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+              <span className="text-sm text-blue-700">
+                📍 Showing document types for <strong>{PROVINCE_NAMES[province] ?? province}</strong>
+              </span>
+            </div>
+
+            <form onSubmit={handleUpload} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Document Type</label>
+                <select
+                  value={docType}
+                  onChange={(e) => setDocType(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  size={1}
+                >
+                  {docGroups.map((group) => (
+                    <optgroup key={group.label} label={`── ${group.label} ──`}>
+                      {group.options.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Select File</label>
+                <input
+                  type="file"
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={!selectedFile || uploading}
+                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              >
+                {uploading ? 'Uploading...' : 'Upload Document'}
+              </button>
+            </form>
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">Upload Documents</h2>
-
-          {/* Province indicator */}
-          <div className="flex items-center gap-2 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-            <span className="text-sm text-blue-700">
-              📍 Showing document types for <strong>{PROVINCE_NAMES[province] ?? province}</strong>
-            </span>
-          </div>
-
-          <form onSubmit={handleUpload} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Document Type</label>
-              <select
-                value={docType}
-                onChange={(e) => setDocType(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg"
-                size={1}
-              >
-                {docGroups.map((group) => (
-                  <optgroup key={group.label} label={`── ${group.label} ──`}>
-                    {group.options.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Select File</label>
-              <input
-                type="file"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                className="w-full px-3 py-2 border rounded-lg"
-                accept=".pdf,.jpg,.jpeg,.png"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={!selectedFile || uploading}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-            >
-              {uploading ? 'Uploading...' : 'Upload Document'}
-            </button>
-          </form>
-        </div>
-
+        {/* ── Uploaded documents list ─────────────────────────────────── */}
         {completeness && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold mb-4">Tax Return Status</h2>
-            <div className="mb-4">
-              <div className="flex justify-between mb-2">
-                <span className="font-medium">Completeness</span>
-                <span className="text-blue-600 font-bold">{completeness.completenessScore}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full transition-all"
-                  style={{ width: `${completeness.completenessScore}%` }}
-                />
-              </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Documents</h2>
+              <span className="text-sm font-semibold text-blue-600">{completeness.completenessScore}% complete</span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-2 mb-5">
+              <div className="bg-blue-600 h-2 rounded-full transition-all" style={{ width: `${completeness.completenessScore}%` }} />
             </div>
 
-            {completeness.documents && completeness.documents.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2">Uploaded Documents ({completeness.documents.length})</h3>
-                <ul className="space-y-2">
-                  {completeness.documents.map((doc: any, idx: number) => (
-                    <li key={idx} className="flex items-center justify-between bg-gray-50 p-3 rounded">
-                      <div>
-                        <span className="text-sm font-medium">{doc.docType}</span>
-                        <span className="text-sm text-gray-500 ml-2">– {doc.filename}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          doc.reviewStatus === 'approved' ? 'bg-green-100 text-green-700' :
-                          doc.reviewStatus === 'rejected' ? 'bg-red-100 text-red-700' :
-                          'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {doc.reviewStatus}
+            {completeness.documents && completeness.documents.length > 0 ? (
+              <ul className="space-y-2">
+                {completeness.documents.map((doc: any, idx: number) => (
+                  <li key={idx} className="flex items-center justify-between bg-gray-50 border border-gray-100 p-3 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      {/* Status icon */}
+                      {doc.reviewStatus === 'approved' ? (
+                        <span className="text-green-500">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
                         </span>
-                        <span className="text-xs text-gray-400">{new Date(doc.uploadedAt).toLocaleDateString()}</span>
+                      ) : doc.reviewStatus === 'rejected' ? (
+                        <span className="text-red-500">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          </svg>
+                        </span>
+                      ) : (
+                        <span className="text-green-400">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </span>
+                      )}
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{doc.docType}</p>
+                        <p className="text-xs text-gray-400">{doc.filename}</p>
                       </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
+                        doc.reviewStatus === 'approved' ? 'bg-green-100 text-green-700' :
+                        doc.reviewStatus === 'rejected' ? 'bg-red-100 text-red-700' :
+                        'bg-green-50 text-green-600'
+                      }`}>
+                        {doc.reviewStatus === 'approved' ? '✓ Approved' :
+                         doc.reviewStatus === 'rejected' ? '✗ Needs correction' :
+                         '✓ Received'}
+                      </span>
+                      <span className="text-xs text-gray-400">{new Date(doc.uploadedAt).toLocaleDateString()}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-400 text-center py-6">No documents uploaded yet.</p>
             )}
           </div>
         )}

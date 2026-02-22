@@ -27,6 +27,7 @@ export default function ProfileClient() {
   });
 
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   const loadProfile = async () => {
     try {
@@ -51,12 +52,12 @@ export default function ProfileClient() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setSaveError('');
     try {
       await APIClient.updateProfile(year, profile);
-      alert(`Tax profile for ${year} saved successfully!`);
       router.push(`/client/tax-year/${year}`);
     } catch (error: any) {
-      alert(`Save failed: ${error.message}`);
+      setSaveError(error.response?.data?.error || 'Save failed. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -151,8 +152,13 @@ export default function ProfileClient() {
             </div>
           </fieldset>
 
+          {saveError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-2">
+              {saveError}
+            </div>
+          )}
           <button type="submit" disabled={saving} className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50">
-            {saving ? 'Saving...' : 'Save & Continue'}
+            {saving ? 'Saving...' : 'Save & Continue →'}
           </button>
         </form>
       </div>

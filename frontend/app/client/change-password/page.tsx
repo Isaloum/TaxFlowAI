@@ -44,7 +44,8 @@ export default function ChangePasswordPage() {
         u.isFirstLogin = false;
         localStorage.setItem('auth_user', JSON.stringify(u));
       }
-      router.push('/client/dashboard');
+      const year = new Date().getFullYear();
+      router.push(`/client/tax-year/${year}/profile`);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to change password. Please try again.');
     } finally {
