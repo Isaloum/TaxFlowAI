@@ -66,10 +66,11 @@ jobs:
 
       - name: Sync database schema
         timeout-minutes: 2
+        continue-on-error: true
         working-directory: backend
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npx prisma db push --skip-generate --accept-data-loss || echo "⚠️ Schema sync skipped (non-fatal)"
+        run: npx prisma db push --skip-generate --accept-data-loss
 
       - name: Build SAM application
         run: |
