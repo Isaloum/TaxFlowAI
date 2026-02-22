@@ -26,6 +26,9 @@ const FEDERAL_SLIPS: DocGroup = {
     { value: 'T2202',    label: 'T2202 – Tuition Certificate' },
     { value: 'T1007',    label: 'T1007 – Workers Compensation Benefits' },
     { value: 'T4PS',     label: 'T4PS – Employee Profit Sharing' },
+    { value: 'T5007',    label: 'T5007 – Workers Compensation / Social Assistance' },
+    { value: 'T4FHSA',  label: 'T4FHSA – First Home Savings Account' },
+    { value: 'RC210',    label: 'RC210 – Canada Workers Benefit Advance Payments' },
   ],
 };
 
@@ -45,7 +48,11 @@ const QC_RL_SLIPS: DocGroup = {
     { value: 'RL22', label: 'RL-22 – Employee Benefits' },
     { value: 'RL24', label: 'RL-24 – Childcare Assistance' },
     { value: 'RL25', label: 'RL-25 – Amounts Paid to Residents of Canada' },
-    { value: 'RL31', label: 'RL-31 – Rental Housing' },
+    { value: 'RL10', label: 'RL-10 – RRSP / FTQ / CSN Contributions' },
+    { value: 'RL18', label: 'RL-18 – Securities Transactions' },
+    { value: 'RL19', label: 'RL-19 – Advance Payments (RL-1 / RQAP)' },
+    { value: 'RL31', label: 'RL-31 – Rental Housing (for Solidarity Credit)' },
+    { value: 'RL32', label: 'RL-32 – First Home Savings Account (FHSA)' },
     { value: 'SolidarityCredit', label: 'Solidarity Tax Credit Statement (Revenu Québec)' },
   ],
 };
@@ -168,7 +175,9 @@ const DEDUCTIONS: DocGroup = {
     { value: 'Union',        label: 'Union / Professional Dues' },
     { value: 'Tools',        label: 'Tradesperson\u2019s Tools Receipts' },
     { value: 'Clergy',       label: 'Clergy Residence Deduction' },
-    { value: 'AdoptionExp',  label: 'Adoption Expense Receipts' },
+    { value: 'AdoptionExp',        label: 'Adoption Expense Receipts' },
+    { value: 'StudentLoanInterest', label: 'Student Loan Interest Certificate' },
+    { value: 'ChildrenActivities', label: "Children's Activity / Sports Receipts" },
   ],
 };
 
@@ -181,6 +190,8 @@ const SELF_EMPLOYMENT: DocGroup = {
     { value: 'T2042',            label: 'T2042 – Farming Income' },
     { value: 'T2121',            label: 'T2121 – Fishing Income' },
     { value: 'GST_HST',          label: 'GST / HST / QST Return' },
+    { value: 'VehicleLog',       label: 'Vehicle Expense Log / Mileage Log' },
+    { value: 'GigPlatformReport', label: 'Gig Platform Annual Report (Uber, DoorDash, Airbnb…)' },
   ],
 };
 
@@ -203,6 +214,7 @@ const OTHER: DocGroup = {
     { value: 'WorkersComp',          label: 'Workers\u2019 Compensation Statement' },
     { value: 'DisabilityTaxCredit',  label: 'Disability Tax Credit Certificate (T2201)' },
     { value: 'CaregiverAmount',      label: 'Caregiver / Infirm Dependent Documents' },
+    { value: 'NoticeOfAssessment',   label: 'Notice of Assessment (last year\'s NOA)' },
     { value: 'ID',                   label: 'Government ID / SIN Card' },
     { value: 'Other',                label: 'Other Document' },
   ],
@@ -229,33 +241,91 @@ const PROVINCE_NAMES: Record<string, string> = {
 type CheckItem = { docType: string; label: string; provinces?: string[] };
 
 const PROFILE_DOCS: Record<string, CheckItem[]> = {
-  has_employment_income:  [
+  // ── Income ──────────────────────────────────────────────────────────────────
+  has_employment_income: [
     { docType: 'T4',  label: 'T4 – Employment Income' },
-    { docType: 'RL1', label: 'RL-1 – Employment Income', provinces: ['QC'] },
+    { docType: 'RL1', label: 'RL-1 – Employment & Other Income', provinces: ['QC'] },
   ],
   has_self_employment: [
-    { docType: 'BusinessIncome', label: 'Business Income Summary' },
-    { docType: 'RL15', label: 'RL-15 – Self-Employment Income', provinces: ['QC'] },
+    { docType: 'BusinessIncome',   label: 'Business / Self-Employment Income Summary' },
+    { docType: 'BusinessExpenses', label: 'Business Expense Receipts' },
+    { docType: 'RL15', label: 'RL-15 – Professional / Self-Employment Income', provinces: ['QC'] },
+  ],
+  has_gig_income: [
+    { docType: 'GigPlatformReport', label: 'Gig Platform Annual Report (Uber, DoorDash, Airbnb…)' },
   ],
   has_investment_income: [
-    { docType: 'T5',  label: 'T5 – Investment Income' },
+    { docType: 'T5',  label: 'T5 – Investment Income (Dividends / Interest)' },
     { docType: 'T3',  label: 'T3 – Trust / Mutual Fund Income' },
     { docType: 'RL3', label: 'RL-3 – Investment Income', provinces: ['QC'] },
   ],
-  has_rental_income:       [{ docType: 'RentalIncome',     label: 'Rental Income & Expense Statement' }],
-  has_rrsp_contributions:  [{ docType: 'RRSP_Receipt',     label: 'RRSP Contribution Receipt' }],
-  has_childcare_expenses:  [
-    { docType: 'ChildcareReceipts', label: 'Childcare Receipts' },
-    { docType: 'RL24', label: 'RL-24 – Childcare Assistance', provinces: ['QC'] },
+  has_securities_transactions: [
+    { docType: 'T5008', label: 'T5008 – Securities Transactions' },
+    { docType: 'RL18',  label: 'RL-18 – Securities Transactions', provinces: ['QC'] },
+  ],
+  has_rental_income: [
+    { docType: 'RentalIncome', label: 'Rental Income & Expense Summary' },
+  ],
+  has_retirement_income: [
+    { docType: 'T4A_OAS', label: 'T4A(OAS) – Old Age Security' },
+    { docType: 'T4A_P',   label: 'T4A(P) – CPP / QPP Benefits' },
+    { docType: 'T4A',     label: 'T4A – Pension / Annuity / Other Income' },
+    { docType: 'T4RIF',   label: 'T4RIF – RRIF Income' },
+    { docType: 'T4RSP',   label: 'T4RSP – RRSP Income (if withdrawn)' },
+    { docType: 'RL2',     label: 'RL-2 – Retirement / Pension Income', provinces: ['QC'] },
+  ],
+  has_ei_rqap: [
+    { docType: 'T4E', label: 'T4E – Employment Insurance (EI)' },
+    { docType: 'RL6', label: 'RL-6 – EI / RQAP / QPIP Benefits', provinces: ['QC'] },
+  ],
+  has_social_assistance: [
+    { docType: 'T5007', label: 'T5007 – Workers Compensation / Social Assistance' },
+    { docType: 'RL5',   label: 'RL-5 – CNESST / Social Assistance Benefits', provinces: ['QC'] },
+  ],
+  // ── Savings & Plans ─────────────────────────────────────────────────────────
+  has_rrsp_contributions: [
+    { docType: 'RRSP',  label: 'RRSP Contribution Receipt' },
+    { docType: 'RL10',  label: 'RL-10 – RRSP / FTQ / CSN Contributions', provinces: ['QC'] },
+  ],
+  has_fhsa: [
+    { docType: 'T4FHSA', label: 'T4FHSA – First Home Savings Account' },
+    { docType: 'RL32',   label: 'RL-32 – FHSA (Quebec)', provinces: ['QC'] },
+  ],
+  // ── Deductions & Credits ────────────────────────────────────────────────────
+  has_childcare_expenses: [
+    { docType: 'Childcare', label: 'Childcare Receipts (Daycare / Babysitter)' },
+    { docType: 'RL24',      label: 'RL-24 – Childcare Assistance', provinces: ['QC'] },
   ],
   has_tuition: [
     { docType: 'T2202', label: 'T2202 – Tuition Certificate' },
-    { docType: 'RL8',   label: 'RL-8 – Tuition (Quebec)',     provinces: ['QC'] },
+    { docType: 'RL8',   label: 'RL-8 – Tuition (Quebec)', provinces: ['QC'] },
   ],
-  has_medical_expenses:    [{ docType: 'MedicalReceipts',   label: 'Medical / Dental Receipts' }],
-  has_donations:           [{ docType: 'DonationReceipt',   label: 'Charitable Donation Receipts' }],
-  claims_home_office:      [{ docType: 'HomeOfficeExpenses', label: 'Home Office Expense Records (T2200 / T777)' }],
-  has_moving_expenses:     [{ docType: 'MovingExpenses',    label: 'Moving Expense Receipts' }],
+  has_student_loans: [
+    { docType: 'StudentLoanInterest', label: 'Student Loan Interest Certificate' },
+  ],
+  has_medical_expenses: [
+    { docType: 'Medical', label: 'Medical / Dental / Vision Receipts' },
+  ],
+  has_donations: [
+    { docType: 'Donations', label: 'Charitable Donation Receipts' },
+  ],
+  claims_home_office: [
+    { docType: 'HomeOffice', label: 'Home Office Expenses — T2200 / TP-64.3 (employer-signed)' },
+  ],
+  has_moving_expenses: [
+    { docType: 'Moving', label: 'Moving Expense Receipts' },
+  ],
+  has_disability: [
+    { docType: 'DisabilityTaxCredit', label: 'T2201 – Disability Tax Credit Certificate' },
+  ],
+  // ── Living Situation ────────────────────────────────────────────────────────
+  is_tenant: [
+    { docType: 'RL31', label: 'RL-31 – Rental Housing (for QC Solidarity Credit)', provinces: ['QC'] },
+  ],
+  // ── Business / Vehicle ──────────────────────────────────────────────────────
+  has_vehicle_for_business: [
+    { docType: 'VehicleLog', label: 'Vehicle Expense Log / Mileage Log' },
+  ],
 };
 
 function buildChecklist(profile: any, province: string, uploadedTypes: Set<string>) {
@@ -336,29 +406,39 @@ export default function TaxYearClient() {
     }
   };
 
-  const hasProfile = completeness?.taxYear?.profile && (
-    completeness.taxYear.profile.has_employment_income ||
-    completeness.taxYear.profile.has_self_employment   ||
-    completeness.taxYear.profile.has_investment_income ||
-    completeness.taxYear.profile.has_rental_income     ||
-    completeness.taxYear.profile.has_rrsp_contributions||
-    completeness.taxYear.profile.has_childcare_expenses||
-    completeness.taxYear.profile.has_tuition           ||
-    completeness.taxYear.profile.has_medical_expenses  ||
-    completeness.taxYear.profile.has_donations         ||
-    completeness.taxYear.profile.claims_home_office    ||
-    completeness.taxYear.profile.has_moving_expenses   ||
-    completeness.taxYear.profile.is_married            ||
-    completeness.taxYear.profile.has_dependents
+  const p = completeness?.taxYear?.profile;
+  const hasProfile = p && (
+    p.has_employment_income       ||
+    p.has_self_employment         ||
+    p.has_gig_income              ||
+    p.has_investment_income       ||
+    p.has_securities_transactions ||
+    p.has_rental_income           ||
+    p.has_retirement_income       ||
+    p.has_ei_rqap                 ||
+    p.has_social_assistance       ||
+    p.has_rrsp_contributions      ||
+    p.has_fhsa                    ||
+    p.has_childcare_expenses      ||
+    p.has_tuition                 ||
+    p.has_student_loans           ||
+    p.has_medical_expenses        ||
+    p.has_donations               ||
+    p.claims_home_office          ||
+    p.has_moving_expenses         ||
+    p.has_disability              ||
+    p.is_tenant                   ||
+    p.has_vehicle_for_business    ||
+    p.is_married                  ||
+    p.has_dependents
   );
 
   const docGroups = getDocGroups(province);
 
   // Build required-doc checklist from profile + uploaded docs
-  const profile       = completeness?.taxYear?.profile;
   const uploadedDocs  = completeness?.documents ?? [];
   const uploadedTypes = new Set<string>(uploadedDocs.map((d: any) => d.docType));
-  const checklist     = buildChecklist(profile, province, uploadedTypes);
+  const checklist     = buildChecklist(p, province, uploadedTypes);
   const doneCount     = checklist.filter(i => i.uploaded).length;
   const totalCount    = checklist.length;
   const frontendScore = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
