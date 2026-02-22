@@ -4,6 +4,14 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { APIClient } from '@/lib/api-client';
 
+function formatPhone(raw?: string): string {
+  if (!raw) return '—';
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length === 10) return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+  if (digits.length === 11 && digits[0] === '1') return `+1 (${digits.slice(1,4)}) ${digits.slice(4,7)}-${digits.slice(7)}`;
+  return raw;
+}
+
 function ClientDetail() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -98,7 +106,7 @@ function ClientDetail() {
           <div className="bg-white rounded-lg shadow p-4 mb-6 flex gap-8 flex-wrap">
             <div><p className="text-xs text-gray-500">Email</p><p className="font-medium">{client.email}</p></div>
             <div><p className="text-xs text-gray-500">Province</p><p className="font-medium">{client.province}</p></div>
-            <div><p className="text-xs text-gray-500">Phone</p><p className="font-medium">{client.phone || '—'}</p></div>
+            <div><p className="text-xs text-gray-500">Phone</p><p className="font-medium">{client.phone ? <a href={`tel:${client.phone}`} className="hover:text-blue-600 transition">{formatPhone(client.phone)}</a> : '—'}</p></div>
             <div><p className="text-xs text-gray-500">Language</p><p className="font-medium">{client.languagePref === 'fr' ? 'Français' : 'English'}</p></div>
           </div>
         )}
