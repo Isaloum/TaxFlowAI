@@ -30,11 +30,26 @@ export const getProfile = async (req: Request, res: Response) => {
         createdAt: true,
         updatedAt: true,
         accountant: {
+          select: { firmName: true, phone: true, email: true },
+        },
+        taxYears: {
           select: {
-            firmName: true,
-            phone: true,
-            email: true,
+            id: true,
+            year: true,
+            status: true,
+            completenessScore: true,
+            documents: {
+              select: {
+                id: true,
+                docType: true,
+                originalFilename: true,
+                uploadedAt: true,
+                reviewStatus: true,
+              },
+              orderBy: { uploadedAt: 'desc' },
+            },
           },
+          orderBy: { year: 'desc' },
         },
       },
     });

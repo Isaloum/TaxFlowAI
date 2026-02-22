@@ -38,7 +38,15 @@ export default function ClientDashboard() {
 
   // Build tax year map from profile data
   const taxYearMap: Record<number, any> = {};
-  (profile?.taxYears || []).forEach((ty: any) => { taxYearMap[ty.year] = ty; });
+  (profile?.taxYears || []).forEach((ty: any) => {
+    taxYearMap[ty.year] = {
+      ...ty,
+      documents: (ty.documents || []).map((d: any) => ({
+        ...d,
+        filename: d.originalFilename ?? d.filename,
+      })),
+    };
+  });
 
   const logout = () => {
     localStorage.removeItem('auth_token');
