@@ -44,7 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const data = await APIClient.login(email, password);
     setUser(data.user);
-    router.push(data.user.role === 'accountant' ? '/accountant/dashboard' : '/client/dashboard');
+    if (data.user.role === 'client' && data.user.isFirstLogin) {
+      router.push('/client/change-password');
+    } else {
+      router.push(data.user.role === 'accountant' ? '/accountant/dashboard' : '/client/dashboard');
+    }
   };
 
   const logout = () => {

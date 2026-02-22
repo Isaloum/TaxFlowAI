@@ -27,6 +27,10 @@ export class APIClient {
     return api.post('/auth/register', data);
   }
 
+  static async changePassword(currentPassword: string, newPassword: string) {
+    return api.post('/auth/change-password', { currentPassword, newPassword });
+  }
+
   static async getProfile() {
     return api.get('/users/client/profile');
   }
