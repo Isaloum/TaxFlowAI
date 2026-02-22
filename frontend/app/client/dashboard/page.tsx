@@ -124,12 +124,32 @@ export default function ClientDashboard() {
                     </div>
                   </div>
 
-                  {/* Doc stats */}
-                  <div className="flex gap-3 text-xs text-gray-500">
-                    <span><strong className="text-gray-800">{docsCount}</strong> uploaded</span>
-                    {approved > 0 && <span className="text-green-600"><strong>{approved}</strong> approved</span>}
-                    {pending > 0  && <span className="text-yellow-600"><strong>{pending}</strong> pending</span>}
-                  </div>
+                  {/* Doc list */}
+                  {docsCount === 0 ? (
+                    <p className="text-xs text-gray-400 italic">No documents uploaded yet</p>
+                  ) : (
+                    <ul className="space-y-1.5">
+                      {(ty.documents as any[]).slice(0, 4).map((doc: any, i: number) => (
+                        <li key={i} className="flex items-center justify-between gap-2">
+                          <span className="text-xs text-gray-700 truncate max-w-[120px]" title={doc.filename}>
+                            {doc.docType}
+                          </span>
+                          {doc.reviewStatus === 'approved' && (
+                            <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full shrink-0">✓ Approved</span>
+                          )}
+                          {doc.reviewStatus === 'rejected' && (
+                            <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full shrink-0">✗ Fix needed</span>
+                          )}
+                          {doc.reviewStatus === 'pending' && (
+                            <span className="text-[10px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded-full shrink-0">✓ Received</span>
+                          )}
+                        </li>
+                      ))}
+                      {docsCount > 4 && (
+                        <li className="text-[10px] text-blue-500 font-medium">+{docsCount - 4} more →</li>
+                      )}
+                    </ul>
+                  )}
                 </div>
 
                 <div className="px-5 py-3 border-t border-gray-50 flex items-center justify-between">
