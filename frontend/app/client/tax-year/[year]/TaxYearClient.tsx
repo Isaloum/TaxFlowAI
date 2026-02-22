@@ -380,6 +380,18 @@ export default function TaxYearClient() {
     if (groups[0]?.options[0]) setDocType(groups[0].options[0].value);
   }, [province]);
 
+  // Auto-refresh every 5 s while any document is still being scanned
+  const allDocs = completeness?.documents ?? [];
+  const isScanning = allDocs.some((d: any) =>
+    d.extractionStatus === 'pending' || d.extractionStatus === 'processing'
+  );
+  useEffect(() => {
+    if (!isScanning) return;
+    const timer = setInterval(loadCompleteness, 5000);
+    return () => clearInterval(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isScanning]);
+
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) return;
@@ -678,26 +690,53 @@ export default function TaxYearClient() {
               <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Additional Documents</p>
                 <ul className="space-y-2">
-                  {extraDocs.map((doc: any, idx: number) => (
-                    <li key={idx} className="flex items-center justify-between bg-gray-50 border border-gray-100 p-3 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">{doc.docType}</p>
-                          <p className="text-xs text-gray-400">{doc.filename}</p>
-                        </div>
-                      </div>
-                      <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
-                        doc.reviewStatus === 'approved' ? 'bg-green-100 text-green-700' :
-                        doc.reviewStatus === 'rejected' ? 'bg-red-100 text-red-700' :
-                        'bg-green-50 text-green-600'
+                  {extraDocs.map((doc: any, idx: number) => {
+                    const scan = doc.extractionStatus;
+                    const hasIssue = doc.typeMismatch || doc.yearMismatch || scan === 'failed';
+                    return (
+                      <li key={idx} className={`flex items-start justify-between p-3 rounded-lg border gap-3 ${
+                        hasIssue ? 'bg-orange-50 border-orange-200' :
+                        doc.reviewStatus === 'rejected' ? 'bg-red-50 border-red-200' :
+                        'bg-gray-50 border-gray-100'
                       }`}>
-                        {doc.reviewStatus === 'approved' ? '✓ Approved' : doc.reviewStatus === 'rejected' ? '✗ Needs correction' : '✓ Received'}
-                      </span>
-                    </li>
-                  ))}
+                        <div className="flex items-start gap-3 min-w-0">
+                          {hasIssue
+                            ? <span className="text-orange-500 flex-shrink-0 mt-0.5">⚠️</span>
+                            : <svg className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                          }
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-700">{doc.docType}</p>
+                            <p className="text-xs text-gray-400 truncate">
+                              {doc.filename}
+                              {doc.taxpayerName && ` · ${doc.taxpayerName}`}
+                              {doc.extractedYear && ` · ${doc.extractedYear}`}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          {scan === 'pending' || scan === 'processing'
+                            ? <span className="text-[11px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full animate-pulse">⏳ Scanning…</span>
+                            : scan === 'failed'
+                            ? <span className="text-[11px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full">❌ Unreadable</span>
+                            : doc.typeMismatch
+                            ? <span className="text-[11px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">⚠️ Wrong doc — AI sees {doc.extractedDocType}</span>
+                            : doc.yearMismatch
+                            ? <span className="text-[11px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">⚠️ Wrong year — doc shows {doc.extractedYear}</span>
+                            : scan === 'success'
+                            ? <span className="text-[11px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-medium">✓ Verified</span>
+                            : null
+                          }
+                          {doc.reviewStatus === 'approved' && <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">✓ Approved</span>}
+                          {doc.reviewStatus === 'rejected' && <span className="text-[11px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">✗ Needs correction</span>}
+                          {doc.reviewStatus === 'pending' && scan !== 'success' && !hasIssue && scan !== 'failed' && scan !== 'pending' && scan !== 'processing' && (
+                            <span className="text-[11px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-medium">✓ Received</span>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}

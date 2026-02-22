@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/database';
 import { StorageService } from '../services/storage.service';
-import { queueDocumentExtraction } from '../services/queue.service';
+import { ExtractionService } from '../services/extraction.service';
 import { ValidationService } from '../services/validation.service';
 import { NotificationService } from '../services/notifications/notification.service';
 
@@ -93,15 +93,44 @@ export class DocumentController {
         return res.status(404).json({ error: 'Document not found or unauthorized' });
       }
 
-      // Non-fatal background tasks
-      try { await queueDocumentExtraction(documentId); } catch (e: any) { console.error('[confirm] queue:', e?.message); }
+      // Run OCR + AI scan synchronously (max 25s) so the result is ready when client refreshes
+      try {
+        await Promise.race([
+          ExtractionService.processDocument(documentId),
+          new Promise<void>(resolve => setTimeout(resolve, 25_000)), // 25s hard cap
+        ]);
+        console.log('[confirm] extraction done');
+      } catch (e: any) {
+        console.error('[confirm] extraction error (non-fatal):', e?.message);
+      }
+
+      // Non-fatal side-tasks
       try { await ValidationService.autoValidate(doc.taxYearId); } catch (e: any) { console.error('[confirm] validate:', e?.message); }
       try {
         await NotificationService.notifyDocumentUploaded(clientId, doc.docType, doc.taxYear.year);
       } catch (e: any) { console.error('[confirm] notify:', e?.message); }
 
+      // Return scan result so frontend can update immediately
+      const updatedDoc = await prisma.document.findUnique({
+        where: { id: documentId },
+        select: { extractionStatus: true, extractionConfidence: true, extractedData: true },
+      });
+      const meta = (updatedDoc?.extractedData as any)?._metadata ?? {};
+
       console.log('[confirm] done');
-      res.json({ success: true, documentId, message: 'Upload confirmed. Processing started.' });
+      res.json({
+        success: true,
+        documentId,
+        scan: {
+          status:           updatedDoc?.extractionStatus ?? 'pending',
+          confidence:       updatedDoc?.extractionConfidence ?? null,
+          typeMismatch:     meta.typeMismatch     ?? false,
+          yearMismatch:     meta.yearMismatch     ?? false,
+          extractedDocType: meta.extractedDocType ?? null,
+          extractedYear:    meta.extractedYear    ?? null,
+          taxpayerName:     (updatedDoc?.extractedData as any)?.taxpayer_name ?? null,
+        },
+      });
     } catch (error: any) {
       console.error('[confirm] FATAL:', error?.message, error?.stack);
       res.status(500).json({ error: error?.message || 'Unknown error', step: 'confirm_upload' });
