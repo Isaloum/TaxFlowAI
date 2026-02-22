@@ -10,9 +10,10 @@ export class ExtractionService {
    */
   static async processDocument(documentId: string): Promise<void> {
     try {
-      // Get document from DB
+      // Get document from DB (include taxYear so we can detect year mismatches)
       const document = await prisma.document.findUnique({
-        where: { id: documentId }
+        where: { id: documentId },
+        include: { taxYear: { select: { year: true } } },
       });
 
       if (!document) {
@@ -47,35 +48,65 @@ export class ExtractionService {
         `🤖 Classification: ${classification.docType} (confidence: ${classification.confidence})`
       );
 
-      // Step 3: Validate extraction
+      // Step 3: Validate extracted fields
       const validation = AIClassifierService.validateExtraction(
         classification.docType,
         classification.extractedData
       );
 
       if (!validation.isValid) {
-        console.warn(
-          `⚠️ Missing fields: ${validation.missingFields.join(', ')}`
-        );
+        console.warn(`⚠️ Missing fields: ${validation.missingFields.join(', ')}`);
       }
 
-      // Step 4: Save results
+      // Step 4: Mismatch detection
+      const selectedDocType  = document.docType;               // what user chose
+      const extractedDocType = classification.docType;         // what AI sees
+      const expectedYear     = document.taxYear?.year ?? null; // e.g. 2024
+      const extractedYear    = classification.tax_year;        // e.g. 2023
+
+      // Normalise to compare (strip underscores/parentheses, uppercase)
+      const norm = (s: string) => s.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+      const typeMismatch =
+        classification.confidence >= 0.80 &&
+        extractedDocType !== 'UNKNOWN' &&
+        norm(extractedDocType) !== norm(selectedDocType);
+
+      const yearMismatch =
+        extractedYear !== null &&
+        expectedYear !== null &&
+        extractedYear !== expectedYear;
+
+      if (typeMismatch) {
+        console.warn(`⚠️ Type mismatch: user selected "${selectedDocType}", AI detected "${extractedDocType}"`);
+      }
+      if (yearMismatch) {
+        console.warn(`⚠️ Year mismatch: expected ${expectedYear}, document shows ${extractedYear}`);
+      }
+
+      // Step 5: Save results
       await prisma.document.update({
         where: { id: documentId },
         data: {
-          docType: classification.docType,
           extractedData: {
             ...classification.extractedData,
+            tax_year:      classification.tax_year,
+            taxpayer_name: classification.taxpayer_name,
             _metadata: {
-              ocrMethod: method,
-              ocrConfidence: confidence,
-              classificationConfidence: classification.confidence,
-              validationIssues: validation.missingFields
-            }
+              ocrMethod:                 method,
+              ocrConfidence:             confidence,
+              classificationConfidence:  classification.confidence,
+              extractedDocType,
+              selectedDocType,
+              typeMismatch,
+              yearMismatch,
+              expectedYear,
+              extractedYear,
+              validationIssues:          validation.missingFields,
+            },
           },
-          extractionStatus: 'success',
-          extractionConfidence: classification.confidence
-        }
+          extractionStatus:     'success',
+          extractionConfidence: classification.confidence,
+        },
       });
 
       console.log(`✅ Document ${documentId} processed successfully`);

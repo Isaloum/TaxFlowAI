@@ -589,39 +589,82 @@ export default function TaxYearClient() {
             {checklist.length > 0 ? (
               <ul className="space-y-2 mb-4">
                 {checklist.map((item, idx) => {
-                  const uploaded = uploadedDocs.find((d: any) => d.docType === item.docType);
-                  const status   = uploaded?.reviewStatus ?? null;
+                  const uploaded  = uploadedDocs.find((d: any) => d.docType === item.docType);
+                  const revStatus = uploaded?.reviewStatus ?? null;
+                  const scanStatus = uploaded?.extractionStatus ?? null;
+                  const hasIssue  = uploaded?.typeMismatch || uploaded?.yearMismatch || scanStatus === 'failed';
+
+                  // Row background
+                  let rowBg = 'bg-gray-50 border-gray-100';
+                  if (item.uploaded) {
+                    if (hasIssue)            rowBg = 'bg-orange-50 border-orange-200';
+                    else if (revStatus === 'rejected') rowBg = 'bg-red-50 border-red-200';
+                    else                     rowBg = 'bg-green-50 border-green-100';
+                  }
+
                   return (
-                    <li key={idx} className={`flex items-center justify-between p-3 rounded-lg border ${
-                      item.uploaded ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100'
-                    }`}>
-                      <div className="flex items-center gap-3">
-                        {/* Checkbox-style indicator */}
+                    <li key={idx} className={`flex items-start justify-between p-3 rounded-lg border gap-3 ${rowBg}`}>
+                      {/* Left: icon + label */}
+                      <div className="flex items-start gap-3 min-w-0">
                         {item.uploaded ? (
-                          <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
+                          hasIssue ? (
+                            <span className="text-orange-500 text-base flex-shrink-0 mt-0.5">⚠️</span>
+                          ) : (
+                            <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                          )
                         ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
+                          <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0 mt-0.5" />
                         )}
-                        <div>
-                          <p className={`text-sm font-medium ${item.uploaded ? 'text-green-800' : 'text-gray-700'}`}>{item.label}</p>
-                          {uploaded && <p className="text-xs text-gray-400">{uploaded.filename} · {new Date(uploaded.uploadedAt).toLocaleDateString()}</p>}
+                        <div className="min-w-0">
+                          <p className={`text-sm font-medium ${hasIssue ? 'text-orange-800' : item.uploaded ? 'text-green-800' : 'text-gray-700'}`}>
+                            {item.label}
+                          </p>
+                          {uploaded && (
+                            <p className="text-xs text-gray-400 truncate">
+                              {uploaded.filename} · {new Date(uploaded.uploadedAt).toLocaleDateString()}
+                              {uploaded.taxpayerName && ` · ${uploaded.taxpayerName}`}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      {/* Status badge */}
-                      {status === 'approved' && (
-                        <span className="text-xs bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full font-medium">✓ Approved</span>
-                      )}
-                      {status === 'rejected' && (
-                        <span className="text-xs bg-red-100 text-red-700 px-2.5 py-0.5 rounded-full font-medium">✗ Needs correction</span>
-                      )}
-                      {status === 'pending' && (
-                        <span className="text-xs bg-green-50 text-green-600 px-2.5 py-0.5 rounded-full font-medium">✓ Received</span>
-                      )}
-                      {!item.uploaded && (
-                        <span className="text-xs bg-gray-100 text-gray-500 px-2.5 py-0.5 rounded-full">Missing</span>
-                      )}
+
+                      {/* Right: badges stacked */}
+                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        {/* Scan / verification badges — shown first if issues */}
+                        {scanStatus === 'pending' || scanStatus === 'processing' ? (
+                          <span className="text-[11px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full animate-pulse">⏳ Scanning…</span>
+                        ) : scanStatus === 'failed' ? (
+                          <span className="text-[11px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full">❌ Unreadable</span>
+                        ) : uploaded?.typeMismatch ? (
+                          <span className="text-[11px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">
+                            ⚠️ Wrong doc — AI sees {uploaded.extractedDocType}
+                          </span>
+                        ) : uploaded?.yearMismatch ? (
+                          <span className="text-[11px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">
+                            ⚠️ Wrong year — doc shows {uploaded.extractedYear}
+                          </span>
+                        ) : null}
+
+                        {/* Review status badge */}
+                        {revStatus === 'approved' && (
+                          <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">✓ Approved</span>
+                        )}
+                        {revStatus === 'rejected' && (
+                          <span className="text-[11px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">✗ Needs correction</span>
+                        )}
+                        {revStatus === 'pending' && !hasIssue && scanStatus === 'success' && (
+                          <span className="text-[11px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-medium">✓ Verified</span>
+                        )}
+                        {revStatus === 'pending' && !hasIssue && scanStatus !== 'success' && !scanStatus && (
+                          <span className="text-[11px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-medium">✓ Received</span>
+                        )}
+
+                        {!item.uploaded && (
+                          <span className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Missing</span>
+                        )}
+                      </div>
                     </li>
                   );
                 })}

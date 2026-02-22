@@ -99,13 +99,25 @@ export const getTaxYearCompleteness = async (req: Request, res: Response) => {
       taxYear,
       province: client?.province || 'QC',
       completenessScore: taxYear.completenessScore,
-      documents: taxYear.documents.map((d) => ({
-        id: d.id,
-        docType: d.docType,
-        filename: d.originalFilename,
-        uploadedAt: d.uploadedAt,
-        reviewStatus: d.reviewStatus,
-      })),
+      documents: taxYear.documents.map((d) => {
+        const meta = (d.extractedData as any)?._metadata ?? {};
+        return {
+          id:                   d.id,
+          docType:              d.docType,
+          filename:             d.originalFilename,
+          uploadedAt:           d.uploadedAt,
+          reviewStatus:         d.reviewStatus,
+          // Extraction / verification fields
+          extractionStatus:     d.extractionStatus,
+          extractionConfidence: d.extractionConfidence,
+          taxpayerName:         (d.extractedData as any)?.taxpayer_name ?? null,
+          extractedYear:        (d.extractedData as any)?.tax_year ?? null,
+          typeMismatch:         meta.typeMismatch  ?? false,
+          yearMismatch:         meta.yearMismatch  ?? false,
+          extractedDocType:     meta.extractedDocType ?? null,
+          expectedYear:         meta.expectedYear  ?? null,
+        };
+      }),
     });
   } catch (error) {
     console.error('Get completeness error:', error);
