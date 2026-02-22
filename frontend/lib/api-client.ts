@@ -98,6 +98,10 @@ export class APIClient {
   static async rejectDocument(docId: string, reason: string) {
     return api.post(`/users/accountant/documents/${docId}/reject`, { reason });
   }
+
+  static async submitForReview(year: number) {
+    return api.post(`/users/client/tax-years/${year}/submit`);
+  }
 }
 
 export default api;

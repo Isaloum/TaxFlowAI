@@ -352,6 +352,7 @@ export default function TaxYearClient() {
   const [docType,      setDocType]      = useState('T4');
   const [province,     setProvince]     = useState('QC');
   const [toast,        setToast]        = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  const [submitting,   setSubmitting]   = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
@@ -391,6 +392,20 @@ export default function TaxYearClient() {
     return () => clearInterval(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isScanning]);
+
+
+  const handleSubmitForReview = async () => {
+    setSubmitting(true);
+    try {
+      await APIClient.submitForReview(year);
+      showToast('File submitted for review! Your accountant will be notified.', 'success');
+      await loadCompleteness();
+    } catch (err: any) {
+      showToast(err?.response?.data?.error || 'Failed to submit', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -740,6 +755,32 @@ export default function TaxYearClient() {
                 </ul>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── SUBMIT FOR REVIEW ──────────────────────────────────────── */}
+        {hasProfile && uploadedDocs.length > 0 && completeness?.taxYear?.status !== 'submitted' && completeness?.taxYear?.status !== 'completed' && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mt-6 flex items-center justify-between gap-4">
+            <div>
+              <p className="font-semibold text-gray-900">Ready? Submit your file for review</p>
+              <p className="text-sm text-gray-500 mt-0.5">Your accountant will be notified and can start reviewing your documents.</p>
+            </div>
+            <button
+              onClick={handleSubmitForReview}
+              disabled={submitting || isScanning}
+              className="flex-shrink-0 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition"
+            >
+              {submitting ? 'Submitting…' : isScanning ? 'Scanning docs…' : 'Submit for Review'}
+            </button>
+          </div>
+        )}
+        {completeness?.taxYear?.status === 'submitted' && (
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 mt-6 flex items-center gap-3">
+            <span className="text-2xl">📬</span>
+            <div>
+              <p className="font-semibold text-blue-900">File submitted for review</p>
+              <p className="text-sm text-blue-700">Your accountant has been notified. You will be alerted if any correction is needed.</p>
+            </div>
           </div>
         )}
       </div>
