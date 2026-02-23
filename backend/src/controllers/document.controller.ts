@@ -4,6 +4,7 @@ import { StorageService } from '../services/storage.service';
 import { ExtractionService } from '../services/extraction.service';
 import { ValidationService } from '../services/validation.service';
 import { NotificationService } from '../services/notifications/notification.service';
+import { queueDocumentExtraction } from '../services/queue.service';
 
 export class DocumentController {
   /**
