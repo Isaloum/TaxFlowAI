@@ -382,6 +382,7 @@ export default function TaxYearClient() {
   const [toast,        setToast]        = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [submitting,   setSubmitting]   = useState(false);
   const [docLabel,     setDocLabel]     = useState('');
+  const [pollCount,    setPollCount]    = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
@@ -410,14 +411,17 @@ export default function TaxYearClient() {
     if (groups[0]?.options[0]) setDocType(groups[0].options[0].value);
   }, [province]);
 
-  // Auto-refresh every 5 s while any document is still being scanned
+  // Auto-refresh every 5 s while any document is still being scanned (max 12 polls = 60s)
   const allDocs = completeness?.documents ?? [];
   const isScanning = allDocs.some((d: any) =>
     d.extractionStatus === 'pending' || d.extractionStatus === 'processing'
-  );
+  ) && pollCount < 12;
   useEffect(() => {
     if (!isScanning) return;
-    const timer = setInterval(loadCompleteness, 5000);
+    const timer = setInterval(() => {
+      setPollCount(c => c + 1);
+      loadCompleteness();
+    }, 5000);
     return () => clearInterval(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isScanning]);
@@ -454,6 +458,7 @@ export default function TaxYearClient() {
       await APIClient.confirmUpload(documentId);
       setSelectedFile(null);
       setDocLabel('');
+      setPollCount(0);
       if (fileInputRef.current) fileInputRef.current.value = '';
       showToast(`${docType} uploaded successfully!`);
       loadCompleteness();
@@ -824,10 +829,10 @@ export default function TaxYearClient() {
             </div>
             <button
               onClick={handleSubmitForReview}
-              disabled={submitting || isScanning}
+              disabled={submitting}
               className="flex-shrink-0 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition"
             >
-              {submitting ? 'Submitting…' : isScanning ? 'Scanning docs…' : 'Submit for Review'}
+              {submitting ? 'Submitting…' : 'Submit for Review'}
             </button>
           </div>
         )}

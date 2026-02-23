@@ -95,15 +95,31 @@ export class DocumentController {
         return res.status(404).json({ error: 'Document not found or unauthorized' });
       }
 
-      // Run OCR + AI scan synchronously (max 25s) so the result is ready when client refreshes
+      // Run OCR + AI scan synchronously (max 20s — leaves buffer before 30s Lambda limit)
+      // If it times out, explicitly mark as failed so the frontend stops polling forever
       try {
-        await Promise.race([
-          ExtractionService.processDocument(documentId),
-          new Promise<void>(resolve => setTimeout(resolve, 25_000)), // 25s hard cap
+        const timedOut = await Promise.race([
+          ExtractionService.processDocument(documentId).then(() => false),
+          new Promise<boolean>(resolve => setTimeout(() => resolve(true), 20_000)),
         ]);
-        console.log('[confirm] extraction done');
+        if (timedOut) {
+          console.warn('[confirm] extraction timed out — marking as failed');
+          await prisma.document.update({
+            where: { id: documentId },
+            data: { extractionStatus: 'failed' },
+          });
+        } else {
+          console.log('[confirm] extraction done');
+        }
       } catch (e: any) {
         console.error('[confirm] extraction error (non-fatal):', e?.message);
+        // Mark as failed so the frontend doesn't poll forever
+        try {
+          await prisma.document.update({
+            where: { id: documentId },
+            data: { extractionStatus: 'failed' },
+          });
+        } catch (_) { /* ignore */ }
       }
 
       // Non-fatal side-tasks
