@@ -4,7 +4,6 @@ import { StorageService } from '../services/storage.service';
 import { ExtractionService } from '../services/extraction.service';
 import { ValidationService } from '../services/validation.service';
 import { NotificationService } from '../services/notifications/notification.service';
-import { queueDocumentExtraction } from '../services/queue.service';
 
 export class DocumentController {
   /**
@@ -215,7 +214,7 @@ export class DocumentController {
       });
 
       // Background tasks (all non-fatal)
-      try { await queueDocumentExtraction(document.id); } catch (e) { console.error('Queue error:', e); }
+      try { ExtractionService.processDocument(document.id).catch(e => console.error('Extraction error:', e)); } catch (e) { console.error('Queue error:', e); }
       try { await ValidationService.autoValidate(taxYear.id); } catch (e) { console.error('Validation error:', e); }
       try { await NotificationService.notifyDocumentUploaded(clientId, docType, year); } catch (e) { console.error('Notify error:', e); }
 
@@ -372,8 +371,8 @@ export class DocumentController {
         return res.status(403).json({ error: 'Unauthorized' });
       }
 
-      // Queue extraction
-      await queueDocumentExtraction(documentId);
+      // Trigger extraction (fire-and-forget)
+      ExtractionService.processDocument(documentId).catch(e => console.error('Extraction error:', e));
 
       res.json({ message: 'Extraction queued' });
     } catch (error: any) {
