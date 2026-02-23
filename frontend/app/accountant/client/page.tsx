@@ -132,6 +132,8 @@ function ClientDetail() {
   const [rejectReason, setRejectReason] = useState('');
   const [rejectDocId, setRejectDocId] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState('');
+  const [completing, setCompleting] = useState(false);
+  const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
     if (clientId) loadAll();
@@ -162,6 +164,23 @@ function ClientDetail() {
       setYearDetails(res.data);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleMarkComplete = async () => {
+    if (!selectedYear) return;
+    setCompleting(true);
+    try {
+      await APIClient.markAsComplete(selectedYear.id);
+      setCompleted(true);
+      await loadYearDetails(selectedYear);
+      // Refresh tax year list so status pill updates
+      const yearsRes = await APIClient.getClientTaxYears(clientId);
+      setTaxYears(yearsRes.data.client?.taxYears || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCompleting(false);
     }
   };
 
@@ -263,18 +282,33 @@ function ClientDetail() {
                     const m = (d.extractedData as any)?._metadata ?? {};
                     return m.typeMismatch || m.yearMismatch;
                   }) && (
-                    <div className="ml-auto">
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
-                        ⚠️ {documents.filter((d: any) => {
-                          const m = (d.extractedData as any)?._metadata ?? {};
-                          return m.typeMismatch || m.yearMismatch;
-                        }).length} doc{documents.filter((d: any) => {
-                          const m = (d.extractedData as any)?._metadata ?? {};
-                          return m.typeMismatch || m.yearMismatch;
-                        }).length > 1 ? 's' : ''} need attention
-                      </span>
-                    </div>
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+                      ⚠️ {documents.filter((d: any) => {
+                        const m = (d.extractedData as any)?._metadata ?? {};
+                        return m.typeMismatch || m.yearMismatch;
+                      }).length} doc{documents.filter((d: any) => {
+                        const m = (d.extractedData as any)?._metadata ?? {};
+                        return m.typeMismatch || m.yearMismatch;
+                      }).length > 1 ? 's' : ''} need attention
+                    </span>
                   )}
+
+                  {/* Mark as Complete — shown when submitted, not yet completed */}
+                  <div className="ml-auto flex items-center gap-3">
+                    {yearDetails.taxYear?.status === 'completed' || completed ? (
+                      <span className="px-4 py-2 rounded-lg text-sm font-medium bg-green-100 text-green-700">
+                        ✅ Return Complete
+                      </span>
+                    ) : yearDetails.taxYear?.status === 'submitted' ? (
+                      <button
+                        disabled={completing}
+                        onClick={handleMarkComplete}
+                        className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 transition"
+                      >
+                        {completing ? 'Saving…' : '✅ Mark as Complete'}
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
 
                 {/* Documents table */}

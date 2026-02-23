@@ -232,6 +232,61 @@ export class SESEmailService {
 
   /**
    * Send a generic notification email
+  static async sendTaxReturnCompletedEmail(
+    clientEmail: string,
+    clientName: string,
+    year: number,
+    languagePref: string
+  ): Promise<void> {
+    const loginUrl = process.env.LOGIN_URL || 'https://www.isaloumapps.com/login';
+    const FROM = process.env.SES_EMAIL || 'notifications@isaloumapps.com';
+
+    const frBody = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#16a34a;">✅ Votre déclaration ${year} est complète!</h2>
+        <p>Bonjour ${clientName},</p>
+        <p>Bonne nouvelle! Votre comptable a terminé le traitement de votre déclaration de revenus ${year}.</p>
+        <p>Tous vos documents ont été examinés et approuvés. Votre dossier est maintenant complet.</p>
+        <p><a href="${loginUrl}" style="background-color:#16a34a;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;">Voir mon dossier</a></p>
+        <p style="color:#6b7280;font-size:13px;">Merci de faire confiance à TaxFlowAI!</p>
+      </div>`;
+
+    const enBody = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#16a34a;">✅ Your ${year} tax return is complete!</h2>
+        <p>Hello ${clientName},</p>
+        <p>Great news! Your accountant has finished processing your ${year} tax return.</p>
+        <p>All your documents have been reviewed and approved. Your file is now complete.</p>
+        <p><a href="${loginUrl}" style="background-color:#16a34a;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;">View my file</a></p>
+        <p style="color:#6b7280;font-size:13px;">Thank you for trusting TaxFlowAI!</p>
+      </div>`;
+
+    const subject = languagePref === 'fr'
+      ? `✅ Votre déclaration ${year} est complète — TaxFlowAI`
+      : `✅ Your ${year} tax return is complete — TaxFlowAI`;
+
+    const htmlBody = languagePref === 'fr'
+      ? `${frBody}<hr style="margin:40px 0;border:none;border-top:1px solid #e5e7eb;">${enBody}`
+      : `${enBody}<hr style="margin:40px 0;border:none;border-top:1px solid #e5e7eb;">${frBody}`;
+
+    const command = new SendEmailCommand({
+      Source: FROM,
+      Destination: { ToAddresses: [clientEmail] },
+      Message: {
+        Subject: { Data: subject, Charset: 'UTF-8' },
+        Body: { Html: { Data: htmlBody, Charset: 'UTF-8' } },
+      },
+    });
+
+    try {
+      await sesClient.send(command);
+      console.log(`Completion email sent to ${clientEmail}`);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Failed to send completion email to ${clientEmail}:`, msg);
+    }
+  }
+
    * @param to - Recipient email address
    * @param subject - Email subject
    * @param htmlBody - HTML body content

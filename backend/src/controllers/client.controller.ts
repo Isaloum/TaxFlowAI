@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import prisma from '../config/database';
+import { NotificationService } from '../services/notifications/notification.service';
 
 const updateProfileSchema = z.object({
   firstName: z.string().min(1, 'First name is required').optional(),
@@ -196,6 +197,10 @@ export const submitForReview = async (req: Request, res: Response) => {
       where: { id: taxYear.id },
       data: { status: 'submitted', submittedAt: new Date() },
     });
+
+    // Notify accountant (non-blocking)
+    NotificationService.notifyAccountantSubmission(clientId, year)
+      .catch(err => console.error('Accountant notification failed:', err));
 
     return res.json({ message: 'Submitted for review', taxYear: updated });
   } catch (error) {

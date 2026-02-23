@@ -102,6 +102,10 @@ export class APIClient {
   static async submitForReview(year: number) {
     return api.post(`/users/client/tax-years/${year}/submit`);
   }
+
+  static async markAsComplete(taxYearId: string) {
+    return api.post(`/users/accountant/tax-years/${taxYearId}/complete`);
+  }
 }
 
 export default api;

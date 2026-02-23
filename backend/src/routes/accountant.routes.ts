@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { 
-  createClient, 
-  getClients, 
-  getClientById, 
+import {
+  createClient,
+  getClients,
+  getClientById,
   deleteClient,
   getDashboardStats,
   getClientsWithTaxYears,
@@ -10,7 +10,8 @@ import {
   getTaxYearDetails,
   approveDocument,
   rejectDocument,
-  downloadTaxPackage
+  downloadTaxPackage,
+  markAsComplete
 } from '../controllers/accountant.controller';
 import { authenticateToken, requireRole } from '../middleware/auth';
 
@@ -33,6 +34,7 @@ router.delete('/clients/:id', deleteClient);
 router.get('/clients/:clientId/years', getClientTaxYears);
 router.get('/tax-years/:taxYearId', getTaxYearDetails);
 router.get('/tax-years/:taxYearId/download-package', downloadTaxPackage);
+router.post('/tax-years/:taxYearId/complete', markAsComplete);
 
 // Document review
 router.post('/documents/:documentId/approve', approveDocument);

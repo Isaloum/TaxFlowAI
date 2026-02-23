@@ -7,6 +7,52 @@ import prisma from '../config/database';
 import { generateTemporaryPassword, SESEmailService } from '../services/ses-email.service';
 import { NotificationService } from '../services/notifications/notification.service';
 
+/**
+ * POST /api/accountant/tax-years/:taxYearId/complete
+ * Accountant marks a tax year as fully complete — triggers client email
+ */
+export const markAsComplete = async (req: Request, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'accountant') {
+      return res.status(403).json({ error: 'Only accountants can mark files as complete' });
+    }
+
+    const accountantId = req.user.sub;
+    const { taxYearId } = req.params;
+
+    const taxYear = await prisma.taxYear.findFirst({
+      where: { id: taxYearId, client: { accountantId } },
+      include: { client: true },
+    });
+
+    if (!taxYear) {
+      return res.status(404).json({ error: 'Tax year not found' });
+    }
+
+    if (taxYear.status === 'completed') {
+      return res.status(400).json({ error: 'Already completed' });
+    }
+
+    const updated = await prisma.taxYear.update({
+      where: { id: taxYearId },
+      data: { status: 'completed', completedAt: new Date() },
+    });
+
+    // Send completion email to client (non-blocking)
+    SESEmailService.sendTaxReturnCompletedEmail(
+      taxYear.client.email,
+      taxYear.client.firstName,
+      taxYear.year,
+      taxYear.client.languagePref
+    ).catch(err => console.error('Completion email failed:', err));
+
+    return res.json({ message: 'Marked as complete', taxYear: updated });
+  } catch (error) {
+    console.error('Mark as complete error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 const createClientSchema = z.object({
   email: z.string().email('Invalid email address'),
   firstName: z.string().min(1, 'First name is required'),

@@ -62,6 +62,7 @@ model TaxYear {
   completenessScore Int      @default(0) @map("completeness_score") // 0-100% (validate in application layer)
   submittedAt       DateTime? @map("submitted_at")
   reviewedAt        DateTime? @map("reviewed_at")
+  completedAt       DateTime? @map("completed_at")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
   reviewNotes       String?  @map("review_notes") // Accountant notes
