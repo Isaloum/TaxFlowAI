@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../config/database';
 import { StorageService } from '../services/storage.service';
-import { ExtractionService } from '../services/extraction.service';
 import { ValidationService } from '../services/validation.service';
 import { NotificationService } from '../services/notifications/notification.service';
 
@@ -94,31 +93,15 @@ export class DocumentController {
         return res.status(404).json({ error: 'Document not found or unauthorized' });
       }
 
-      // Run OCR + AI scan synchronously (max 20s — leaves buffer before 30s Lambda limit)
-      // If it times out, explicitly mark as failed so the frontend stops polling forever
+      // OCR extraction runs in a separate environment (tesseract.js needs native binaries
+      // not available in Lambda). Mark as skipped so frontend doesn't poll forever.
       try {
-        const timedOut = await Promise.race([
-          ExtractionService.processDocument(documentId).then(() => false),
-          new Promise<boolean>(resolve => setTimeout(() => resolve(true), 20_000)),
-        ]);
-        if (timedOut) {
-          console.warn('[confirm] extraction timed out — marking as failed');
-          await prisma.document.update({
-            where: { id: documentId },
-            data: { extractionStatus: 'failed' },
-          });
-        } else {
-          console.log('[confirm] extraction done');
-        }
+        await prisma.document.update({
+          where: { id: documentId },
+          data: { extractionStatus: 'skipped' },
+        });
       } catch (e: any) {
-        console.error('[confirm] extraction error (non-fatal):', e?.message);
-        // Mark as failed so the frontend doesn't poll forever
-        try {
-          await prisma.document.update({
-            where: { id: documentId },
-            data: { extractionStatus: 'failed' },
-          });
-        } catch (_) { /* ignore */ }
+        console.error('[confirm] status update error:', e?.message);
       }
 
       // Non-fatal side-tasks
@@ -214,7 +197,6 @@ export class DocumentController {
       });
 
       // Background tasks (all non-fatal)
-      try { ExtractionService.processDocument(document.id).catch(e => console.error('Extraction error:', e)); } catch (e) { console.error('Queue error:', e); }
       try { await ValidationService.autoValidate(taxYear.id); } catch (e) { console.error('Validation error:', e); }
       try { await NotificationService.notifyDocumentUploaded(clientId, docType, year); } catch (e) { console.error('Notify error:', e); }
 
@@ -371,10 +353,8 @@ export class DocumentController {
         return res.status(403).json({ error: 'Unauthorized' });
       }
 
-      // Trigger extraction (fire-and-forget)
-      ExtractionService.processDocument(documentId).catch(e => console.error('Extraction error:', e));
-
-      res.json({ message: 'Extraction queued' });
+      // Extraction not available in this Lambda (requires native binaries)
+      res.json({ message: 'Extraction unavailable in this environment' });
     } catch (error: any) {
       console.error('Trigger extraction error:', error);
       res.status(500).json({ error: error.message });

@@ -414,7 +414,7 @@ export default function TaxYearClient() {
   // Auto-refresh every 5 s while any document is still being scanned (max 12 polls = 60s)
   const allDocs = completeness?.documents ?? [];
   const isScanning = allDocs.some((d: any) =>
-    d.extractionStatus === 'pending' || d.extractionStatus === 'processing'
+    (d.extractionStatus === 'pending' || d.extractionStatus === 'processing') && d.extractionStatus !== 'skipped'
   ) && pollCount < 12;
   useEffect(() => {
     if (!isScanning) return;
