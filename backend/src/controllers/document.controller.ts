@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/database';
 import { StorageService } from '../services/storage.service';
+import { ExtractionService } from '../services/extraction.service';
 import { ValidationService } from '../services/validation.service';
 import { NotificationService } from '../services/notifications/notification.service';
 
@@ -93,15 +94,28 @@ export class DocumentController {
         return res.status(404).json({ error: 'Document not found or unauthorized' });
       }
 
-      // OCR extraction runs in a separate environment (tesseract.js needs native binaries
-      // not available in Lambda). Mark as skipped so frontend doesn't poll forever.
+      // Run OCR + AI classification (max 20s — leaves buffer before Lambda's 30s kill)
+      // Uses AWS Textract (images) + pdf-parse (PDFs) — no native binaries, Lambda-safe
       try {
-        await prisma.document.update({
-          where: { id: documentId },
-          data: { extractionStatus: 'skipped' },
-        });
+        const timedOut = await Promise.race([
+          ExtractionService.processDocument(documentId).then(() => false),
+          new Promise<boolean>(resolve => setTimeout(() => resolve(true), 20_000)),
+        ]);
+        if (timedOut) {
+          console.warn('[confirm] extraction timed out — marking failed');
+          await prisma.document.update({
+            where: { id: documentId },
+            data: { extractionStatus: 'failed' },
+          });
+        }
       } catch (e: any) {
-        console.error('[confirm] status update error:', e?.message);
+        console.error('[confirm] extraction error:', e?.message);
+        try {
+          await prisma.document.update({
+            where: { id: documentId },
+            data: { extractionStatus: 'failed' },
+          });
+        } catch (_) {}
       }
 
       // Non-fatal side-tasks

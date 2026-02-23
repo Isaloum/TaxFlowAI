@@ -151,8 +151,6 @@ Resources:
           - mock-aws-s3
           - aws-sdk
           - nock
-          - tesseract.js
-          - '@google-cloud/vision'
           - '@prisma/client'
 
   # Documents Lambda
@@ -161,6 +159,13 @@ Resources:
     Properties:
       CodeUri: ./
       Handler: src/lambda/documents.handler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - textract:DetectDocumentText
+                - textract:AnalyzeDocument
+              Resource: "*"
       Events:
         DocumentsProxy:
           Type: Api
@@ -188,8 +193,6 @@ Resources:
           - mock-aws-s3
           - aws-sdk
           - nock
-          - tesseract.js
-          - '@google-cloud/vision'
           - '@prisma/client'
 
   # Users Lambda
@@ -232,8 +235,6 @@ Resources:
           - mock-aws-s3
           - aws-sdk
           - nock
-          - tesseract.js
-          - '@google-cloud/vision'
           - '@prisma/client'
 
   # Notifications Lambda
@@ -269,8 +270,6 @@ Resources:
           - mock-aws-s3
           - aws-sdk
           - nock
-          - tesseract.js
-          - '@google-cloud/vision'
           - '@prisma/client'
 
   # CloudWatch Log Groups
@@ -331,8 +330,6 @@ Resources:
           - mock-aws-s3
           - aws-sdk
           - nock
-          - tesseract.js
-          - '@google-cloud/vision'
           - '@prisma/client'
 
   HealthFunctionLogGroup:
