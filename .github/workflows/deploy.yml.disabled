@@ -1,0 +1,219 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend to AWS Lambda
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      api-endpoint: ${{ steps.get-endpoint.outputs.API_ENDPOINT }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Setup AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Debug AWS Secrets
+        run: |
+          echo "Checking if AWS secrets are available..."
+          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then
+            echo "ERROR: AWS_ACCESS_KEY_ID is not set"
+            exit 1
+          else
+            echo "✓ AWS_ACCESS_KEY_ID is set"
+          fi
+          if [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
+            echo "ERROR: AWS_SECRET_ACCESS_KEY is not set"
+            exit 1
+          else
+            echo "✓ AWS_SECRET_ACCESS_KEY is set"
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Verify AWS credentials
+        run: |
+          aws sts get-caller-identity
+          echo "✓ AWS credentials are working!"
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Build backend
+        run: |
+          cd backend
+          npm run build
+
+      - name: Fix template structure and policies
+        run: |
+          cd backend
+          
+          # Fix UsersTable placement (move from Outputs to Resources)
+          cat > fix-structure.py << 'PYEOF'
+          with open('template.yaml', 'r') as f:
+              lines = f.readlines()
+
+          resources_start = None
+          outputs_start = None
+          userstable_start = None
+
+          for i, line in enumerate(lines):
+              if line.strip() == 'Resources:':
+                  resources_start = i
+              elif line.strip() == 'Outputs:':
+                  outputs_start = i
+              elif line.strip() == '# DynamoDB Table for Users':
+                  userstable_start = i
+
+          if userstable_start and outputs_start and resources_start and userstable_start > outputs_start:
+              userstable_section = lines[userstable_start:]
+              before_userstable = lines[:userstable_start]
+              new_lines = before_userstable[:outputs_start] + ['\n'] + userstable_section + ['\n'] + before_userstable[outputs_start:]
+              
+              with open('template.yaml', 'w') as f:
+                  f.writelines(new_lines)
+              
+              print("✅ Moved UsersTable to Resources section")
+          else:
+              print("✅ UsersTable already in correct location")
+          PYEOF
+          
+          python3 fix-structure.py
+          
+          # Fix DynamoDBCrudPolicy to use explicit IAM statements
+          cat > fix-policy.py << 'PYEOF'
+          with open('template.yaml', 'r') as f:
+              content = f.read()
+
+          old_policy = r'''      Policies:
+              - DynamoDBCrudPolicy:
+                  TableName: !Ref UsersTable'''
+
+          new_policy = '''      Policies:
+              - Statement:
+                  - Effect: Allow
+                    Action:
+                      - dynamodb:GetItem
+                      - dynamodb:PutItem
+                      - dynamodb:UpdateItem
+                      - dynamodb:DeleteItem
+                      - dynamodb:Query
+                      - dynamodb:Scan
+                    Resource: !GetAtt UsersTable.Arn'''
+
+          if old_policy in content:
+              content = content.replace(old_policy, new_policy)
+              with open('template.yaml', 'w') as f:
+                  f.write(content)
+              print("✅ Fixed DynamoDBCrudPolicy")
+          else:
+              print("✅ DynamoDBCrudPolicy already fixed or not present")
+          PYEOF
+          
+          python3 fix-policy.py
+          
+          # Remove Metadata sections requiring Makefiles
+          echo "Checking for Metadata sections..."
+          if grep -q "Metadata:" template.yaml; then
+            sed -i '/Metadata:/,/BuildMethod: makefile/d' template.yaml && echo "✅ Removed Metadata sections" || echo "⚠️  Could not remove Metadata sections"
+          else
+            echo "✅ No Metadata sections found"
+          fi
+          
+          echo "✅ Template fixes applied"
+
+      - name: SAM Build
+        run: |
+          cd backend
+          sam build --template-file template.yaml
+
+      - name: SAM Deploy
+        run: |
+          cd backend
+          sam deploy \
+            --template-file .aws-sam/build/template.yaml \
+            --stack-name taxflowai-backend \
+            --capabilities CAPABILITY_IAM \
+            --region us-east-1 \
+            --resolve-s3 \
+            --s3-prefix taxflowai-backend \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
+
+      - name: Get API Endpoint
+        id: get-endpoint
+        run: |
+          API_ENDPOINT=$(aws cloudformation describe-stacks \
+            --stack-name taxflowai-backend \
+            --query 'Stacks[0].Outputs[?OutputKey==`ApiEndpoint`].OutputValue' \
+            --output text \
+            --region us-east-1)
+          echo "API Endpoint: $API_ENDPOINT"
+          echo "API_ENDPOINT=$API_ENDPOINT" >> $GITHUB_OUTPUT
+
+  deploy-frontend:
+    name: Deploy Frontend to AWS Amplify
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ needs.deploy-backend.outputs.api-endpoint }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Deploy to Amplify
+        run: |
+          echo "Amplify will auto-deploy frontend on push to main"
+          echo "Manual deployment can be triggered from AWS Amplify console"
+          echo "Environment variables should be configured in Amplify console:"
+          echo "  - NEXT_PUBLIC_API_URL=${{ needs.deploy-backend.outputs.api-endpoint }}"
+          echo "  - NEXT_PUBLIC_SUPABASE_URL"
+          echo "  - NEXT_PUBLIC_SUPABASE_ANON_KEY"

@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Test coverage
+coverage/
+*.lcov
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Playwright test results
+test-results/
+playwright-report/
+*.backup
+
+# AWS SAM
+.aws-sam/
+samconfig.toml
+
+# Build artifacts
+dist/
+build/

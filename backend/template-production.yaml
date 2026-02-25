@@ -1,0 +1,489 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: TaxFlowAI Backend - Production Ready
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+  
+  DatabaseUrl:
+    Type: String
+    NoEcho: true
+    Description: PostgreSQL connection string
+  
+  SupabaseUrl:
+    Type: String
+    Description: Supabase project URL
+  
+  SupabaseServiceKey:
+    Type: String
+    NoEcho: true
+    Description: Supabase service role key
+  
+  OpenAIKey:
+    Type: String
+    NoEcho: true
+    Description: OpenAI API key
+  
+  JwtSecret:
+    Type: String
+    NoEcho: true
+    Description: JWT signing secret
+  
+  AllowedOrigin:
+    Type: String
+    Default: "*"
+    Description: CORS allowed origin
+
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 60
+    MemorySize: 1024
+    Environment:
+      Variables:
+        NODE_ENV: !Ref Environment
+        DATABASE_URL: !Ref DatabaseUrl
+        SUPABASE_URL: !Ref SupabaseUrl
+        SUPABASE_SERVICE_KEY: !Ref SupabaseServiceKey
+        OPENAI_API_KEY: !Ref OpenAIKey
+        JWT_SECRET: !Ref JwtSecret
+        ALLOWED_ORIGIN: !Ref AllowedOrigin
+        SES_EMAIL: notifications@isaloumapps.com
+        LOGIN_URL: https://www.isaloumapps.com/login
+        APP_URL: https://www.isaloumapps.com
+        APP_NAME: TaxFlowAI
+  
+Resources:
+  # DynamoDB - defined first so Lambda functions can reference it
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST  # Serverless pricing - only pay for what you use
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: email-index
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: production
+        - Key: Application
+          Value: taxflowai
+
+  # API Gateway
+  TaxFlowAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      Cors:
+        AllowMethods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+
+  # Auth Lambda
+  AuthFunction:
+    Description: Authentication and user management - Updated Feb 13 2026
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/lambda/auth.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTable
+          JWT_SECRET: !Ref JwtSecret
+          JWT_EXPIRES_IN: '24h'
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource: !GetAtt UsersTable.Arn
+      Events:
+        AuthProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /auth/{proxy+}
+            Method: ANY
+        AuthRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /auth
+            Method: ANY
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: 'es2020'
+        Sourcemap: false
+        EntryPoints:
+          - src/lambda/auth.ts
+        External:
+          - sharp
+          - '@mapbox/node-pre-gyp'
+          - mock-aws-s3
+          - aws-sdk
+          - nock
+          - '@prisma/client'
+          - '@aws-sdk/client-sqs'
+
+  # Documents Lambda
+  DocumentsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/lambda/documents.handler
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref ExtractionQueue
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt ExtractionQueue.Arn
+            - Effect: Allow
+              Action:
+                - textract:DetectDocumentText
+                - textract:AnalyzeDocument
+              Resource: "*"
+      Events:
+        DocumentsProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /documents/{proxy+}
+            Method: ANY
+        DocumentsRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /documents
+            Method: ANY
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: 'es2020'
+        Sourcemap: false
+        EntryPoints:
+          - src/lambda/documents.ts
+        External:
+          - sharp
+          - '@mapbox/node-pre-gyp'
+          - mock-aws-s3
+          - aws-sdk
+          - nock
+          - '@prisma/client'
+          - '@aws-sdk/client-sqs'
+
+  # Users Lambda
+  UsersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/lambda/users.handler
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref ExtractionQueue
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt ExtractionQueue.Arn
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: "*"
+      Events:
+        UsersProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /users/{proxy+}
+            Method: ANY
+        UsersRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /users
+            Method: ANY
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: 'es2020'
+        Sourcemap: false
+        EntryPoints:
+          - src/lambda/users.ts
+        External:
+          - sharp
+          - '@mapbox/node-pre-gyp'
+          - mock-aws-s3
+          - aws-sdk
+          - nock
+          - '@prisma/client'
+          - '@aws-sdk/client-sqs'
+
+  # Notifications Lambda
+  NotificationsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/lambda/notifications.handler
+      Events:
+        NotificationsProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /notifications/{proxy+}
+            Method: ANY
+        NotificationsRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /notifications
+            Method: ANY
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: 'es2020'
+        Sourcemap: false
+        EntryPoints:
+          - src/lambda/notifications.ts
+        External:
+          - sharp
+          - '@mapbox/node-pre-gyp'
+          - mock-aws-s3
+          - aws-sdk
+          - nock
+          - '@prisma/client'
+          - '@aws-sdk/client-sqs'
+
+  # ── SQS ─────────────────────────────────────────────────────────────────────
+
+  # Dead-Letter Queue — messages land here after 3 failed processing attempts
+  ExtractionDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: taxflowai-extraction-dlq
+      MessageRetentionPeriod: 1209600   # 14 days — plenty of time to inspect failures
+
+  # Main extraction queue
+  ExtractionQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: taxflowai-extraction
+      VisibilityTimeout: 70             # Must be >= Lambda timeout (60s) + buffer
+      MessageRetentionPeriod: 86400     # 1 day
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt ExtractionDLQ.Arn
+        maxReceiveCount: 3              # Retry 3 times before sending to DLQ
+
+  # Worker Lambda — triggered by SQS, runs OCR + AI classification
+  WorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/lambda/worker.handler
+      Timeout: 60
+      MemorySize: 1024
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref ExtractionQueue
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:ReceiveMessage
+                - sqs:DeleteMessage
+                - sqs:GetQueueAttributes
+              Resource: !GetAtt ExtractionQueue.Arn
+            - Effect: Allow
+              Action:
+                - textract:DetectDocumentText
+                - textract:AnalyzeDocument
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: "*"
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ExtractionQueue.Arn
+            BatchSize: 1                # Process one document at a time
+            FunctionResponseTypes:
+              - ReportBatchItemFailures # Partial batch failure — only retry failed messages
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: 'es2020'
+        Sourcemap: false
+        EntryPoints:
+          - src/lambda/worker.ts
+        External:
+          - sharp
+          - '@mapbox/node-pre-gyp'
+          - mock-aws-s3
+          - aws-sdk
+          - nock
+          - '@prisma/client'
+          - '@aws-sdk/client-sqs'
+
+  # Allow Documents + Users Lambda to send messages to the queue
+  DocumentsToQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref ExtractionQueue
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt ExtractionQueue.Arn
+
+  WorkerFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${WorkerFunction}
+      RetentionInDays: 7
+
+  # ── CloudWatch Log Groups
+  AuthFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AuthFunction}
+      RetentionInDays: 7
+
+  DocumentsFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${DocumentsFunction}
+      RetentionInDays: 7
+
+  UsersFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${UsersFunction}
+      RetentionInDays: 7
+
+  NotificationsFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${NotificationsFunction}
+      RetentionInDays: 7
+
+  # Health Check Lambda
+  HealthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/lambda/health.handler
+      Events:
+        HealthProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /health/{proxy+}
+            Method: ANY
+        HealthRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /health
+            Method: ANY
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: 'es2020'
+        Sourcemap: false
+        EntryPoints:
+          - src/lambda/health.ts
+        External:
+          - sharp
+          - '@mapbox/node-pre-gyp'
+          - mock-aws-s3
+          - aws-sdk
+          - nock
+          - '@prisma/client'
+          - '@aws-sdk/client-sqs'
+
+  HealthFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${HealthFunction}
+      RetentionInDays: 7
+
+  # DynamoDB Table for Users
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${TaxFlowAPI}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/"
+    Export:
+      Name: !Sub "${AWS::StackName}-ApiEndpoint"
+  
+  AuthFunctionArn:
+    Description: Auth Lambda ARN
+    Value: !GetAtt AuthFunction.Arn
+  
+  DocumentsFunctionArn:
+    Description: Documents Lambda ARN
+    Value: !GetAtt DocumentsFunction.Arn
+  
+  UsersFunctionArn:
+    Description: Users Lambda ARN
+    Value: !GetAtt UsersFunction.Arn
+  
+  NotificationsFunctionArn:
+    Description: Notifications Lambda ARN
+    Value: !GetAtt NotificationsFunction.Arn
+
+  HealthFunctionArn:
+    Description: Health Lambda ARN
+    Value: !GetAtt HealthFunction.Arn
+
+  ExtractionQueueUrl:
+    Description: SQS Extraction Queue URL
+    Value: !Ref ExtractionQueue
+
+  ExtractionDLQUrl:
+    Description: SQS Dead-Letter Queue URL
+    Value: !Ref ExtractionDLQ

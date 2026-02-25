@@ -1,0 +1,136 @@
+name: Backend Deployment
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-deploy.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: backend-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy Backend to AWS Lambda
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Setup AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Install esbuild globally
+        run: npm install -g esbuild
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Generate Prisma client
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx prisma generate
+
+      - name: Derive direct DB URL (strip PgBouncer for migrations)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          DIRECT=$(echo "${DATABASE_URL}" | sed 's/?pgbouncer=true//' | sed 's/:6543\//:5432\//')
+          echo "DIRECT_DATABASE_URL=${DIRECT}" >> $GITHUB_ENV
+
+      - name: Add missing columns (safe idempotent migration)
+        continue-on-error: true
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ env.DIRECT_DATABASE_URL }}
+        run: node scripts/ensure-columns.js
+
+      - name: Sync database schema
+        timeout-minutes: 5
+        continue-on-error: true
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ env.DIRECT_DATABASE_URL }}
+        run: npx prisma db push --skip-generate --accept-data-loss
+
+      - name: Build SAM application
+        run: |
+          cd backend
+          sam build --template-file template-production.yaml
+
+      - name: Copy Prisma engine to Lambda packages
+        run: |
+          for func in AuthFunction DocumentsFunction UsersFunction NotificationsFunction HealthFunction; do
+            BUILD_DIR="backend/.aws-sam/build/$func"
+            if [ -d "$BUILD_DIR" ]; then
+              mkdir -p "$BUILD_DIR/node_modules/.prisma/client"
+              mkdir -p "$BUILD_DIR/node_modules/@prisma/client"
+              cp -r backend/node_modules/.prisma/client/. "$BUILD_DIR/node_modules/.prisma/client/"
+              cp -r backend/node_modules/@prisma/client/. "$BUILD_DIR/node_modules/@prisma/client/"
+              echo "✅ Copied Prisma to $func"
+            fi
+          done
+
+      - name: Deploy to AWS Lambda
+        run: |
+          cd backend
+          sam deploy \
+            --stack-name taxflowai-backend \
+            --capabilities CAPABILITY_IAM \
+            --region us-east-1 \
+            --resolve-s3 \
+            --s3-prefix taxflowai-backend \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              Environment=prod \
+              DatabaseUrl="${{ secrets.DATABASE_URL }}" \
+              SupabaseUrl="${{ secrets.SUPABASE_URL }}" \
+              SupabaseServiceKey="${{ secrets.SUPABASE_SERVICE_KEY }}" \
+              OpenAIKey="${{ secrets.OPENAI_API_KEY }}" \
+              JwtSecret="${{ secrets.JWT_SECRET }}" \
+              AllowedOrigin="*"
+
+      - name: Get API endpoint
+        id: endpoint
+        run: |
+          API_ENDPOINT=$(aws cloudformation describe-stacks \
+            --stack-name taxflowai-backend \
+            --query 'Stacks[0].Outputs[?OutputKey==`ApiEndpoint`].OutputValue' \
+            --output text \
+            --region us-east-1)
+          echo "API_ENDPOINT=$API_ENDPOINT" >> $GITHUB_OUTPUT
+          echo "🌐 API Endpoint: $API_ENDPOINT"

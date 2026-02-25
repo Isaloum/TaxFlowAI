@@ -1,0 +1,22 @@
+name: Pages smoke test
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Pages to be generated
+        run: |
+          echo "Waiting for Pages to be available..."
+          for i in {1..30}; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" https://isaloum.github.io/TaxFlowAI/ || echo 000)
+            echo "Attempt $i: $status"
+            if [ "$status" = "200" ]; then
+              echo "Pages reachable"; exit 0;
+            fi
+            sleep 10
+          done
+          echo "Pages not reachable"; exit 1

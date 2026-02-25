@@ -1,0 +1,150 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Accountant {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  firmName     String
+  phone        String
+  languagePref String   @default("fr") // 'fr' or 'en'
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Password reset
+  passwordResetToken  String?   @unique @map("password_reset_token")
+  passwordResetExpiry DateTime? @map("password_reset_expiry")
+
+  // Notification preferences
+  emailNotifications Boolean  @default(true) @map("email_notifications")
+  smsNotifications   Boolean  @default(true) @map("sms_notifications")
+  dailyDigest        Boolean  @default(true) @map("daily_digest")
+  
+  clients           Client[]
+  reviewedDocuments Document[]
+
+  @@map("accountants")
+}
+
+model Client {
+  id            String    @id @default(cuid())
+  accountantId  String
+  email         String    @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  province      String
+  phone         String
+  languagePref  String    @default("fr") // 'fr' or 'en'
+  isFirstLogin  Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Password reset
+  passwordResetToken  String?   @unique @map("password_reset_token")
+  passwordResetExpiry DateTime? @map("password_reset_expiry")
+
+  // Notification preferences
+  emailNotifications Boolean  @default(true) @map("email_notifications")
+  smsNotifications   Boolean  @default(false) @map("sms_notifications")
+  
+  accountant    Accountant @relation(fields: [accountantId], references: [id], onDelete: Cascade)
+  taxYears      TaxYear[]
+
+  @@map("clients")
+}
+
+model TaxYear {
+  id                String   @id @default(uuid())
+  clientId          String   @map("client_id")
+  year              Int
+  status            String   @default("draft") // draft, submitted, in_review, completed, archived
+  profile           Json     @default("{}") // income types, family info, province-specific data
+  completenessScore Int      @default(0) @map("completeness_score") // 0-100% (validate in application layer)
+  submittedAt       DateTime? @map("submitted_at")
+  reviewedAt        DateTime? @map("reviewed_at")
+  completedAt       DateTime? @map("completed_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  reviewNotes       String?  @map("review_notes") // Accountant notes
+
+  client      Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  documents   Document[]
+  validations Validation[]
+
+  @@unique([clientId, year])
+  @@map("tax_years")
+}
+
+model Document {
+  id                   String    @id @default(uuid())
+  taxYearId            String    @map("tax_year_id")
+  docType              String    @map("doc_type") // T4, RL1, T5, etc.
+  docSubtype           String?   @map("doc_subtype") // employer/institution name
+  originalFilename     String?   @map("original_filename")
+  fileUrl              String    @map("file_url") // Supabase Storage URL
+  fileSizeBytes        Int?      @map("file_size_bytes")
+  mimeType             String?   @map("mime_type")
+  extractedData        Json      @default("{}") @map("extracted_data") // OCR results
+  extractionStatus     String    @default("pending") @map("extraction_status") // pending, processing, success, failed
+  extractionConfidence Decimal?  @map("extraction_confidence") @db.Decimal(3, 2) // 0.00 to 1.00 (validate in application layer)
+  uploadedAt           DateTime  @default(now()) @map("uploaded_at")
+  
+  // Accountant review fields
+  reviewStatus         String    @default("pending") @map("review_status") // pending, approved, rejected
+  reviewedBy           String?   @map("reviewed_by") // accountant ID
+  reviewedAt           DateTime? @map("reviewed_at")
+  rejectionReason      String?   @map("rejection_reason")
+
+  taxYear  TaxYear     @relation(fields: [taxYearId], references: [id], onDelete: Cascade)
+  reviewer Accountant? @relation(fields: [reviewedBy], references: [id])
+
+  @@map("documents")
+}
+
+model Validation {
+  id              String   @id @default(uuid())
+  taxYearId       String   @map("tax_year_id")
+  ruleCode        String   @map("rule_code") // e.g., "QUEBEC_T4_RL1_PAIR"
+  status          String   // pass, fail, warning
+  message         String?
+  missingDocType  String?  @map("missing_doc_type") // e.g., "RL1"
+  checkedAt       DateTime @default(now()) @map("checked_at")
+
+  taxYear TaxYear @relation(fields: [taxYearId], references: [id], onDelete: Cascade)
+
+  @@map("validations")
+}
+
+model Notification {
+  id            String   @id @default(uuid())
+  recipientId   String   @map("recipient_id")
+  recipientType String   @map("recipient_type") // 'accountant' or 'client'
+  type          String   // 'client_submitted', 'missing_docs', etc.
+  title         String
+  body          String?
+  read          Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([recipientId, read])
+  @@map("notifications")
+}
+
+model NotificationLog {
+  id          String   @id @default(uuid())
+  recipientId String   @map("recipient_id")
+  type        String   // email, sms
+  channel     String   // document_uploaded, document_rejected, submission_ready, etc.
+  status      String   // sent, failed, pending
+  sentAt      DateTime @default(now()) @map("sent_at")
+  metadata    Json     @default("{}")
+
+  @@map("notification_logs")
+}

@@ -1,0 +1,23 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": ["eslint:recommended", "plugin:prettier/recommended"],
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module"
+  },
+  "globals": {
+    "_": "readonly",
+    "getFormData": "readonly",
+    "TaxCalculator": "readonly",
+    "lastCalculationData": "writable",
+    "test": "readonly"
+  },
+  "rules": {
+    "no-unused-vars": ["warn"],
+    "no-console": "off"
+  }
+}

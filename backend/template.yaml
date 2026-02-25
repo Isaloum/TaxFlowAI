@@ -1,0 +1,118 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: TaxFlowAI Backend API - Serverless Lambda Functions
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 30
+    MemorySize: 1024
+    Environment:
+      Variables:
+        DATABASE_URL: !Ref DatabaseUrl
+        SUPABASE_URL: !Ref SupabaseUrl
+        SUPABASE_SERVICE_KEY: !Ref SupabaseServiceKey
+        OPENAI_API_KEY: !Ref OpenAIKey
+        SES_EMAIL: notifications@isaloumapps.com
+        NODE_ENV: production
+
+Parameters:
+  DatabaseUrl:
+    Type: String
+    NoEcho: true
+    Description: Supabase PostgreSQL connection string
+  SupabaseUrl:
+    Type: String
+    Description: Supabase project URL
+  SupabaseServiceKey:
+    Type: String
+    NoEcho: true
+    Description: Supabase service role key
+  OpenAIKey:
+    Type: String
+    NoEcho: true
+    Description: OpenAI API key for document classification
+  AllowedOrigin:
+    Type: String
+    Default: "'https://isaloumapps.com,https://www.isaloumapps.com'"
+    Description: Allowed CORS origins (comma-separated)
+
+Resources:
+  TaxFlowAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowOrigin: !Ref AllowedOrigin
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowCredentials: true
+
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/lambda/auth.handler
+      Description: Authentication and user management
+      Events:
+        AuthAPI:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /auth/{proxy+}
+            Method: ANY
+
+  DocumentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/lambda/documents.handler
+      Description: Document upload, classification, and management
+      Events:
+        DocumentAPI:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /documents/{proxy+}
+            Method: ANY
+
+  UserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/lambda/users.handler
+      Description: User profile and settings management
+      Events:
+        UserAPI:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /users/{proxy+}
+            Method: ANY
+
+  NotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/lambda/notifications.handler
+      Description: Email and notification service via SES
+      Events:
+        NotificationAPI:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /notifications/{proxy+}
+            Method: ANY
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${TaxFlowAPI}.execute-api.us-east-1.amazonaws.com/prod"
+    Export:
+      Name: TaxFlowAPIEndpoint
+  
+  ApiId:
+    Description: "API Gateway ID"
+    Value: !Ref TaxFlowAPI
+    Export:
+      Name: TaxFlowAPIId
