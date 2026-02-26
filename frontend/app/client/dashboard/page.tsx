@@ -125,11 +125,22 @@ export default function ClientDashboard() {
   // Alerts
   const rejectedDocs: { year: number; docType: string }[] = [];
   (profile?.taxYears || []).forEach((ty: any) => {
+    if (ty.status === 'completed') return; // skip completed years from rejection banner
     (ty.documents || []).forEach((d: any) => {
       if (d.reviewStatus === 'rejected') rejectedDocs.push({ year: ty.year, docType: d.docType });
     });
   });
-  const isCompleted = (profile?.taxYears || []).some((ty: any) => ty.status === 'completed');
+  const completedYears = (profile?.taxYears || [])
+    .filter((ty: any) => ty.status === 'completed')
+    .map((ty: any) => ty.year)
+    .sort((a: number, b: number) => b - a);
+  const isCompleted = completedYears.length > 0;
+
+  // Years with rejected docs (for banner)
+  const rejectedYears = [...new Set(rejectedDocs.map(d => d.year))].sort((a, b) => b - a);
+  const rejectedYearsLabel = rejectedYears.length > 0
+    ? `(${rejectedYears.join(' & ')})`
+    : '';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -171,7 +182,7 @@ export default function ClientDashboard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <p className="text-sm font-semibold text-green-800">🎉 Your tax return is complete!</p>
+              <p className="text-sm font-semibold text-green-800">🎉 Your {completedYears.join(' & ')} tax return{completedYears.length > 1 ? 's are' : ' is'} complete!</p>
               <p className="text-xs text-green-600 mt-0.5">Your accountant has finished processing your file.</p>
             </div>
           </div>
@@ -185,7 +196,7 @@ export default function ClientDashboard() {
             </svg>
             <div>
               <p className="text-sm font-semibold text-red-800">
-                Action required — {rejectedDocs.length} document{rejectedDocs.length > 1 ? 's need' : ' needs'} correction
+                Action required — {rejectedDocs.length} document{rejectedDocs.length > 1 ? 's need' : ' needs'} correction {rejectedYearsLabel}
               </p>
               <p className="text-xs text-red-600 mt-0.5">Click the year below to re-upload the correct document.</p>
             </div>
