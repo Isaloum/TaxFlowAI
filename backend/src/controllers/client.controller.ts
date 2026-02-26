@@ -111,6 +111,7 @@ export const getTaxYearCompleteness = async (req: Request, res: Response) => {
           filename:             d.originalFilename,
           uploadedAt:           d.uploadedAt,
           reviewStatus:         d.reviewStatus,
+          rejectionReason:      d.rejectionReason ?? null,
           // Extraction / verification fields
           extractionStatus:     d.extractionStatus,
           extractionConfidence: d.extractionConfidence,
