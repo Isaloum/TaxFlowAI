@@ -39,7 +39,7 @@
     "@playwright/test": "^1.58.2",
     "axe-core": "^4.11.1",
     "c8": "^11.0.0",
-    "eslint": "^10.0.1",
+    "eslint": "^10.0.2",
     "eslint-config-next": "^16.1.6",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
