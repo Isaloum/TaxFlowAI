@@ -394,15 +394,17 @@ export default function TaxYearClient() {
   const [pollCount,    setPollCount]    = useState(0);
   const [deletingId,   setDeletingId]   = useState<string | null>(null);
   const [uploadFlash,  setUploadFlash]  = useState(false);
+  const [pendingReupload, setPendingReupload] = useState<Set<string>>(new Set());
   const fileInputRef  = useRef<HTMLInputElement>(null);
   const uploadFormRef = useRef<HTMLDivElement>(null);
 
-  const handleReupload = (type: string, owner?: string) => {
+  const handleReupload = (type: string, owner?: string, docId?: string) => {
     setDocType(type);
     if (owner) setOwnerName(owner);
+    if (docId) setPendingReupload(prev => new Set([...prev, docId]));
     uploadFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setUploadFlash(true);
-    setTimeout(() => setUploadFlash(false), 1800);
+    setTimeout(() => setUploadFlash(false), 3000);
   };
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
@@ -805,17 +807,19 @@ export default function TaxYearClient() {
                                   {/* Simple client-friendly status — one badge only */}
                                   {approved && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">✓ Received</span>}
                                   {!approved && rejected && (
-                                    <>
-                                      <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">
-                                        ⚠️{doc.rejectionReason ? ` ${doc.rejectionReason}` : ' Fix needed'}
-                                      </span>
-                                      <button
-                                        onClick={() => handleReupload(doc.docType, doc.ownerName)}
-                                        className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full hover:bg-blue-700 transition font-medium"
-                                      >
-                                        ↩ Re-upload
-                                      </button>
-                                    </>
+                                    pendingReupload.has(doc.id)
+                                      ? <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">⏳ Under review</span>
+                                      : <>
+                                          <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">
+                                            ⚠️{doc.rejectionReason ? ` ${doc.rejectionReason}` : ' Fix needed'}
+                                          </span>
+                                          <button
+                                            onClick={() => handleReupload(doc.docType, doc.ownerName, doc.id)}
+                                            className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full hover:bg-blue-700 transition font-medium"
+                                          >
+                                            ↩ Re-upload
+                                          </button>
+                                        </>
                                   )}
                                   {!approved && !rejected && hasMismatch && doc.typeMismatch && <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full">⚠️ Wrong document</span>}
                                   {!approved && !rejected && hasMismatch && !doc.typeMismatch && doc.yearMismatch && <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full">⚠️ Wrong year</span>}
@@ -883,17 +887,19 @@ export default function TaxYearClient() {
                           {doc.reviewStatus === 'approved'
                             ? <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">✓ Received</span>
                             : doc.reviewStatus === 'rejected'
-                            ? <>
-                                <span className="text-[11px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">
-                                  ⚠️{doc.rejectionReason ? ` ${doc.rejectionReason}` : ' Fix needed'}
-                                </span>
-                                <button
-                                  onClick={() => handleReupload(doc.docType, doc.ownerName)}
-                                  className="text-[11px] bg-blue-600 text-white px-2 py-0.5 rounded-full hover:bg-blue-700 transition font-medium"
-                                >
-                                  ↩ Re-upload
-                                </button>
-                              </>
+                            ? pendingReupload.has(doc.id)
+                              ? <span className="text-[11px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">⏳ Under review</span>
+                              : <>
+                                  <span className="text-[11px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">
+                                    ⚠️{doc.rejectionReason ? ` ${doc.rejectionReason}` : ' Fix needed'}
+                                  </span>
+                                  <button
+                                    onClick={() => handleReupload(doc.docType, doc.ownerName, doc.id)}
+                                    className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full hover:bg-blue-700 transition font-medium mt-1"
+                                  >
+                                    ↩ Re-upload
+                                  </button>
+                                </>
                             : doc.typeMismatch
                             ? <span className="text-[11px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">⚠️ Wrong document</span>
                             : doc.yearMismatch
