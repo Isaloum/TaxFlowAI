@@ -1,0 +1,91 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      # App config
+      BASE_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://localhost:5000/api
+
+      # Test credentials (set as GitHub secrets)
+      TEST_ACCOUNTANT_EMAIL:    ${{ secrets.TEST_ACCOUNTANT_EMAIL }}
+      TEST_ACCOUNTANT_PASSWORD: ${{ secrets.TEST_ACCOUNTANT_PASSWORD }}
+      TEST_CLIENT_EMAIL:        ${{ secrets.TEST_CLIENT_EMAIL }}
+      TEST_CLIENT_PASSWORD:     ${{ secrets.TEST_CLIENT_PASSWORD }}
+
+      # Backend config (set as GitHub secrets)
+      DATABASE_URL:   ${{ secrets.DATABASE_URL }}
+      JWT_SECRET:     ${{ secrets.JWT_SECRET }}
+      SUPABASE_URL:   ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY:   ${{ secrets.SUPABASE_KEY }}
+      AWS_REGION:     us-east-1
+      SES_EMAIL:      ${{ secrets.SES_EMAIL }}
+      FRONTEND_URL:   http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # ── Install dependencies ──────────────────────────────────────────────
+      - name: Install root deps
+        run: npm ci
+
+      - name: Install frontend deps
+        run: npm ci
+        working-directory: frontend
+
+      - name: Install backend deps
+        run: npm ci
+        working-directory: backend
+
+      # ── Install Playwright browsers ───────────────────────────────────────
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      # ── Build frontend ────────────────────────────────────────────────────
+      - name: Build frontend
+        run: npm run build
+        working-directory: frontend
+
+      # ── Start servers ─────────────────────────────────────────────────────
+      - name: Start backend
+        run: npm run dev &
+        working-directory: backend
+
+      - name: Start frontend
+        run: npm run start &
+        working-directory: frontend
+        env:
+          PORT: 3000
+
+      - name: Wait for servers to be ready
+        run: |
+          npx wait-on http://localhost:3000 http://localhost:5000/api/health --timeout 30000
+
+      # ── Run E2E tests ─────────────────────────────────────────────────────
+      - name: Run Playwright tests
+        run: npx playwright test
+        env:
+          CI: true
+
+      # ── Upload report on failure ──────────────────────────────────────────
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
