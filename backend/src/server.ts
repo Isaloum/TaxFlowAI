@@ -19,16 +19,24 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-// Build allowed origins — always include both www and non-www variants
+// CORS_ORIGINS: comma-separated list of allowed origins (takes priority)
+// e.g. CORS_ORIGINS=https://isaloumapps.com,https://www.isaloumapps.com
 const ALLOWED_ORIGINS = (() => {
+  const origins = new Set<string>(['http://localhost:3000', 'http://localhost:4000']);
+
+  // Add all explicitly listed origins
+  const explicit = process.env.CORS_ORIGINS || '';
+  explicit.split(',').map(o => o.trim()).filter(Boolean).forEach(o => origins.add(o));
+
+  // Also derive from FRONTEND_URL — add both www and non-www
   const base = FRONTEND_URL.replace(/\/$/, '');
-  const origins = new Set<string>(['http://localhost:3000', 'http://localhost:4000', base]);
-  // Add www ↔ non-www counterpart for production domains
+  origins.add(base);
   if (base.startsWith('https://www.')) {
     origins.add(base.replace('https://www.', 'https://'));
   } else if (base.startsWith('https://')) {
     origins.add(base.replace('https://', 'https://www.'));
   }
+
   return [...origins];
 })();
 
@@ -38,8 +46,7 @@ app.use(helmet());
 // ── CORS ─────────────────────────────────────────────────────────────────────
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (server-to-server, mobile apps)
-    if (!origin) return callback(null, true);
+    if (!origin) return callback(null, true); // server-to-server / mobile
     if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
     callback(new Error(`CORS: origin ${origin} not allowed`));
   },
