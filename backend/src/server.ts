@@ -19,12 +19,30 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
+// Build allowed origins — always include both www and non-www variants
+const ALLOWED_ORIGINS = (() => {
+  const base = FRONTEND_URL.replace(/\/$/, '');
+  const origins = new Set<string>(['http://localhost:3000', 'http://localhost:4000', base]);
+  // Add www ↔ non-www counterpart for production domains
+  if (base.startsWith('https://www.')) {
+    origins.add(base.replace('https://www.', 'https://'));
+  } else if (base.startsWith('https://')) {
+    origins.add(base.replace('https://', 'https://www.'));
+  }
+  return [...origins];
+})();
+
 // ── Security headers ─────────────────────────────────────────────────────────
 app.use(helmet());
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (server-to-server, mobile apps)
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true,
 }));
 
