@@ -13,14 +13,18 @@ function getTokenForUrl(url?: string): string | null {
   const path = url || '';
   // Accountant endpoints
   if (path.includes('/accountant/') || path.includes('/users/accountant/')) {
-    return localStorage.getItem('auth_token_accountant');
+    return localStorage.getItem('auth_token_accountant')
+      || localStorage.getItem('auth_token'); // fallback for existing sessions
   }
   // Client endpoints
   if (path.includes('/client/') || path.includes('/users/client/')) {
-    return localStorage.getItem('auth_token_client');
+    return localStorage.getItem('auth_token_client')
+      || localStorage.getItem('auth_token');
   }
-  // Auth / other endpoints — try accountant first, then client
-  return localStorage.getItem('auth_token_accountant') || localStorage.getItem('auth_token_client');
+  // Shared endpoints (/documents/, /auth/, etc.) — use whichever token exists
+  return localStorage.getItem('auth_token_accountant')
+    || localStorage.getItem('auth_token_client')
+    || localStorage.getItem('auth_token'); // legacy fallback
 }
 
 api.interceptors.request.use((config) => {
