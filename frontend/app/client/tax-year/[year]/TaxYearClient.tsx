@@ -393,15 +393,19 @@ export default function TaxYearClient() {
   const [ownerName,    setOwnerName]    = useState('');
   const [pollCount,    setPollCount]    = useState(0);
   const [deletingId,   setDeletingId]   = useState<string | null>(null);
-  const [uploadFlash,  setUploadFlash]  = useState(false);
+  const [uploadFlash,     setUploadFlash]     = useState(false);
   const [pendingReupload, setPendingReupload] = useState<Set<string>>(new Set());
+  const [replacingDocId,  setReplacingDocId]  = useState<string | null>(null);
   const fileInputRef  = useRef<HTMLInputElement>(null);
   const uploadFormRef = useRef<HTMLDivElement>(null);
 
   const handleReupload = (type: string, owner?: string, docId?: string) => {
     setDocType(type);
     if (owner) setOwnerName(owner);
-    if (docId) setPendingReupload(prev => new Set([...prev, docId]));
+    if (docId) {
+      setPendingReupload(prev => new Set([...prev, docId]));
+      setReplacingDocId(docId); // remember which doc to delete on next upload
+    }
     uploadFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setUploadFlash(true);
     setTimeout(() => setUploadFlash(false), 3000);
@@ -491,8 +495,26 @@ export default function TaxYearClient() {
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) return;
+
+    // Block exact duplicate: same filename + same docType already uploaded (and not the one being replaced)
+    const duplicate = uploadedDocs.find(
+      (d: any) => d.filename === selectedFile.name && d.docType === docType && d.id !== replacingDocId
+    );
+    if (duplicate) {
+      showToast('This file is already uploaded. Delete the existing one first if you want to replace it.', 'error');
+      return;
+    }
+
     setUploading(true);
     try {
+      // Auto-delete the old rejected/mismatch doc being replaced (prevents duplicates)
+      const oldDocId = replacingDocId;
+      if (oldDocId) {
+        try { await APIClient.deleteDocument(oldDocId); } catch (_) {}
+        setReplacingDocId(null);
+        setPendingReupload(prev => { const s = new Set(prev); s.delete(oldDocId); return s; });
+      }
+
       const presignRes = await APIClient.presignUpload(year, {
         docType,
         filename: selectedFile.name,
@@ -509,6 +531,7 @@ export default function TaxYearClient() {
       setDocLabel('');
       setOwnerName('');
       setPollCount(0);
+      setReplacingDocId(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       showToast(`${docType} uploaded successfully!`);
       loadCompleteness();
