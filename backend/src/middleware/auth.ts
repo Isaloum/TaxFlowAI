@@ -8,8 +8,14 @@ if (!JWT_SECRET) {
 }
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  // 1. Try HttpOnly cookie first (JS cannot read this — XSS safe)
+  let token: string | undefined = (req as any).cookies?.taxflow_token;
+
+  // 2. Fall back to Authorization header (for API clients / mobile)
+  if (!token) {
+    const authHeader = req.headers['authorization'];
+    token = (authHeader && authHeader.split(' ')[1]) || undefined;
+  }
 
   if (!token) {
     return res.status(401).json({ error: 'Access token required' });

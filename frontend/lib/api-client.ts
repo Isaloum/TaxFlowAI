@@ -4,7 +4,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 const api = axios.create({
   baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 });
 
 // Role-specific keys prevent token collision when both tabs are open
@@ -68,6 +69,10 @@ export class APIClient {
 
   static async changePassword(currentPassword: string, newPassword: string) {
     return api.post('/auth/change-password', { currentPassword, newPassword });
+  }
+
+  static async getMe() {
+    return api.get('/auth/me');
   }
 
   static async getProfile() {

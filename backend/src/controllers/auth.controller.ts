@@ -65,6 +65,14 @@ export const registerAccountant = async (req: Request, res: Response) => {
       signOptions
     );
 
+    res.cookie('taxflow_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000,
+      path: '/',
+    });
+
     res.status(201).json({
       message: 'Accountant registered successfully',
       token,
@@ -106,6 +114,14 @@ export const login = async (req: Request, res: Response) => {
           signOptions
         );
 
+        res.cookie('taxflow_token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 24 * 60 * 60 * 1000,
+          path: '/',
+        });
+
         return res.status(200).json({
           message: 'Login successful',
           token,
@@ -136,6 +152,14 @@ export const login = async (req: Request, res: Response) => {
           JWT_SECRET,
           signOptions
         );
+
+        res.cookie('taxflow_token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 24 * 60 * 60 * 1000,
+          path: '/',
+        });
 
         return res.status(200).json({
           message: 'Login successful',
@@ -232,6 +256,7 @@ export const changePassword = async (req: Request, res: Response) => {
 };
 
 export const logout = async (req: Request, res: Response) => {
+  res.clearCookie('taxflow_token', { path: '/' });
   res.status(200).json({ message: 'Logout successful' });
 };
 
@@ -323,4 +348,9 @@ export const resetPassword = async (req: Request, res: Response) => {
     console.error('Reset password error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+};
+
+export const getMe = async (req: Request, res: Response) => {
+  if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
+  res.json({ user: req.user });
 };
