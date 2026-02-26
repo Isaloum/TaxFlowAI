@@ -10,6 +10,7 @@ import clientRoutes from './routes/client.routes';
 import documentRoutes from './routes/document.routes';
 import validationRoutes from './routes/validation.routes';
 import adminRoutes from './routes/admin.routes';
+import billingRoutes from './routes/billing.routes';
 import { startDailyDigestCron } from './jobs/daily-digest.cron';
 
 dotenv.config();
@@ -47,8 +48,9 @@ app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', message: 'TaxFlowAI API is running' });
 });
 
-app.use('/api/auth',  authRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/auth',    authRoutes);
+app.use('/api/admin',   adminRoutes);
+app.use('/api/billing', billingRoutes);
 app.use('/api/accountant', accountantRoutes);
 app.use('/api/client', clientRoutes);
 app.use('/api/client', documentRoutes);

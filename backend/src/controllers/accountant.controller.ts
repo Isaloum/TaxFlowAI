@@ -9,6 +9,7 @@ import { NotificationService } from '../services/notifications/notification.serv
 import { ValidationService } from '../services/validation.service';
 import { StorageService } from '../services/storage.service';
 import { enqueueExtraction } from '../services/sqs.service';
+import { syncStripeSeats } from './billing.controller';
 
 /**
  * POST /api/accountant/tax-years/:taxYearId/complete
@@ -197,6 +198,9 @@ export const createClient = async (req: Request, res: Response) => {
       console.error('Failed to send invitation email:', emailError);
     }
 
+    // Sync Stripe seat count (non-fatal)
+    syncStripeSeats(req.user!.sub).catch(() => {});
+
     res.status(201).json({
       message: 'Client created successfully',
       client: {
@@ -311,6 +315,9 @@ export const deleteClient = async (req: Request, res: Response) => {
     await prisma.client.delete({
       where: { id },
     });
+
+    // Sync Stripe seat count (non-fatal)
+    syncStripeSeats(req.user!.sub).catch(() => {});
 
     res.status(200).json({ message: 'Client deleted successfully' });
   } catch (error) {

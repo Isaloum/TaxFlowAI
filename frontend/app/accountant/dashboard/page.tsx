@@ -43,6 +43,8 @@ export default function AccountantDashboard() {
   const [formError, setFormError] = useState('');
   const [toast, setToast] = useState('');
 
+  const [billingBlocked, setBillingBlocked] = useState(false);
+
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '',
     province: 'QC', phone: '', languagePref: 'fr' as 'en' | 'fr',
@@ -50,9 +52,21 @@ export default function AccountantDashboard() {
 
   useEffect(() => {
     loadClients();
+    checkBilling();
     const timeout = setTimeout(() => setLoading(false), 10000);
     return () => clearTimeout(timeout);
   }, []);
+
+  const checkBilling = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/billing/status`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        const blocked = data.subscriptionStatus === 'canceled' || data.subscriptionStatus === 'unpaid';
+        setBillingBlocked(blocked);
+      }
+    } catch { /* non-fatal */ }
+  };
 
   const loadClients = async () => {
     try {
@@ -142,6 +156,12 @@ export default function AccountantDashboard() {
         </div>
         <div className="flex items-center gap-4">
           <LanguageToggle />
+          <button onClick={() => router.push('/accountant/billing')} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 transition">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            Billing
+          </button>
           <button onClick={logout} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-600 transition">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -158,15 +178,27 @@ export default function AccountantDashboard() {
             <h1 className="text-2xl font-bold text-gray-900">{t('acctDash.title')}</h1>
             <p className="text-sm text-gray-500 mt-1">{t('acctDash.subtitle')}</p>
           </div>
-          <button
-            onClick={() => setShowAddClient(true)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition shadow-sm"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            {t('acctDash.addClient')}
-          </button>
+          {billingBlocked ? (
+            <button
+              onClick={() => router.push('/accountant/billing')}
+              className="flex items-center gap-2 bg-red-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-red-700 transition shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M12 3a9 9 0 100 18A9 9 0 0012 3z" />
+              </svg>
+              Subscription Required
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowAddClient(true)}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              {t('acctDash.addClient')}
+            </button>
+          )}
         </div>
 
         {/* Stats */}

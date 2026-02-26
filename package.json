@@ -57,5 +57,9 @@
     "*.html": [
       "prettier --write"
     ]
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
   }
 }

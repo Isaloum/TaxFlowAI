@@ -26,7 +26,15 @@ model Accountant {
   emailNotifications Boolean  @default(true) @map("email_notifications")
   smsNotifications   Boolean  @default(true) @map("sms_notifications")
   dailyDigest        Boolean  @default(true) @map("daily_digest")
-  
+
+  // Stripe billing
+  stripeCustomerId     String?   @unique @map("stripe_customer_id")
+  stripeSubscriptionId String?   @unique @map("stripe_subscription_id")
+  subscriptionStatus   String    @default("trialing") @map("subscription_status")
+  // trialing | active | past_due | canceled | unpaid
+  trialEndsAt          DateTime? @map("trial_ends_at")
+  currentPeriodEnd     DateTime? @map("current_period_end")
+
   clients           Client[]
   reviewedDocuments Document[]
 
