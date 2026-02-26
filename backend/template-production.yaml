@@ -37,7 +37,7 @@ Parameters:
   
   AllowedOrigin:
     Type: String
-    Default: "*"
+    Default: "https://www.isaloumapps.com,https://isaloumapps.com"
     Description: CORS allowed origin
 
 
@@ -96,8 +96,9 @@ Resources:
       StageName: !Ref Environment
       Cors:
         AllowMethods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
-        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
-        AllowOrigin: "'*'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,Cookie'"
+        AllowOrigin: "'https://www.isaloumapps.com'"
+        AllowCredentials: "'true'"
 
   # Auth Lambda
   AuthFunction:
