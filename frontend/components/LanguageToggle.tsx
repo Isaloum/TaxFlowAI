@@ -9,7 +9,7 @@ export default function LanguageToggle() {
       title={lang === 'en' ? 'Switch to French' : 'Passer en anglais'}
       className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition text-gray-600 hover:text-blue-600 select-none"
     >
-      {lang === 'en' ? '🇫🇷 FR' : '🇨🇦 EN'}
+      {lang === 'en' ? 'FR' : 'EN'}
     </button>
   );
 }
