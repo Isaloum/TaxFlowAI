@@ -2,11 +2,18 @@ import { Request, Response } from 'express';
 import Stripe from 'stripe';
 import prisma from '../config/database';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-01-27.acacia',
-});
+// Lazy Stripe init — avoids crash at Lambda startup when STRIPE_SECRET_KEY not yet configured
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) throw new Error('STRIPE_SECRET_KEY is not configured');
+    _stripe = new Stripe(key, { apiVersion: '2025-01-27.acacia' });
+  }
+  return _stripe;
+}
 
-const PRICE_ID     = process.env.STRIPE_PRICE_ID!;      // per-seat monthly price
+const PRICE_ID     = process.env.STRIPE_PRICE_ID || '';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://www.isaloumapps.com';
 const TRIAL_DAYS   = 30;
 
@@ -64,7 +71,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
     // Create or reuse Stripe customer
     let customerId = accountant.stripeCustomerId;
     if (!customerId) {
-      const customer = await stripe.customers.create({
+      const customer = await getStripe().customers.create({
         email: accountant.email,
         name:  accountant.firmName,
         metadata: { accountantId },
@@ -78,7 +85,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
 
     const clientCount = Math.max(accountant._count.clients, 1); // min 1 seat
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       customer:   customerId,
       mode:       'subscription',
       line_items: [{
@@ -118,7 +125,7 @@ export const createPortalSession = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'No active subscription found' });
     }
 
-    const session = await stripe.billingPortal.sessions.create({
+    const session = await getStripe().billingPortal.sessions.create({
       customer:   accountant.stripeCustomerId,
       return_url: `${FRONTEND_URL}/accountant/billing`,
     });
@@ -141,7 +148,7 @@ export const stripeWebhook = async (req: Request, res: Response) => {
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, secret);
+    event = getStripe().webhooks.constructEvent(req.body, sig, secret);
   } catch (err: any) {
     console.error('Webhook signature verification failed:', err.message);
     return res.status(400).json({ error: `Webhook Error: ${err.message}` });
@@ -154,7 +161,7 @@ export const stripeWebhook = async (req: Request, res: Response) => {
         const accountantId = session.metadata?.accountantId;
         if (!accountantId || !session.subscription) break;
 
-        const sub = await stripe.subscriptions.retrieve(session.subscription as string);
+        const sub = await getStripe().subscriptions.retrieve(session.subscription as string);
         await prisma.accountant.update({
           where: { id: accountantId },
           data: {
@@ -219,11 +226,11 @@ export async function syncStripeSeats(accountantId: string): Promise<void> {
     if (!accountant?.stripeSubscriptionId) return; // no subscription yet
     if (!['active', 'trialing'].includes(accountant.subscriptionStatus)) return;
 
-    const sub = await stripe.subscriptions.retrieve(accountant.stripeSubscriptionId);
+    const sub = await getStripe().subscriptions.retrieve(accountant.stripeSubscriptionId);
     const itemId = sub.items.data[0]?.id;
     if (!itemId) return;
 
-    await stripe.subscriptionItems.update(itemId, {
+    await getStripe().subscriptionItems.update(itemId, {
       quantity: Math.max(accountant._count.clients, 1),
     });
   } catch (error) {
