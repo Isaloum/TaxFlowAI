@@ -1,39 +1,22 @@
-import { Resend } from 'resend';
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
-// Validate required environment variables
-if (!process.env.RESEND_API_KEY) {
-  console.warn('Resend API key not configured. Email notifications will be disabled.');
+const sesClient = new SESClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const FROM_EMAIL = process.env.SES_EMAIL || 'notifications@isaloumapps.com';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://www.isaloumapps.com';
+
+async function sendEmail(to: string, subject: string, html: string): Promise<void> {
+  const command = new SendEmailCommand({
+    Source: FROM_EMAIL,
+    Destination: { ToAddresses: [to] },
+    Message: {
+      Subject: { Data: subject, Charset: 'UTF-8' },
+      Body: { Html: { Data: html, Charset: 'UTF-8' } },
+    },
+  });
+  await sesClient.send(command);
 }
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@taxflowai.com';
-
 export class EmailService {
-  /**
-   * Send welcome email to new client
-   * Note: Reserved for future use - not currently called
-   */
-  static async sendWelcomeEmail(to: string, firstName: string): Promise<void> {
-    if (!resend) {
-      console.warn('Resend not configured, skipping email');
-      return;
-    }
-    
-    await resend.emails.send({
-      from: FROM_EMAIL,
-      to,
-      subject: 'Welcome to TaxFlowAI',
-      html: `
-        <h1>Welcome ${firstName}!</h1>
-        <p>Your TaxFlowAI account has been created successfully.</p>
-        <p>You can now upload your tax documents and track your submission progress in real-time.</p>
-        <p><a href="${process.env.FRONTEND_URL}/client/dashboard">Go to Dashboard</a></p>
-        <br>
-        <p>Questions? Reply to this email.</p>
-      `
-    });
-  }
-
   /**
    * Notify client: document uploaded successfully
    */
@@ -43,26 +26,19 @@ export class EmailService {
     docType: string,
     year: number
   ): Promise<void> {
-    if (!resend) {
-      console.warn('Resend not configured, skipping email');
-      return;
-    }
-    
-    await resend.emails.send({
-      from: FROM_EMAIL,
-      to,
-      subject: `Document Uploaded: ${docType}`,
-      html: `
-        <h2>Hi ${firstName},</h2>
-        <p>Your <strong>${docType}</strong> for tax year <strong>${year}</strong> has been uploaded successfully.</p>
-        <p>We're processing it now and will update you once it's reviewed.</p>
-        <p><a href="${process.env.FRONTEND_URL}/client/tax-year/${year}">View Documents</a></p>
-      `
-    });
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#2563eb;">Document Received — TaxFlowAI</h2>
+        <p>Hi ${firstName},</p>
+        <p>Your <strong>${docType}</strong> for tax year <strong>${year}</strong> has been uploaded and is now under review.</p>
+        <p><a href="${FRONTEND_URL}/client/tax-year/${year}" style="background:#2563eb;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;">View Documents</a></p>
+        <p style="color:#6b7280;font-size:13px;">Thank you for using TaxFlowAI.</p>
+      </div>`;
+    await sendEmail(to, `Document Received: ${docType} (${year})`, html);
   }
 
   /**
-   * Notify client: document rejected
+   * Notify client: document rejected — action required
    */
   static async sendDocumentRejectedEmail(
     to: string,
@@ -71,25 +47,19 @@ export class EmailService {
     reason: string,
     year: number
   ): Promise<void> {
-    if (!resend) {
-      console.warn('Resend not configured, skipping email');
-      return;
-    }
-    
-    await resend.emails.send({
-      from: FROM_EMAIL,
-      to,
-      subject: `Action Required: ${docType} Rejected`,
-      html: `
-        <h2>Hi ${firstName},</h2>
-        <p>Your <strong>${docType}</strong> was reviewed and needs to be re-uploaded.</p>
-        <div style="background: #fee; border-left: 4px solid #c33; padding: 12px; margin: 16px 0;">
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#dc2626;">Action Required — TaxFlowAI</h2>
+        <p>Hi ${firstName},</p>
+        <p>Your <strong>${docType}</strong> for tax year <strong>${year}</strong> needs to be re-uploaded.</p>
+        <div style="background:#fef2f2;border-left:4px solid #dc2626;padding:14px;margin:16px 0;border-radius:4px;">
           <strong>Reason:</strong> ${reason}
         </div>
-        <p>Please upload a corrected version.</p>
-        <p><a href="${process.env.FRONTEND_URL}/client/tax-year/${year}">Upload New Document</a></p>
-      `
-    });
+        <p>Please log in and upload a corrected version.</p>
+        <p><a href="${FRONTEND_URL}/client/tax-year/${year}" style="background:#dc2626;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;">Re-upload Now</a></p>
+        <p style="color:#6b7280;font-size:13px;">Thank you for using TaxFlowAI.</p>
+      </div>`;
+    await sendEmail(to, `Action Required: ${docType} Needs Re-upload (${year})`, html);
   }
 
   /**
@@ -101,28 +71,22 @@ export class EmailService {
     year: number,
     missingDocs: string[]
   ): Promise<void> {
-    if (!resend) {
-      console.warn('Resend not configured, skipping email');
-      return;
-    }
-    
     const docList = missingDocs.map((doc) => `<li>${doc}</li>`).join('');
-
-    await resend.emails.send({
-      from: FROM_EMAIL,
-      to,
-      subject: `Reminder: Missing Documents for ${year}`,
-      html: `
-        <h2>Hi ${firstName},</h2>
-        <p>You're almost done! We're still missing these documents for tax year ${year}:</p>
-        <ul>${docList}</ul>
-        <p><a href="${process.env.FRONTEND_URL}/client/tax-year/${year}">Upload Now</a></p>
-      `
-    });
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#d97706;">Reminder: Missing Documents — TaxFlowAI</h2>
+        <p>Hi ${firstName},</p>
+        <p>You still have missing documents for tax year <strong>${year}</strong>:</p>
+        <ul style="color:#374151;">${docList}</ul>
+        <p>Please upload them as soon as possible so your accountant can complete your return.</p>
+        <p><a href="${FRONTEND_URL}/client/tax-year/${year}" style="background:#2563eb;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;">Upload Now</a></p>
+        <p style="color:#6b7280;font-size:13px;">Thank you for using TaxFlowAI.</p>
+      </div>`;
+    await sendEmail(to, `Reminder: Missing Documents for ${year}`, html);
   }
 
   /**
-   * Notify accountant: client submitted documents
+   * Notify accountant: client submitted documents for review
    */
   static async sendSubmissionNotificationEmail(
     to: string,
@@ -131,25 +95,19 @@ export class EmailService {
     year: number,
     clientId: string
   ): Promise<void> {
-    if (!resend) {
-      console.warn('Resend not configured, skipping email');
-      return;
-    }
-    
-    await resend.emails.send({
-      from: FROM_EMAIL,
-      to,
-      subject: `New Submission: ${clientName} (${year})`,
-      html: `
-        <h2>Hi ${accountantName},</h2>
-        <p><strong>${clientName}</strong> has submitted documents for tax year <strong>${year}</strong>.</p>
-        <p><a href="${process.env.FRONTEND_URL}/accountant/client/${clientId}">Review Now</a></p>
-      `
-    });
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#2563eb;">New Submission Ready — TaxFlowAI</h2>
+        <p>Hi ${accountantName},</p>
+        <p><strong>${clientName}</strong> has submitted their documents for tax year <strong>${year}</strong> and is ready for your review.</p>
+        <p><a href="${FRONTEND_URL}/accountant/client/${clientId}" style="background:#2563eb;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;">Review Now</a></p>
+        <p style="color:#6b7280;font-size:13px;">TaxFlowAI — Accountant Portal</p>
+      </div>`;
+    await sendEmail(to, `New Submission: ${clientName} (${year})`, html);
   }
 
   /**
-   * Daily digest for accountant: pending reviews
+   * Daily digest for accountant: clients pending review
    */
   static async sendDailyDigestEmail(
     to: string,
@@ -157,28 +115,22 @@ export class EmailService {
     pendingCount: number,
     clients: Array<{ name: string; year: number; id: string }>
   ): Promise<void> {
-    if (!resend) {
-      console.warn('Resend not configured, skipping email');
-      return;
-    }
-    
     const clientList = clients
       .map(
         (c) =>
-          `<li><a href="${process.env.FRONTEND_URL}/accountant/client/${c.id}">${c.name} (${c.year})</a></li>`
+          `<li><a href="${FRONTEND_URL}/accountant/client/${c.id}" style="color:#2563eb;">${c.name} — ${c.year}</a></li>`
       )
       .join('');
 
-    await resend.emails.send({
-      from: FROM_EMAIL,
-      to,
-      subject: `Daily Digest: ${pendingCount} Clients Pending Review`,
-      html: `
-        <h2>Hi ${accountantName},</h2>
-        <p>You have <strong>${pendingCount}</strong> clients with pending document reviews:</p>
-        <ul>${clientList}</ul>
-        <p><a href="${process.env.FRONTEND_URL}/accountant/dashboard">Go to Dashboard</a></p>
-      `
-    });
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#2563eb;">Daily Digest — TaxFlowAI</h2>
+        <p>Hi ${accountantName},</p>
+        <p>You have <strong>${pendingCount}</strong> client${pendingCount !== 1 ? 's' : ''} waiting for review:</p>
+        <ul style="color:#374151;line-height:2;">${clientList}</ul>
+        <p><a href="${FRONTEND_URL}/accountant/dashboard" style="background:#2563eb;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;">Go to Dashboard</a></p>
+        <p style="color:#6b7280;font-size:13px;">TaxFlowAI — Accountant Portal</p>
+      </div>`;
+    await sendEmail(to, `Daily Digest: ${pendingCount} Client${pendingCount !== 1 ? 's' : ''} Pending Review`, html);
   }
 }
