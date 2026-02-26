@@ -794,7 +794,16 @@ export default function TaxYearClient() {
                                 <div className="flex items-center gap-1 flex-shrink-0">
                                   {/* Simple client-friendly status — one badge only */}
                                   {approved && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">✓ Received</span>}
-                                  {!approved && rejected && <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">⚠️ Re-upload needed</span>}
+                                  {!approved && rejected && (
+                                    <div className="flex flex-col items-end gap-0.5">
+                                      <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">⚠️ Re-upload needed</span>
+                                      {doc.rejectionReason && (
+                                        <span className="text-[10px] text-red-600 font-medium text-right max-w-[160px] leading-tight">
+                                          Reason: {doc.rejectionReason}
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
                                   {!approved && !rejected && hasMismatch && doc.typeMismatch && <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full">⚠️ Wrong document</span>}
                                   {!approved && !rejected && hasMismatch && !doc.typeMismatch && doc.yearMismatch && <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full">⚠️ Wrong year</span>}
                                   {!approved && !rejected && hasMismatch && !doc.typeMismatch && !doc.yearMismatch && doc.nameMismatch && <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full">⚠️ Wrong name</span>}
@@ -861,8 +870,14 @@ export default function TaxYearClient() {
                           {doc.reviewStatus === 'approved'
                             ? <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">✓ Received</span>
                             : doc.reviewStatus === 'rejected'
-                            ? <><span className="text-[11px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">⚠️ Re-upload needed</span>
-                              {doc.rejectionReason && <span className="text-[10px] text-red-500 text-right max-w-[140px] leading-tight">{doc.rejectionReason}</span>}</>
+                            ? <div className="flex flex-col items-end gap-1">
+                                <span className="text-[11px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">⚠️ Re-upload needed</span>
+                                {doc.rejectionReason && (
+                                  <span className="text-[11px] text-red-600 font-semibold text-right max-w-[160px] leading-tight bg-red-50 border border-red-200 rounded px-2 py-1">
+                                    💬 {doc.rejectionReason}
+                                  </span>
+                                )}
+                              </div>
                             : doc.typeMismatch
                             ? <span className="text-[11px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">⚠️ Wrong document</span>
                             : doc.yearMismatch
