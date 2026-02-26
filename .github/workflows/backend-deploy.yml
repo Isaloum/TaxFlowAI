@@ -122,7 +122,7 @@ jobs:
               SupabaseServiceKey="${{ secrets.SUPABASE_SERVICE_KEY }}" \
               OpenAIKey="${{ secrets.OPENAI_API_KEY }}" \
               JwtSecret="${{ secrets.JWT_SECRET }}" \
-              AllowedOrigin="*"
+              AllowedOrigin="https://isaloumapps.com,https://www.isaloumapps.com"
 
       - name: Get API endpoint
         id: endpoint

@@ -24,8 +24,8 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 const ALLOWED_ORIGINS = (() => {
   const origins = new Set<string>(['http://localhost:3000', 'http://localhost:4000']);
 
-  // Add all explicitly listed origins
-  const explicit = process.env.CORS_ORIGINS || '';
+  // Add all explicitly listed origins (CORS_ORIGINS or ALLOWED_ORIGIN from SAM)
+  const explicit = process.env.CORS_ORIGINS || process.env.ALLOWED_ORIGIN || '';
   explicit.split(',').map(o => o.trim()).filter(Boolean).forEach(o => origins.add(o));
 
   // Also derive from FRONTEND_URL — add both www and non-www
