@@ -3,17 +3,26 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { APIClient } from '@/lib/api-client';
+import { useT } from '@/lib/i18n';
+import LanguageToggle from '@/components/LanguageToggle';
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  completed: { label: 'Completed',   color: 'text-green-700',  bg: 'bg-green-100'  },
-  submitted: { label: 'Submitted',   color: 'text-blue-700',   bg: 'bg-blue-100'   },
-  draft:     { label: 'In Progress', color: 'text-yellow-700', bg: 'bg-yellow-100' },
-};
+// STATUS_CONFIG will use translations - see below in component
 
-function YearCard({ year, ty, onClick, large = false }: { year: number; ty: any; onClick: () => void; large?: boolean }) {
+function YearCard({ year, ty, onClick, large = false, t }: { year: number; ty: any; onClick: () => void; large?: boolean; t: any }) {
   const score     = ty?.completenessScore ?? 0;
   const status    = ty?.status || 'draft';
-  const cfg       = STATUS_CONFIG[status] || STATUS_CONFIG.draft;
+  const statusLabels: Record<string, string> = {
+    completed: t('clientDash.status.completed'),
+    submitted: t('clientDash.status.submitted'),
+    draft: t('clientDash.status.inreview'),
+  };
+  const statusColors: Record<string, { color: string; bg: string }> = {
+    completed: { color: 'text-green-700',  bg: 'bg-green-100'  },
+    submitted: { color: 'text-blue-700',   bg: 'bg-blue-100'   },
+    draft:     { color: 'text-yellow-700', bg: 'bg-yellow-100' },
+  };
+  const cfg = statusColors[status] || statusColors.draft;
+  const label = statusLabels[status] || statusLabels.draft;
   const docsCount = ty?.documents?.length ?? 0;
   const scoreColor = score >= 80 ? 'bg-green-500' : score >= 50 ? 'bg-yellow-400' : 'bg-red-400';
 
@@ -25,14 +34,14 @@ function YearCard({ year, ty, onClick, large = false }: { year: number; ty: any;
       <div className="flex items-center justify-between mb-4">
         <span className={`font-bold text-gray-900 ${large ? 'text-3xl' : 'text-xl'}`}>{year}</span>
         <span className={`text-xs font-medium px-2 py-1 rounded-full ${cfg.bg} ${cfg.color}`}>
-          {cfg.label}
+          {label}
         </span>
       </div>
 
       {/* Completeness bar */}
       <div className="mb-4">
         <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-          <span>Completeness</span>
+          <span>{t('clientDash.progress')}</span>
           <span className="font-semibold text-gray-700">{score}%</span>
         </div>
         <div className={`w-full bg-gray-100 rounded-full ${large ? 'h-2.5' : 'h-1.5'}`}>
@@ -42,7 +51,7 @@ function YearCard({ year, ty, onClick, large = false }: { year: number; ty: any;
 
       {/* Doc list */}
       {docsCount === 0 ? (
-        <p className="text-xs text-gray-400 italic">No documents uploaded yet</p>
+        <p className="text-xs text-gray-400 italic">{t('clientDash.noDocuments')}</p>
       ) : (
         <ul className="space-y-1.5">
           {(ty.documents as any[]).slice(0, large ? 6 : 3).map((doc: any, i: number) => (
@@ -63,7 +72,7 @@ function YearCard({ year, ty, onClick, large = false }: { year: number; ty: any;
 
       <div className={`flex items-center justify-between mt-4 pt-3 border-t border-gray-50 ${large ? '' : ''}`}>
         <span className="text-xs text-blue-600 font-medium group-hover:underline">
-          {docsCount === 0 ? 'Start uploading →' : 'View & upload →'}
+          {docsCount === 0 ? t('clientDash.startUploading') : t('clientDash.viewUpload')}
         </span>
         <svg className="w-4 h-4 text-blue-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -75,6 +84,7 @@ function YearCard({ year, ty, onClick, large = false }: { year: number; ty: any;
 
 export default function ClientDashboard() {
   const router = useRouter();
+  const { t } = useT();
   const [profile,  setProfile]  = useState<any>(null);
   const [loading,  setLoading]  = useState(true);
   const [showPrev, setShowPrev] = useState(false);
@@ -156,13 +166,14 @@ export default function ClientDashboard() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-600 hidden sm:inline">
-            Hello, <strong>{profile?.firstName}</strong>
+            {t('clientDash.greeting')}, <strong>{profile?.firstName}</strong>
           </span>
+          <LanguageToggle />
           <button onClick={logout} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-600 transition">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            Logout
+            {t('common.logout')}
           </button>
         </div>
       </nav>
@@ -171,8 +182,8 @@ export default function ClientDashboard() {
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">My Taxes</h1>
-          <p className="text-sm text-gray-500 mt-1">Upload your documents and track your return progress</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('clientDash.title')}</h1>
+          <p className="text-sm text-gray-500 mt-1">{t('clientDash.subtitle')}</p>
         </div>
 
         {/* Completion banner */}
@@ -182,8 +193,8 @@ export default function ClientDashboard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <p className="text-sm font-semibold text-green-800">🎉 Your {completedYears.join(' & ')} tax return{completedYears.length > 1 ? 's are' : ' is'} complete!</p>
-              <p className="text-xs text-green-600 mt-0.5">Your accountant has finished processing your file.</p>
+              <p className="text-sm font-semibold text-green-800">🎉 {t('clientDash.completed')} {completedYears.join(' & ')} {completedYears.length > 1 ? t('clientDash.completeMulti') : t('clientDash.completeSingle')}</p>
+              <p className="text-xs text-green-600 mt-0.5">{t('clientDash.processingComplete')}</p>
             </div>
           </div>
         )}
@@ -196,9 +207,9 @@ export default function ClientDashboard() {
             </svg>
             <div>
               <p className="text-sm font-semibold text-red-800">
-                Action required — {rejectedDocs.length} document{rejectedDocs.length > 1 ? 's need' : ' needs'} correction {rejectedYearsLabel}
+                {t('clientDash.actionRequired')} — {rejectedDocs.length} document{rejectedDocs.length > 1 ? 's' : ''} {rejectedDocs.length > 1 ? t('clientDash.docsNeed') : t('clientDash.docNeeds')} {rejectedYearsLabel}
               </p>
-              <p className="text-xs text-red-600 mt-0.5">Click the year below to re-upload the correct document.</p>
+              <p className="text-xs text-red-600 mt-0.5">{t('clientDash.uploadCorrect')}</p>
             </div>
           </div>
         )}
@@ -212,12 +223,13 @@ export default function ClientDashboard() {
 
         {/* ── ACTIVE YEAR — big card ── */}
         <div className="mb-3">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Current</p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{t('clientDash.current')}</p>
           <YearCard
             year={activeYear}
             ty={taxYearMap[activeYear]}
             onClick={() => router.push(`/client/tax-year/${activeYear}`)}
             large
+            t={t}
           />
         </div>
 
@@ -234,7 +246,7 @@ export default function ClientDashboard() {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-              <span className="font-medium">Previous years ({previousYears.length})</span>
+              <span className="font-medium">{t('clientDash.previous')} ({previousYears.length})</span>
             </button>
 
             {showPrev && (
@@ -245,6 +257,7 @@ export default function ClientDashboard() {
                     year={year}
                     ty={taxYearMap[year]}
                     onClick={() => router.push(`/client/tax-year/${year}`)}
+                    t={t}
                   />
                 ))}
               </div>

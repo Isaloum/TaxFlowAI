@@ -4,10 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { APIClient } from '@/lib/api-client';
+import { useT } from '@/lib/i18n';
+import LanguageToggle from '@/components/LanguageToggle';
 
 export default function ChangePasswordPage() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const { t } = useT();
 
   const [current,  setCurrent]  = useState('');
   const [next,     setNext]     = useState('');
@@ -60,16 +63,19 @@ export default function ChangePasswordPage() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl mb-4">
-            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-            </svg>
+          <div className="flex items-center justify-between mb-4">
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl">
+              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+            </div>
+            <LanguageToggle />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Set your password</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('changePw.title')}</h1>
           <p className="text-gray-500 mt-1 text-sm">
-            Welcome{user?.firstName ? `, ${user.firstName}` : ''}! Your accountant created this account for you.
-            <br />Please set your own password to continue.
+            {t('changePw.intro')} {user?.firstName ? `, ${user.firstName}` : ''}
+            <br />{t('changePw.setPassword')}
           </p>
         </div>
 
@@ -82,7 +88,7 @@ export default function ChangePasswordPage() {
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
             <p className="text-xs text-blue-700">
-              Your temporary password was sent by email. Enter it below, then choose a new secure password.
+              {t('changePw.emailSent')}
             </p>
           </div>
 
@@ -90,7 +96,7 @@ export default function ChangePasswordPage() {
 
             {/* Current (temporary) password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Temporary password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('changePw.current')}</label>
               <div className="relative">
                 <input
                   type={showCur ? 'text' : 'password'}
@@ -112,7 +118,7 @@ export default function ChangePasswordPage() {
 
             {/* New password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('changePw.new')}</label>
               <div className="relative">
                 <input
                   type={showNew ? 'text' : 'password'}
@@ -145,7 +151,7 @@ export default function ChangePasswordPage() {
 
             {/* Confirm password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm new password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('changePw.confirm')}</label>
               <input
                 type="password"
                 value={confirm}
@@ -157,7 +163,7 @@ export default function ChangePasswordPage() {
                 }`}
               />
               {confirm && confirm !== next && (
-                <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+                <p className="text-xs text-red-500 mt-1">{t('changePw.mismatch')}</p>
               )}
             </div>
 
@@ -180,14 +186,14 @@ export default function ChangePasswordPage() {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
               )}
-              {loading ? 'Saving…' : 'Set new password'}
+              {loading ? t('changePw.submitting') : t('changePw.submit')}
             </button>
           </form>
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          Not you?{' '}
-          <button onClick={logout} className="text-blue-600 hover:underline">Sign out</button>
+          {t('changePw.notYou')}{' '}
+          <button onClick={logout} className="text-blue-600 hover:underline">{t('common.logout')}</button>
         </p>
       </div>
     </div>

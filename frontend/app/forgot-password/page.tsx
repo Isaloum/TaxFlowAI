@@ -1,8 +1,11 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useT } from '@/lib/i18n';
+import LanguageToggle from '@/components/LanguageToggle';
 
 export default function ForgotPasswordPage() {
+  const { t } = useT();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,7 +32,10 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-md p-8">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-md p-8 relative">
+        <div className="absolute top-4 right-4">
+          <LanguageToggle />
+        </div>
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-xl mb-4">
@@ -37,8 +43,8 @@ export default function ForgotPasswordPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Forgot password?</h1>
-          <p className="text-gray-500 text-sm mt-1">No worries — we&apos;ll send you a reset link</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('forgotPw.title')}</h1>
+          <p className="text-gray-500 text-sm mt-1">{t('forgotPw.subtitle')}</p>
         </div>
 
         {sent ? (
@@ -48,18 +54,18 @@ export default function ForgotPasswordPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Check your email</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">{t('forgotPw.successTitle')}</h2>
             <p className="text-gray-500 text-sm mb-6">
-              If <strong>{email}</strong> is registered, you&apos;ll receive a reset link shortly. Valid for 1 hour.
+              {t('forgotPw.successMsg')} <strong>{email}</strong>
             </p>
             <Link href="/login" className="text-indigo-600 hover:underline text-sm font-medium">
-              ← Back to login
+              {t('forgotPw.backToLogin')}
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('forgotPw.email')}</label>
               <input
                 type="email"
                 value={email}
@@ -77,11 +83,11 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
             >
-              {loading ? 'Sending…' : 'Send reset link'}
+              {loading ? t('forgotPw.sending') : t('forgotPw.send')}
             </button>
 
             <p className="text-center text-sm text-gray-500">
-              <Link href="/login" className="text-indigo-600 hover:underline">← Back to login</Link>
+              <Link href="/login" className="text-indigo-600 hover:underline">{t('forgotPw.backToLogin')}</Link>
             </p>
           </form>
         )}

@@ -3,6 +3,8 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { APIClient } from '@/lib/api-client';
+import { useT } from '@/lib/i18n';
+import LanguageToggle from '@/components/LanguageToggle';
 
 function formatPhone(raw?: string): string {
   if (!raw) return '—';
@@ -131,6 +133,7 @@ function ExtractedFields({ doc }: { doc: any }) {
 
 function ClientDetail() {
   const router = useRouter();
+  const { t } = useT();
   const searchParams = useSearchParams();
   const clientId = searchParams.get('id') || '';
 
@@ -307,13 +310,16 @@ function ClientDetail() {
         </div>
       )}
       <nav className="bg-white shadow mb-6">
-        <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">
-          <button onClick={() => router.push('/accountant/dashboard')} className="text-blue-600 hover:underline text-sm">
-            ← Dashboard
-          </button>
-          <h1 className="text-xl font-bold">
-            {client ? `${client.firstName} ${client.lastName}` : 'Client'}
-          </h1>
+        <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={() => router.push('/accountant/dashboard')} className="text-blue-600 hover:underline text-sm">
+              ← {t('acctClient.backToDash')}
+            </button>
+            <h1 className="text-xl font-bold">
+              {client ? `${client.firstName} ${client.lastName}` : 'Client'}
+            </h1>
+          </div>
+          <LanguageToggle />
         </div>
       </nav>
 
@@ -403,10 +409,10 @@ function ClientDetail() {
                         <button
                           disabled={completing || documents.length === 0}
                           onClick={handleMarkComplete}
-                          title={documents.length === 0 ? 'Cannot complete — no documents uploaded' : ''}
+                          title={documents.length === 0 ? t('acctClient.cannotComplete') : ''}
                           className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                         >
-                          {completing ? 'Saving…' : '✅ Mark as Complete'}
+                          {completing ? t('acctClient.completing') : `✅ ${t('acctClient.markComplete')}`}
                         </button>
                       </div>
                     ) : null}
@@ -416,14 +422,14 @@ function ClientDetail() {
                 {/* Documents table */}
                 <div className="bg-white rounded-lg shadow overflow-hidden">
                   <div className="px-4 py-3 border-b flex items-center justify-between">
-                    <h3 className="font-semibold">Documents</h3>
+                    <h3 className="font-semibold">{t('acctClient.documents')}</h3>
                     <span className="text-xs text-gray-400">
-                      {documents.filter((d: any) => d.reviewStatus === 'approved').length} approved ·{' '}
-                      {documents.filter((d: any) => d.reviewStatus === 'pending').length} pending
+                      {documents.filter((d: any) => d.reviewStatus === 'approved').length} {t('acctClient.approved')} ·{' '}
+                      {documents.filter((d: any) => d.reviewStatus === 'pending').length} {t('acctClient.pending')}
                     </span>
                   </div>
                   {documents.length === 0 && (
-                    <p className="px-4 py-8 text-center text-gray-400 text-sm">No documents uploaded yet.</p>
+                    <p className="px-4 py-8 text-center text-gray-400 text-sm">{t('acctClient.noDocuments')}</p>
                   )}
                   <div className="divide-y">
                     {documents.map((doc: any) => {
@@ -462,11 +468,11 @@ function ClientDetail() {
                                 <>
                                   <button disabled={!!actionLoading} onClick={() => handleApprove(doc.id)}
                                     className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50">
-                                    {actionLoading === doc.id ? '...' : 'Approve'}
+                                    {actionLoading === doc.id ? '...' : t('acctClient.approve')}
                                   </button>
                                   <button disabled={!!actionLoading} onClick={() => setRejectDocId(doc.id)}
                                     className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50">
-                                    Reject
+                                    {t('acctClient.reject')}
                                   </button>
                                 </>
                               )}
@@ -541,16 +547,16 @@ function ClientDetail() {
       {rejectDocId && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
-            <h3 className="font-bold mb-1">Reject Document</h3>
-            <p className="text-sm text-gray-500 mb-3">The client will see this reason and be asked to re-upload.</p>
+            <h3 className="font-bold mb-1">{t('acctClient.rejectBtn')}</h3>
+            <p className="text-sm text-gray-500 mb-3">{t('acctClient.clientWillSee')}</p>
             <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)}
               placeholder="e.g. Wrong year — please upload your 2024 T4" className="w-full border rounded-lg px-3 py-2 text-sm h-24 resize-none mb-4" />
             <div className="flex gap-3">
               <button onClick={() => { setRejectDocId(null); setRejectReason(''); }}
-                className="flex-1 border rounded-lg py-2 text-sm hover:bg-gray-50">Cancel</button>
+                className="flex-1 border rounded-lg py-2 text-sm hover:bg-gray-50">{t('common.cancel')}</button>
               <button disabled={!rejectReason.trim() || !!actionLoading} onClick={handleReject}
                 className="flex-1 bg-red-600 text-white rounded-lg py-2 text-sm hover:bg-red-700 disabled:opacity-50">
-                {actionLoading ? '...' : 'Confirm Reject'}
+                {actionLoading ? '...' : t('acctClient.confirmReject')}
               </button>
             </div>
           </div>

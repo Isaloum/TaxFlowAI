@@ -2,8 +2,11 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useT } from '@/lib/i18n';
+import LanguageToggle from '@/components/LanguageToggle';
 
 function ResetPasswordForm() {
+  const { t } = useT();
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token') ?? '';
@@ -44,15 +47,18 @@ function ResetPasswordForm() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-md p-8">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-md p-8 relative">
+        <div className="absolute top-4 right-4">
+          <LanguageToggle />
+        </div>
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-xl mb-4">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Set new password</h1>
-          <p className="text-gray-500 text-sm mt-1">Must be at least 8 characters</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('resetPw.title')}</h1>
+          <p className="text-gray-500 text-sm mt-1">{t('common.passwordHint')}</p>
         </div>
 
         {done ? (
@@ -62,13 +68,13 @@ function ResetPasswordForm() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Password updated!</h2>
-            <p className="text-gray-500 text-sm">Redirecting you to login…</p>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">{t('resetPw.success')}</h2>
+            <p className="text-gray-500 text-sm">{t('common.redirecting')}</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('resetPw.newPassword')}</label>
               <input
                 type="password"
                 value={password}
@@ -79,7 +85,7 @@ function ResetPasswordForm() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('resetPw.confirm')}</label>
               <input
                 type="password"
                 value={confirm}
@@ -97,11 +103,11 @@ function ResetPasswordForm() {
               disabled={loading || !token}
               className="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
             >
-              {loading ? 'Updating…' : 'Reset password'}
+              {loading ? t('resetPw.submitting') : t('resetPw.submit')}
             </button>
 
             <p className="text-center text-sm text-gray-500">
-              <Link href="/login" className="text-indigo-600 hover:underline">← Back to login</Link>
+              <Link href="/login" className="text-indigo-600 hover:underline">{t('common.backToLogin')}</Link>
             </p>
           </form>
         )}

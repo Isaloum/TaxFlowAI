@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { APIClient } from '@/lib/api-client';
+import { useT } from '@/lib/i18n';
+import LanguageToggle from '@/components/LanguageToggle';
 
 const PROVINCES = [
   { value: 'AB', label: 'Alberta' },
@@ -32,6 +34,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: number |
 
 export default function AccountantDashboard() {
   const router = useRouter();
+  const { t } = useT();
   const [clients, setClients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -137,20 +140,23 @@ export default function AccountantDashboard() {
           <span className="font-bold text-gray-900">TaxFlowAI</span>
           <span className="text-xs text-gray-400 ml-2 hidden sm:inline">Accountant Portal</span>
         </div>
-        <button onClick={logout} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-600 transition">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Logout
-        </button>
+        <div className="flex items-center gap-4">
+          <LanguageToggle />
+          <button onClick={logout} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-600 transition">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            {t('common.logout')}
+          </button>
+        </div>
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Client Overview</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage and review your clients&apos; tax documents</p>
+            <h1 className="text-2xl font-bold text-gray-900">{t('acctDash.title')}</h1>
+            <p className="text-sm text-gray-500 mt-1">{t('acctDash.subtitle')}</p>
           </div>
           <button
             onClick={() => setShowAddClient(true)}
@@ -159,16 +165,16 @@ export default function AccountantDashboard() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Add Client
+            {t('acctDash.addClient')}
           </button>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Total Clients"     value={total}     color="text-gray-900" sub="all time" />
-          <StatCard label="Pending Review"    value={pending}   color="text-yellow-600" sub="need your attention" />
-          <StatCard label="Completed"         value={completed} color="text-green-600"  sub="tax years closed" />
-          <StatCard label="Urgent"            value={urgent}    color="text-red-600"    sub="3+ docs waiting" />
+          <StatCard label={t('acctDash.total')}     value={total}     color="text-gray-900" sub={t('acctDash.allTime')} />
+          <StatCard label={t('acctDash.pending')}    value={pending}   color="text-yellow-600" sub={t('acctDash.needAttention')} />
+          <StatCard label={t('acctDash.completed')}         value={completed} color="text-green-600"  sub={t('acctDash.closed')} />
+          <StatCard label={t('acctDash.urgent')}            value={urgent}    color="text-red-600"    sub={t('acctDash.waiting')} />
         </div>
 
         {/* Search + Table */}
@@ -192,20 +198,20 @@ export default function AccountantDashboard() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Client</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">Province</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">Latest Year</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('acctDash.name')}</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">{t('common.province')}</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">{t('acctDash.year')}</th>
                 <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Completeness</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide hidden xl:table-cell">Submitted</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">Pending</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide hidden xl:table-cell">{t('acctDash.submitted')}</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('acctDash.status')}</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">{t('acctDash.pending')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-5 py-12 text-center text-gray-400 text-sm">
-                    {search ? 'No clients match your search.' : 'No clients yet — click "Add Client" to get started.'}
+                    {search ? t('acctDash.noMatch') : t('acctDash.noClients')}
                   </td>
                 </tr>
               )}

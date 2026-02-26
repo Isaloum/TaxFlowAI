@@ -3,10 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { APIClient } from '@/lib/api-client';
+import { useT } from '@/lib/i18n';
+import LanguageToggle from '@/components/LanguageToggle';
 
 export default function ProfileClient() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useT();
   const year = parseInt(params.year as string);
 
   const [profile, setProfile] = useState({
@@ -82,18 +85,21 @@ export default function ProfileClient() {
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow mb-6">
-        <div className="container mx-auto px-4 sm:px-6 py-4">
-          <h1 className="text-xl font-bold">Tax Profile - {year}</h1>
+        <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold">{t('profile.title')} - {year}</h1>
+          </div>
+          <LanguageToggle />
         </div>
       </nav>
 
       <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600 mb-6">Help us determine what documents you need to upload.</p>
+          <p className="text-gray-600 mb-6">{t('profile.subtitle')}</p>
 
           {/* ── Income Sources ────────────────────────────────────── */}
           <fieldset className="border rounded-lg p-4 mb-4">
-            <legend className="font-semibold text-lg px-2">Income Sources</legend>
+            <legend className="font-semibold text-lg px-2">{t('profile.section.income')}</legend>
             <div className="space-y-2 mt-2">
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={profile.has_employment_income} onChange={e => handleChange('has_employment_income', e.target.checked)} />
@@ -136,7 +142,7 @@ export default function ProfileClient() {
 
           {/* ── Savings & Plans ───────────────────────────────────── */}
           <fieldset className="border rounded-lg p-4 mb-4">
-            <legend className="font-semibold text-lg px-2">Savings &amp; Plans</legend>
+            <legend className="font-semibold text-lg px-2">{t('profile.section.savings')}</legend>
             <div className="space-y-2 mt-2">
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={profile.has_rrsp_contributions} onChange={e => handleChange('has_rrsp_contributions', e.target.checked)} />
@@ -151,7 +157,7 @@ export default function ProfileClient() {
 
           {/* ── Deductions & Credits ──────────────────────────────── */}
           <fieldset className="border rounded-lg p-4 mb-4">
-            <legend className="font-semibold text-lg px-2">Deductions &amp; Credits</legend>
+            <legend className="font-semibold text-lg px-2">{t('profile.section.deductions')}</legend>
             <div className="space-y-2 mt-2">
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={profile.has_childcare_expenses} onChange={e => handleChange('has_childcare_expenses', e.target.checked)} />
@@ -190,7 +196,7 @@ export default function ProfileClient() {
 
           {/* ── Living Situation ──────────────────────────────────── */}
           <fieldset className="border rounded-lg p-4 mb-4">
-            <legend className="font-semibold text-lg px-2">Living Situation</legend>
+            <legend className="font-semibold text-lg px-2">{t('profile.section.living')}</legend>
             <div className="space-y-2 mt-2">
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={profile.is_tenant} onChange={e => handleChange('is_tenant', e.target.checked)} />
@@ -202,7 +208,7 @@ export default function ProfileClient() {
           {/* ── Business / Vehicle ────────────────────────────────── */}
           {profile.has_self_employment && (
             <fieldset className="border rounded-lg p-4 mb-4">
-              <legend className="font-semibold text-lg px-2">Business / Vehicle</legend>
+              <legend className="font-semibold text-lg px-2">{t('profile.section.business')}</legend>
               <div className="space-y-2 mt-2">
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={profile.has_vehicle_for_business} onChange={e => handleChange('has_vehicle_for_business', e.target.checked)} />
@@ -214,7 +220,7 @@ export default function ProfileClient() {
 
           {/* ── Family ───────────────────────────────────────────── */}
           <fieldset className="border rounded-lg p-4 mb-6">
-            <legend className="font-semibold text-lg px-2">Family</legend>
+            <legend className="font-semibold text-lg px-2">{t('profile.section.family')}</legend>
             <div className="space-y-2 mt-2">
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={profile.is_married} onChange={e => handleChange('is_married', e.target.checked)} />
@@ -241,7 +247,7 @@ export default function ProfileClient() {
             </div>
           )}
           <button type="submit" disabled={saving} className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50">
-            {saving ? 'Saving...' : 'Save & Continue →'}
+            {saving ? t('profile.saving') : t('profile.save')}
           </button>
         </form>
       </div>

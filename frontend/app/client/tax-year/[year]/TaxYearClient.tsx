@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { APIClient } from '@/lib/api-client';
+import { useT } from '@/lib/i18n';
+import LanguageToggle from '@/components/LanguageToggle';
 
 // ─── Document type definitions ───────────────────────────────────────────────
 
@@ -380,6 +382,7 @@ const LABEL_PLACEHOLDER: Record<string, string> = {
 export default function TaxYearClient() {
   const params  = useParams();
   const router  = useRouter();
+  const { t } = useT();
   const year    = parseInt(params.year as string);
 
   const [completeness, setCompleteness] = useState<any>(null);
@@ -471,7 +474,7 @@ export default function TaxYearClient() {
       await APIClient.deleteDocument(documentId);
       setPollCount(0);
       await loadCompleteness();
-      showToast('Document removed. You can now upload the correct one.', 'success');
+      showToast(t('taxYear.toast.deleted'), 'success');
     } catch (err: any) {
       showToast(err?.response?.data?.error || 'Failed to delete', 'error');
     } finally {
@@ -483,7 +486,7 @@ export default function TaxYearClient() {
     setSubmitting(true);
     try {
       await APIClient.submitForReview(year);
-      showToast('File submitted for review! Your accountant will be notified.', 'success');
+      showToast(t('taxYear.toast.submitted'), 'success');
       await loadCompleteness();
     } catch (err: any) {
       showToast(err?.response?.data?.error || 'Failed to submit', 'error');
@@ -501,7 +504,7 @@ export default function TaxYearClient() {
       (d: any) => d.filename === selectedFile.name && d.docType === docType && d.id !== replacingDocId
     );
     if (duplicate) {
-      showToast('This file is already uploaded. Delete the existing one first if you want to replace it.', 'error');
+      showToast(t('taxYear.toast.duplicate'), 'error');
       return;
     }
 
@@ -533,7 +536,7 @@ export default function TaxYearClient() {
       setPollCount(0);
       setReplacingDocId(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
-      showToast(`${docType} uploaded successfully!`);
+      showToast(`${docType} ${t('taxYear.toast.uploaded')}`);
       loadCompleteness();
     } catch (error: any) {
       showToast(error.response?.data?.error || error.message, 'error');
@@ -602,16 +605,19 @@ export default function TaxYearClient() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Dashboard
+            {t('nav.dashboard')}
           </button>
           <span className="text-gray-300">/</span>
-          <h1 className="text-base font-bold text-gray-900">Tax Year {year}</h1>
+          <h1 className="text-base font-bold text-gray-900">{t('nav.taxYear')} {year}</h1>
         </div>
-        {completeness?.province && (
-          <span className="text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full">
-            📍 {completeness.province}
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          {completeness?.province && (
+            <span className="text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full">
+              📍 {completeness.province}
+            </span>
+          )}
+          <LanguageToggle />
+        </div>
       </nav>
 
       <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
@@ -625,15 +631,15 @@ export default function TaxYearClient() {
                   d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Step 1 — Complete your tax profile</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">{t('taxYear.step1.title')}</h2>
             <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto">
-              Tell us about your income sources and deductions so we can show you exactly which documents to upload.
+              {t('taxYear.step1.desc')}
             </p>
             <button
               onClick={() => router.push(`/client/tax-year/${year}/profile`)}
               className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition"
             >
-              Start profile
+              {t('taxYear.step1.start')}
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -644,12 +650,12 @@ export default function TaxYearClient() {
           /* ── STEP 2: Upload documents ──────────────────────────────────── */
           <div ref={uploadFormRef} className={`bg-white rounded-2xl shadow-sm border p-6 mb-6 transition-all duration-300 ${uploadFlash ? 'border-blue-400 ring-2 ring-blue-300' : 'border-gray-200'}`}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Step 2 — Upload Documents</h2>
+              <h2 className="text-xl font-bold">{t('taxYear.step2.title')}</h2>
               <button
                 onClick={() => router.push(`/client/tax-year/${year}/profile`)}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
               >
-                ✏️ Edit Profile
+                ✏️ {t('taxYear.step2.editProfile')}
               </button>
             </div>
 
@@ -662,7 +668,7 @@ export default function TaxYearClient() {
 
             <form onSubmit={handleUpload} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Document Type</label>
+                <label className="block text-sm font-medium mb-2">{t('taxYear.step2.docType')}</label>
                 <select
                   value={docType}
                   onChange={(e) => setDocType(e.target.value)}
@@ -684,7 +690,7 @@ export default function TaxYearClient() {
               {MULTI_UPLOAD_TYPES.has(docType) && (
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Label <span className="text-gray-400 font-normal">(optional — helps tell copies apart)</span>
+                    {t('taxYear.step2.label')} <span className="text-gray-400 font-normal">{t('taxYear.step2.labelHint')}</span>
                   </label>
                   <input
                     type="text"
@@ -699,8 +705,8 @@ export default function TaxYearClient() {
               {/* Name on document — always required */}
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Name on document <span className="text-red-500">*</span>
-                  <span className="text-gray-400 font-normal ml-1">(yours, spouse, child, etc.)</span>
+                  {t('taxYear.step2.owner')} <span className="text-red-500">*</span>
+                  <span className="text-gray-400 font-normal ml-1">{t('taxYear.step2.ownerPlaceholder')}</span>
                 </label>
                 <input
                   type="text"
@@ -713,7 +719,7 @@ export default function TaxYearClient() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Select File</label>
+                <label className="block text-sm font-medium mb-2">{t('taxYear.step2.file')}</label>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -728,7 +734,7 @@ export default function TaxYearClient() {
                 disabled={!selectedFile || !ownerName.trim() || uploading}
                 className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
               >
-                {uploading ? 'Uploading...' : 'Upload Document'}
+                {uploading ? t('taxYear.step2.uploadingBtn') : t('taxYear.step2.uploadBtn')}
               </button>
             </form>
           </div>
@@ -740,9 +746,9 @@ export default function TaxYearClient() {
 
             {/* Header + progress */}
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl font-bold">Required Documents</h2>
+              <h2 className="text-xl font-bold">{t('taxYear.required.title')}</h2>
               <span className={`text-sm font-bold ${frontendScore === 100 ? 'text-green-600' : 'text-blue-600'}`}>
-                {doneCount}/{totalCount} uploaded
+                {doneCount}/{totalCount} {t('taxYear.required.uploaded')}
               </span>
             </div>
             <div className="w-full bg-gray-100 rounded-full h-2 mb-1">
@@ -751,7 +757,7 @@ export default function TaxYearClient() {
                 style={{ width: `${frontendScore}%` }}
               />
             </div>
-            <p className="text-xs text-gray-400 mb-5">{frontendScore}% complete — based on your tax profile</p>
+            <p className="text-xs text-gray-400 mb-5">{frontendScore}% {t('taxYear.required.progress')}</p>
 
             {/* Checklist */}
             {checklist.length > 0 ? (
@@ -798,14 +804,14 @@ export default function TaxYearClient() {
                         </div>
                         <div className="flex flex-col items-end gap-1 flex-shrink-0">
                           {!item.uploaded && uploadedList.length === 0 && (
-                            <span className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Missing</span>
+                            <span className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{t('taxYear.required.missing')}</span>
                           )}
                           {item.uploaded && isMulti && (
                             <button
                               onClick={() => { setDocType(item.docType); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                               className="text-[11px] text-blue-600 hover:underline"
                             >
-                              + Add another
+                              + {t('taxYear.required.addAnother')}
                             </button>
                           )}
                         </div>
@@ -828,21 +834,21 @@ export default function TaxYearClient() {
                                 </span>
                                 <div className="flex items-center gap-1 flex-shrink-0">
                                   {/* Simple client-friendly status — one badge only */}
-                                  {approved && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">✓ Received</span>}
+                                  {approved && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">✓ {t('taxYear.required.received')}</span>}
                                   {!approved && (rejected || hasMismatch) && (
                                     pendingReupload.has(doc.id)
-                                      ? <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">⏳ Under review</span>
+                                      ? <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">⏳ {t('taxYear.required.underReview')}</span>
                                       : <button
                                           onClick={() => handleReupload(doc.docType, doc.ownerName, doc.id)}
                                           className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full hover:bg-blue-700 transition font-medium"
                                         >
-                                          ↩ Re-upload
+                                          ↩ {t('taxYear.required.reupload')}
                                         </button>
                                   )}
                                   {!approved && !rejected && !hasMismatch && (
                                     scanning
-                                      ? <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full animate-pulse">⏳ Under review</span>
-                                      : <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">⏳ Under review</span>
+                                      ? <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full animate-pulse">⏳ {t('taxYear.required.underReview')}</span>
+                                      : <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">⏳ {t('taxYear.required.underReview')}</span>
                                   )}
                                   {/* Delete on ALL docs so user can always replace */}
                                   <button
@@ -850,7 +856,7 @@ export default function TaxYearClient() {
                                     disabled={deletingId === doc.id}
                                     className="text-[10px] text-gray-400 hover:text-red-600 hover:underline disabled:opacity-50 ml-1"
                                   >
-                                    {deletingId === doc.id ? 'Deleting…' : '🗑'}
+                                    {deletingId === doc.id ? t('taxYear.required.deleting') : '🗑'}
                                   </button>
                                 </div>
                               </li>
@@ -863,13 +869,13 @@ export default function TaxYearClient() {
                 })}
               </ul>
             ) : (
-              <p className="text-sm text-gray-400 text-center py-4">No required documents identified from your profile.</p>
+              <p className="text-sm text-gray-400 text-center py-4">{t('taxYear.required.none')}</p>
             )}
 
             {/* Extra docs not in checklist */}
             {extraDocs.length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Additional Documents</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('taxYear.additional.title')}</p>
                 <ul className="space-y-2">
                   {extraDocs.map((doc: any, idx: number) => {
                     const scan = doc.extractionStatus;
@@ -900,19 +906,19 @@ export default function TaxYearClient() {
                         <div className="flex flex-col items-end gap-1 flex-shrink-0">
                           {/* Simple client-friendly status */}
                           {doc.reviewStatus === 'approved'
-                            ? <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">✓ Received</span>
+                            ? <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">✓ {t('taxYear.required.received')}</span>
                             : (doc.reviewStatus === 'rejected' || doc.typeMismatch || doc.yearMismatch || doc.nameMismatch)
                             ? pendingReupload.has(doc.id)
-                              ? <span className="text-[11px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">⏳ Under review</span>
+                              ? <span className="text-[11px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">⏳ {t('taxYear.required.underReview')}</span>
                               : <button
                                   onClick={() => handleReupload(doc.docType, doc.ownerName, doc.id)}
                                   className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full hover:bg-blue-700 transition font-medium"
                                 >
-                                  ↩ Re-upload
+                                  ↩ {t('taxYear.required.reupload')}
                                 </button>
                             : (scan === 'pending' || scan === 'processing')
-                            ? <span className="text-[11px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full animate-pulse font-medium">⏳ Under review</span>
-                            : <span className="text-[11px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">⏳ Under review</span>
+                            ? <span className="text-[11px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full animate-pulse font-medium">⏳ {t('taxYear.required.underReview')}</span>
+                            : <span className="text-[11px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">⏳ {t('taxYear.required.underReview')}</span>
                           }
                           {/* Delete always available */}
                           <button
@@ -920,7 +926,7 @@ export default function TaxYearClient() {
                             disabled={deletingId === doc.id}
                             className="text-[11px] text-gray-400 hover:text-red-600 hover:underline disabled:opacity-50 mt-1"
                           >
-                            {deletingId === doc.id ? 'Deleting…' : '🗑 Delete'}
+                            {deletingId === doc.id ? t('taxYear.required.deleting') : `🗑 ${t('taxYear.additional.delete')}`}
                           </button>
                         </div>
                       </li>
@@ -944,23 +950,22 @@ export default function TaxYearClient() {
                 <div className="mb-4 bg-orange-50 border border-orange-200 rounded-xl p-3 flex gap-2 items-start">
                   <span className="text-orange-500 flex-shrink-0">⚠️</span>
                   <p className="text-sm text-orange-800">
-                    <strong>{issueCount} document{issueCount > 1 ? 's' : ''}</strong> {issueCount > 1 ? 'have' : 'has'} issues (wrong type, wrong year, or rejected).
-                    Please delete and re-upload the correct files before submitting.
+                    <strong>{issueCount} document{issueCount > 1 ? 's' : ''}</strong> {t('taxYear.submit.issues')}
                   </p>
                 </div>
               )}
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="font-semibold text-gray-900">Ready? Submit your file for review</p>
-                  <p className="text-sm text-gray-500 mt-0.5">Your accountant will be notified and can start reviewing your documents.</p>
+                  <p className="font-semibold text-gray-900">{t('taxYear.submit.title')}</p>
+                  <p className="text-sm text-gray-500 mt-0.5">{t('taxYear.submit.desc')}</p>
                 </div>
                 <button
                   onClick={handleSubmitForReview}
                   disabled={submitting || issueCount > 0}
-                  title={issueCount > 0 ? 'Fix document issues before submitting' : ''}
+                  title={issueCount > 0 ? t('taxYear.submit.fixIssues') : ''}
                   className="flex-shrink-0 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
-                  {submitting ? 'Submitting…' : 'Submit for Review'}
+                  {submitting ? t('taxYear.submit.submitting') : t('taxYear.submit.btn')}
                 </button>
               </div>
             </div>
@@ -970,8 +975,8 @@ export default function TaxYearClient() {
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 mt-6 flex items-center gap-3">
             <span className="text-2xl">📬</span>
             <div>
-              <p className="font-semibold text-blue-900">File submitted for review</p>
-              <p className="text-sm text-blue-700">Your accountant has been notified. You will be alerted if any correction is needed.</p>
+              <p className="font-semibold text-blue-900">{t('taxYear.submitted.title')}</p>
+              <p className="text-sm text-blue-700">{t('taxYear.submitted.desc')}</p>
             </div>
           </div>
         )}
