@@ -774,7 +774,7 @@ export default function TaxYearClient() {
                           </p>
                         </div>
                         <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                          {!item.uploaded && (
+                          {!item.uploaded && uploadedList.length === 0 && (
                             <span className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Missing</span>
                           )}
                           {item.uploaded && isMulti && (
