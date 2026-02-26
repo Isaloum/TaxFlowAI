@@ -148,6 +148,12 @@ function ClientDetail() {
   const [notes, setNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
   const [notesSaved, setNotesSaved] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 5000);
+  };
 
   useEffect(() => {
     if (clientId) loadAll();
@@ -214,12 +220,13 @@ function ClientDetail() {
     try {
       await APIClient.markAsComplete(selectedYear.id);
       setCompleted(true);
+      showToast('✅ Tax year marked as complete!');
       await loadYearDetails(selectedYear);
-      // Refresh tax year list so status pill updates
       const yearsRes = await APIClient.getClientTaxYears(clientId);
       setTaxYears(yearsRes.data.client?.taxYears || []);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || 'Failed to mark as complete.';
+      showToast(`❌ ${msg}`, 'error');
     } finally {
       setCompleting(false);
     }
@@ -291,6 +298,14 @@ function ClientDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 shadow-lg rounded-xl px-4 py-3 text-sm flex items-center gap-2 border max-w-sm ${
+          toast.type === 'success' ? 'bg-white border-green-200 text-green-700' : 'bg-white border-red-200 text-red-700'
+        }`}>
+          {toast.msg}
+        </div>
+      )}
       <nav className="bg-white shadow mb-6">
         <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">
           <button onClick={() => router.push('/accountant/dashboard')} className="text-blue-600 hover:underline text-sm">
