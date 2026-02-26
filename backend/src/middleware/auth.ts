@@ -25,7 +25,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     const decoded = jwt.verify(token, JWT_SECRET) as {
       sub: string;
       email: string;
-      role: 'accountant' | 'client';
+      role: 'accountant' | 'client' | 'admin';
     };
     req.user = decoded;
     next();
@@ -34,7 +34,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const requireRole = (role: 'accountant' | 'client') => {
+export const requireRole = (role: 'accountant' | 'client' | 'admin') => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });

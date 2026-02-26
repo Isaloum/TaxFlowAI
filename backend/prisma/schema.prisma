@@ -148,3 +148,12 @@ model NotificationLog {
 
   @@map("notification_logs")
 }
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admins")
+}
