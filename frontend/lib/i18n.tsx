@@ -173,7 +173,7 @@ const EN: Translations = {
   // ── Accountant Dashboard ─────────────────────────────────────────────────────
   'acctDash.title':        'Accountant Dashboard',
   'acctDash.subtitle':     'Manage your clients and review their tax documents.',
-  'acctDash.addClient':    '+ Add Client',
+  'acctDash.addClient':    'Add Client',
   'acctDash.clients':      'Clients',
   'acctDash.total':        'Total Clients',
   'acctDash.allTime':      'all time',
@@ -362,7 +362,7 @@ const FR: Translations = {
 
   'acctDash.title':        'Tableau de bord comptable',
   'acctDash.subtitle':     'Gérez vos clients et révisez leurs documents fiscaux.',
-  'acctDash.addClient':    '+ Ajouter un client',
+  'acctDash.addClient':    'Ajouter un client',
   'acctDash.clients':      'Clients',
   'acctDash.total':        'Total clients',
   'acctDash.allTime':      'au total',
