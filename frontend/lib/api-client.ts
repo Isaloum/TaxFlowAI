@@ -10,21 +10,35 @@ const api = axios.create({
 // Role-specific keys prevent token collision when both tabs are open
 function getTokenForUrl(url?: string): string | null {
   if (typeof window === 'undefined') return null;
-  const path = url || '';
-  // Accountant endpoints
-  if (path.includes('/accountant/') || path.includes('/users/accountant/')) {
+  const apiPath = url || '';
+  const pagePath = window.location.pathname;
+
+  // Accountant API endpoints — always use accountant token
+  if (apiPath.includes('/accountant/') || apiPath.includes('/users/accountant/')) {
     return localStorage.getItem('auth_token_accountant')
-      || localStorage.getItem('auth_token'); // fallback for existing sessions
+      || localStorage.getItem('auth_token');
   }
-  // Client endpoints
-  if (path.includes('/client/') || path.includes('/users/client/')) {
+  // Client API endpoints — always use client token
+  if (apiPath.includes('/client/') || apiPath.includes('/users/client/')) {
     return localStorage.getItem('auth_token_client')
       || localStorage.getItem('auth_token');
   }
-  // Shared endpoints (/documents/, /auth/, etc.) — use whichever token exists
+
+  // Shared endpoints (/documents/, /auth/, etc.)
+  // Use the PAGE URL to decide which role is making the call
+  if (pagePath.includes('/accountant/')) {
+    return localStorage.getItem('auth_token_accountant')
+      || localStorage.getItem('auth_token');
+  }
+  if (pagePath.includes('/client/')) {
+    return localStorage.getItem('auth_token_client')
+      || localStorage.getItem('auth_token');
+  }
+
+  // Final fallback (login page, etc.)
   return localStorage.getItem('auth_token_accountant')
     || localStorage.getItem('auth_token_client')
-    || localStorage.getItem('auth_token'); // legacy fallback
+    || localStorage.getItem('auth_token');
 }
 
 api.interceptors.request.use((config) => {
