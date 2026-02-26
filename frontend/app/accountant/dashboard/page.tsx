@@ -4,116 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { APIClient } from '@/lib/api-client';
 
-// ─── Dev Progress Tracker ──────────────────────────────────────────────────────
-const DONE = [
-  'Client & accountant authentication (JWT)',
-  'Client profile questionnaire (income sources)',
-  'Document upload + S3 storage',
-  'AI document classification (GPT-4o)',
-  'OCR extraction + field parsing',
-  'Quebec rules engine (T4/RL-1 pairing, T2125…)',
-  'Accountant dashboard — client list + completeness',
-  'Accountant client page — approve / reject / reset / rescan',
-  'Silent polling — zero page flash on actions',
-  'SQS async processing queue + Dead-Letter Queue',
-  'Forgot password / reset password flow',
-  'Completeness score — live recalculation on every view',
-  'Completed years locked at 100% (no re-validation)',
-  'Token isolation — accountant + client tabs work simultaneously',
-  'Rejection reason visible to client on re-upload page',
-  'Year numbers in completion & rejection banners',
-  'Validation checks — correct field names & pass/fail values',
-  'Dashboard: meaningful pending column text',
-  'Delete document 404 fix',
-  'Login 500 fix (Prisma explicit select everywhere)',
-];
-
-const NEXT = [
-  { label: 'Mobile responsive layout', priority: '🔴 High' },
-  { label: 'French (FR) language support', priority: '🔴 High' },
-  { label: 'End-to-end testing of all flows', priority: '🔴 High' },
-  { label: 'Re-upload flow UX — client replaces rejected doc easily', priority: '🟡 Medium' },
-  { label: 'Email notifications — rejection & completion emails', priority: '🟡 Medium' },
-  { label: 'Accountant can invite clients by email', priority: '🟡 Medium' },
-  { label: 'Admin super-dashboard (all firms)', priority: '🟢 Later' },
-  { label: 'RDS Proxy for 500+ concurrent users', priority: '🟢 Later' },
-  { label: 'Stripe billing per accountant firm', priority: '🟢 Later' },
-];
-
-function DevProgress() {
-  const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<'done' | 'next'>('next');
-  return (
-    <>
-      {/* Toggle button */}
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="fixed bottom-6 right-6 z-50 bg-gray-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg hover:bg-gray-700 transition flex items-center gap-2"
-      >
-        🚀 Dev Progress
-        <span className="bg-green-400 text-gray-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{DONE.length} done</span>
-      </button>
-
-      {/* Panel */}
-      {open && (
-        <div className="fixed bottom-20 right-6 z-50 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
-          {/* Header */}
-          <div className="bg-gray-900 text-white px-4 py-3 flex items-center justify-between">
-            <div>
-              <p className="font-bold text-sm">TaxFlowAI — Dev Progress</p>
-              <p className="text-xs text-gray-400 mt-0.5">{DONE.length} done · {NEXT.length} remaining</p>
-            </div>
-            <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white text-lg leading-none">×</button>
-          </div>
-
-          {/* Progress bar */}
-          <div className="px-4 pt-3 pb-1">
-            <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-              <span>Overall progress</span>
-              <span>{Math.round(DONE.length / (DONE.length + NEXT.length) * 100)}%</span>
-            </div>
-            <div className="w-full bg-gray-100 rounded-full h-2">
-              <div
-                className="bg-green-500 h-2 rounded-full transition-all"
-                style={{ width: `${Math.round(DONE.length / (DONE.length + NEXT.length) * 100)}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex border-b border-gray-100 px-4 mt-2">
-            <button onClick={() => setTab('next')} className={`text-xs font-semibold pb-2 mr-4 border-b-2 transition ${tab === 'next' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400'}`}>
-              ⏳ Up next ({NEXT.length})
-            </button>
-            <button onClick={() => setTab('done')} className={`text-xs font-semibold pb-2 border-b-2 transition ${tab === 'done' ? 'border-green-600 text-green-600' : 'border-transparent text-gray-400'}`}>
-              ✅ Done ({DONE.length})
-            </button>
-          </div>
-
-          {/* List */}
-          <div className="overflow-y-auto max-h-72 px-4 py-2 space-y-1">
-            {tab === 'done' && DONE.map((item, i) => (
-              <div key={i} className="flex items-start gap-2 py-1.5 border-b border-gray-50 last:border-0">
-                <span className="text-green-500 mt-0.5 flex-shrink-0">✓</span>
-                <p className="text-xs text-gray-600">{item}</p>
-              </div>
-            ))}
-            {tab === 'next' && NEXT.map((item, i) => (
-              <div key={i} className="flex items-start gap-2 py-1.5 border-b border-gray-50 last:border-0">
-                <span className="text-[10px] flex-shrink-0 mt-0.5">{item.priority.split(' ')[0]}</span>
-                <div>
-                  <p className="text-xs text-gray-700 font-medium">{item.label}</p>
-                  <p className="text-[10px] text-gray-400">{item.priority.split(' ').slice(1).join(' ')}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
 const PROVINCES = [
   { value: 'AB', label: 'Alberta' },
   { value: 'BC', label: 'British Columbia' },
@@ -474,8 +364,6 @@ export default function AccountantDashboard() {
           </div>
         </div>
       )}
-
-      <DevProgress />
     </div>
   );
 }
