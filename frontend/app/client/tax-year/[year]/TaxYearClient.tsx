@@ -560,7 +560,7 @@ export default function TaxYearClient() {
         </div>
       )}
 
-      <nav className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <nav className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/client/dashboard')}
             className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 transition">
@@ -579,7 +579,7 @@ export default function TaxYearClient() {
         )}
       </nav>
 
-      <div className="container mx-auto px-6 max-w-4xl">
+      <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
 
         {/* ── STEP 1: Profile required ─────────────────────────────────── */}
         {!hasProfile ? (

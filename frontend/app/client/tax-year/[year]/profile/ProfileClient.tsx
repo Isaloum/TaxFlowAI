@@ -82,12 +82,12 @@ export default function ProfileClient() {
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow mb-6">
-        <div className="container mx-auto px-6 py-4">
+        <div className="container mx-auto px-4 sm:px-6 py-4">
           <h1 className="text-xl font-bold">Tax Profile - {year}</h1>
         </div>
       </nav>
 
-      <div className="container mx-auto px-6 max-w-3xl">
+      <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
           <p className="text-gray-600 mb-6">Help us determine what documents you need to upload.</p>
 

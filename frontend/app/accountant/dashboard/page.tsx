@@ -127,7 +127,7 @@ export default function AccountantDashboard() {
       )}
 
       {/* Nav */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <nav className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,9 +145,9 @@ export default function AccountantDashboard() {
         </button>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Client Overview</h1>
             <p className="text-sm text-gray-500 mt-1">Manage and review your clients&apos; tax documents</p>
@@ -198,7 +198,7 @@ export default function AccountantDashboard() {
                 <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Completeness</th>
                 <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide hidden xl:table-cell">Submitted</th>
                 <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Pending</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">Pending</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -257,7 +257,7 @@ export default function AccountantDashboard() {
                         {client.status || 'draft'}
                       </span>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 hidden sm:table-cell">
                       {(client.pendingReview ?? 0) > 0 ? (
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                           client.pendingReview >= 3 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'

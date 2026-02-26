@@ -1,7 +1,7 @@
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <nav className="px-6 py-4">
+      <nav className="px-4 sm:px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold text-indigo-600">TaxFlowAI</h1>
           <div className="space-x-4">
@@ -13,9 +13,9 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-6 py-20">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
         <div className="text-center">
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-3xl sm:text-5xl font-bold text-gray-900 mb-6">
             Smart Tax Document Management for Canadians
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">

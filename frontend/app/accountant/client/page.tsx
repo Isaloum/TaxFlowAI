@@ -292,7 +292,7 @@ function ClientDetail() {
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow mb-6">
-        <div className="container mx-auto px-6 py-4 flex items-center gap-4">
+        <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">
           <button onClick={() => router.push('/accountant/dashboard')} className="text-blue-600 hover:underline text-sm">
             ← Dashboard
           </button>
@@ -302,9 +302,9 @@ function ClientDetail() {
         </div>
       </nav>
 
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-4 sm:px-6">
         {client && (
-          <div className="bg-white rounded-lg shadow p-4 mb-6 flex gap-8 flex-wrap">
+          <div className="bg-white rounded-lg shadow p-4 mb-6 flex gap-4 sm:gap-8 flex-wrap">
             <div><p className="text-xs text-gray-500">Email</p><p className="font-medium">{client.email}</p></div>
             <div><p className="text-xs text-gray-500">Province</p>
               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">{client.province}</span>
@@ -314,8 +314,8 @@ function ClientDetail() {
           </div>
         )}
 
-        <div className="flex gap-6">
-          <div className="w-48 flex-shrink-0">
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="w-full md:w-48 md:flex-shrink-0">
             <h2 className="text-sm font-semibold text-gray-500 mb-2">TAX YEARS</h2>
             <div className="space-y-1">
               {taxYears.length === 0 && <p className="text-sm text-gray-400">No tax years yet.</p>}
