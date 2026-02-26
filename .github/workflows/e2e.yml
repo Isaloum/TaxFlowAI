@@ -1,10 +1,7 @@
 name: E2E Tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:   # run manually only — requires live DB secrets
 
 jobs:
   e2e:
@@ -14,7 +11,7 @@ jobs:
     env:
       # App config
       BASE_URL: http://localhost:3000
-      NEXT_PUBLIC_API_URL: http://localhost:5000/api
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
 
       # Test credentials (set as GitHub secrets)
       TEST_ACCOUNTANT_EMAIL:    ${{ secrets.TEST_ACCOUNTANT_EMAIL }}
@@ -73,7 +70,7 @@ jobs:
 
       - name: Wait for servers to be ready
         run: |
-          npx wait-on http://localhost:3000 http://localhost:5000/api/health --timeout 30000
+          npx wait-on http://localhost:3000 http://localhost:4000/api/health --timeout 30000
 
       # ── Run E2E tests ─────────────────────────────────────────────────────
       - name: Run Playwright tests
