@@ -98,7 +98,7 @@ Resources:
         AllowMethods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
         AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,Cookie'"
         AllowOrigin: "'https://www.isaloumapps.com'"
-        AllowCredentials: "'true'"
+        AllowCredentials: true
 
   # Auth Lambda
   AuthFunction:
@@ -292,6 +292,55 @@ Resources:
           - '@prisma/client'
           - '@aws-sdk/client-sqs'
 
+  # Billing Lambda
+  BillingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/lambda/billing.handler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: "*"
+      Events:
+        BillingProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /billing/{proxy+}
+            Method: ANY
+        BillingRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /billing
+            Method: ANY
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: 'es2020'
+        Sourcemap: false
+        EntryPoints:
+          - src/lambda/billing.ts
+        External:
+          - sharp
+          - '@mapbox/node-pre-gyp'
+          - mock-aws-s3
+          - aws-sdk
+          - nock
+          - '@prisma/client'
+          - '@aws-sdk/client-sqs'
+
+  BillingFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${BillingFunction}
+      RetentionInDays: 7
+
   # ── SQS ─────────────────────────────────────────────────────────────────────
 
   # Dead-Letter Queue — messages land here after 3 failed processing attempts
@@ -476,6 +525,10 @@ Outputs:
   NotificationsFunctionArn:
     Description: Notifications Lambda ARN
     Value: !GetAtt NotificationsFunction.Arn
+
+  BillingFunctionArn:
+    Description: Billing Lambda ARN
+    Value: !GetAtt BillingFunction.Arn
 
   HealthFunctionArn:
     Description: Health Lambda ARN

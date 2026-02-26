@@ -5,7 +5,8 @@ import authRoutes from '../routes/auth.routes';
 
 const app = express();
 app.set('trust proxy', 1); // API Gateway sits in front
-app.use(cors({ origin: '*' }));
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGIN || 'https://www.isaloumapps.com,https://isaloumapps.com').split(',').map(o => o.trim());
+app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
 app.use(express.json());
 app.use('/auth', authRoutes);
 
