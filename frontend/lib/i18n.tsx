@@ -213,7 +213,7 @@ const FR: Translations = {
   'nav.taxYear':           'Année fiscale',
 
   'home.title':            'Documents fiscaux — simplifiés.',
-  'home.subtitle':         'Téléversez vos feuillets fiscaux en toute sécurité. Votre comptable s'occupe du reste.',
+  'home.subtitle':         "Téléversez vos feuillets fiscaux en toute sécurité. Votre comptable s'occupe du reste.",
   'home.clientLogin':      'Connexion client',
   'home.accountantLogin':  'Connexion comptable',
   'home.feature1.title':   'Téléversement sécurisé',
