@@ -112,7 +112,7 @@ model Document {
   rejectionReason      String?   @map("rejection_reason")
 
   taxYear  TaxYear     @relation(fields: [taxYearId], references: [id], onDelete: Cascade)
-  reviewer Accountant? @relation(fields: [reviewedBy], references: [id])
+  reviewer Accountant? @relation(fields: [reviewedBy], references: [id], onDelete: SetNull)
 
   @@map("documents")
 }
