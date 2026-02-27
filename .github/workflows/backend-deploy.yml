@@ -78,6 +78,15 @@ jobs:
           DATABASE_URL: ${{ env.DIRECT_DATABASE_URL }}
         run: node scripts/ensure-columns.js
 
+      - name: Seed admin account (idempotent — skips if already exists)
+        continue-on-error: true
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ env.DIRECT_DATABASE_URL }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: npx ts-node --skip-project scripts/create-admin.ts
+
       - name: Sync database schema
         timeout-minutes: 5
         continue-on-error: true
