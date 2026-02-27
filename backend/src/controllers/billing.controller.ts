@@ -13,9 +13,10 @@ function getStripe(): Stripe {
   return _stripe;
 }
 
-const PRICE_ID     = process.env.STRIPE_PRICE_ID || '';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://www.isaloumapps.com';
-const TRIAL_DAYS   = 30;
+const ANNUAL_PRICE_ID      = process.env.STRIPE_PRICE_ID || '';          // $12/client/year recurring
+const ONBOARDING_PRICE_ID  = process.env.STRIPE_ONBOARDING_PRICE_ID || ''; // $3,500 one-time
+const FRONTEND_URL         = process.env.FRONTEND_URL || 'https://www.isaloumapps.com';
+const MIN_CLIENTS          = 42; // 42 × $12 = $504 → enforces $500/year minimum
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/billing/status
@@ -90,17 +91,22 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
       });
     }
 
-    const clientCount = Math.max(accountant._count.clients, 1); // min 1 seat
+    // Enforce minimum annual fee ($500/yr = 42 clients × $12)
+    const clientCount = Math.max(accountant._count.clients, MIN_CLIENTS);
+
+    // First-time subscriber → include one-time $3,500 onboarding fee
+    const isFirstTime = !accountant.stripeSubscriptionId;
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+    if (isFirstTime && ONBOARDING_PRICE_ID) {
+      lineItems.push({ price: ONBOARDING_PRICE_ID, quantity: 1 });
+    }
+    lineItems.push({ price: ANNUAL_PRICE_ID, quantity: clientCount });
 
     const session = await getStripe().checkout.sessions.create({
       customer:   customerId,
       mode:       'subscription',
-      line_items: [{
-        price:    PRICE_ID,
-        quantity: clientCount,
-      }],
+      line_items: lineItems,
       subscription_data: {
-        trial_period_days: TRIAL_DAYS,
         metadata: { accountantId },
       },
       success_url: `${FRONTEND_URL}/accountant/billing?success=true`,
@@ -238,7 +244,7 @@ export async function syncStripeSeats(accountantId: string): Promise<void> {
     if (!itemId) return;
 
     await getStripe().subscriptionItems.update(itemId, {
-      quantity: Math.max(accountant._count.clients, 1),
+      quantity: Math.max(accountant._count.clients, MIN_CLIENTS),
     });
   } catch (error) {
     console.error('syncStripeSeats error:', error); // non-fatal

@@ -156,12 +156,20 @@ function BillingContent() {
 
         {/* Seats card */}
         <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 mb-6">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Active Seats</p>
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Active Clients</p>
           <div className="flex items-end gap-2">
             <span className="text-4xl font-bold text-white">{billing?.clientCount ?? 0}</span>
             <span className="text-gray-400 text-sm mb-1">client{billing?.clientCount !== 1 ? 's' : ''}</span>
           </div>
-          <p className="text-xs text-gray-500 mt-2">Billed per active client. Seats auto-adjust when you add or remove clients.</p>
+          {(() => {
+            const billed = Math.max(billing?.clientCount ?? 0, 42);
+            const annual = billed * 12;
+            return (
+              <p className="text-xs text-gray-500 mt-2">
+                Billed for {billed} clients × $12 = <span className="text-white font-medium">${annual.toLocaleString()}/year</span> (minimum $500/year)
+              </p>
+            );
+          })()}
         </div>
 
         {/* Pricing card */}
@@ -170,12 +178,23 @@ function BillingContent() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="font-semibold text-white text-lg">Professional Plan</p>
-                <p className="text-sm text-gray-400 mt-1">Everything you need to manage your clients</p>
+                <p className="text-sm text-gray-400 mt-1">Billed annually — no monthly surprises</p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-2xl font-bold text-white">$9<span className="text-base font-normal text-gray-400">/client/mo</span></p>
+                <p className="text-2xl font-bold text-white">$12<span className="text-base font-normal text-gray-400">/client/year</span></p>
+                <p className="text-xs text-gray-500 mt-1">min. $500/year</p>
               </div>
             </div>
+
+            {/* One-time onboarding fee callout */}
+            <div className="mt-4 bg-blue-950/50 border border-blue-800/50 rounded-xl px-4 py-3 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-300">One-time onboarding fee</p>
+                <p className="text-xs text-gray-400 mt-0.5">Setup, integration &amp; going live</p>
+              </div>
+              <p className="text-xl font-bold text-white">$3,500</p>
+            </div>
+
             <ul className="mt-4 space-y-2 text-sm text-gray-300">
               {[
                 'Unlimited document uploads per client',
