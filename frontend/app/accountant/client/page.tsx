@@ -384,7 +384,7 @@ function ClientDetail() {
                       }).length} doc{documents.filter((d: any) => {
                         const m = (d.extractedData as any)?._metadata ?? {};
                         return m.typeMismatch || m.yearMismatch;
-                      }).length > 1 ? 's' : ''} need attention
+                      }).length > 1 ? 's' : ''} {t('acctClient.needAttention')}
                     </span>
                   )}
 
@@ -393,20 +393,20 @@ function ClientDetail() {
                     {yearDetails.taxYear?.status === 'completed' || completed ? (
                       <>
                         <span className="px-4 py-2 rounded-lg text-sm font-medium bg-green-100 text-green-700">
-                          ✅ Return Complete
+                          {t('acctClient.returnComplete')}
                         </span>
                         <button
                           disabled={reopening}
                           onClick={handleReopen}
                           className="px-4 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50 transition"
                         >
-                          {reopening ? 'Reopening…' : '↩ Re-open'}
+                          {reopening ? t('acctClient.reopening') : t('acctClient.reopen')}
                         </button>
                       </>
                     ) : yearDetails.taxYear?.status === 'submitted' ? (
                       <div className="flex items-center gap-2">
                         {documents.length === 0 && (
-                          <span className="text-xs text-red-500">No documents uploaded</span>
+                          <span className="text-xs text-red-500">{t('acctClient.noDocsUploaded')}</span>
                         )}
                         <button
                           disabled={completing || documents.length === 0}
@@ -450,7 +450,7 @@ function ClientDetail() {
                               <ExtractedFields doc={doc} />
                               {doc.reviewStatus === 'rejected' && doc.rejectionReason && (
                                 <div className="mt-1 text-xs text-red-700 bg-red-50 rounded px-2 py-1">
-                                  ✗ Rejected: {doc.rejectionReason}
+                                  {t('acctClient.rejected')} {doc.rejectionReason}
                                 </div>
                               )}
                             </div>
@@ -461,11 +461,11 @@ function ClientDetail() {
                                   try {
                                     const res = await APIClient.getDocumentDownload(doc.id);
                                     window.open(res.data.downloadUrl, '_blank');
-                                  } catch { alert('Could not open document'); }
+                                  } catch { alert(t('acctClient.couldNotOpen')); }
                                 }}
                                 className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded hover:bg-gray-200"
                                 title="Open document"
-                              >👁 View</button>
+                              >{t('acctClient.view')}</button>
                               {doc.reviewStatus === 'pending' && (
                                 <>
                                   <button disabled={!!actionLoading} onClick={() => handleApprove(doc.id)}
@@ -482,14 +482,14 @@ function ClientDetail() {
                                 <button disabled={!!actionLoading} onClick={() => handleReset(doc.id)}
                                   className="px-2 py-1 text-xs text-gray-500 border border-gray-200 rounded hover:bg-gray-50 disabled:opacity-50"
                                   title="Reset to pending">
-                                  {actionLoading === doc.id ? '...' : '↩ Reset'}
+                                  {actionLoading === doc.id ? '...' : t('acctClient.reset')}
                                 </button>
                               )}
                               {(doc.extractionStatus === 'failed' || doc.extractionStatus === 'pending' || doc.extractionStatus === 'processing') && (
                                 <button disabled={!!actionLoading} onClick={() => handleRescan(doc.id)}
                                   className="px-2 py-1 text-xs text-blue-600 border border-blue-200 rounded hover:bg-blue-50 disabled:opacity-50"
                                   title="Re-trigger document scan">
-                                  {actionLoading === doc.id ? '...' : '🔄 Re-scan'}
+                                  {actionLoading === doc.id ? '...' : t('acctClient.rescan')}
                                 </button>
                               )}
                             </div>
@@ -502,8 +502,8 @@ function ClientDetail() {
 
                 {/* Accountant Notes */}
                 <div className="bg-white rounded-lg shadow p-4">
-                  <h3 className="font-semibold mb-2 text-sm">Internal Notes</h3>
-                  <p className="text-xs text-gray-400 mb-2">Only visible to you — not shown to the client.</p>
+                  <h3 className="font-semibold mb-2 text-sm">{t('acctClient.internalNotes')}</h3>
+                  <p className="text-xs text-gray-400 mb-2">{t('acctClient.notesHint')}</p>
                   <textarea
                     value={notes}
                     onChange={e => setNotes(e.target.value)}
@@ -511,20 +511,20 @@ function ClientDetail() {
                     className="w-full border rounded-lg px-3 py-2 text-sm h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
                   />
                   <div className="flex items-center justify-end gap-3 mt-2">
-                    {notesSaved && <span className="text-xs text-green-600">✓ Saved</span>}
+                    {notesSaved && <span className="text-xs text-green-600">{t('acctClient.notesSaved')}</span>}
                     <button
                       onClick={handleSaveNotes}
                       disabled={savingNotes}
                       className="px-4 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 disabled:opacity-50"
                     >
-                      {savingNotes ? 'Saving…' : 'Save Notes'}
+                      {savingNotes ? t('acctClient.saving') : t('acctClient.saveNotes')}
                     </button>
                   </div>
                 </div>
 
                 {yearDetails.taxYear?.status !== 'completed' && yearDetails.taxYear?.validations && yearDetails.taxYear.validations.length > 0 && (
                   <div className="bg-white rounded-lg shadow overflow-hidden">
-                    <div className="px-4 py-3 border-b"><h3 className="font-semibold">Validation Checks</h3></div>
+                    <div className="px-4 py-3 border-b"><h3 className="font-semibold">{t('acctClient.validations')}</h3></div>
                     <div className="divide-y">
                       {yearDetails.taxYear.validations.map((v: any) => (
                         <div key={v.id} className="px-4 py-3 flex items-center justify-between">
