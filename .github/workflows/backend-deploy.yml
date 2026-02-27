@@ -85,7 +85,7 @@ jobs:
           DATABASE_URL: ${{ env.DIRECT_DATABASE_URL }}
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-        run: npx ts-node --skip-project scripts/create-admin.ts
+        run: node scripts/create-admin.js
 
       - name: Sync database schema
         timeout-minutes: 5
