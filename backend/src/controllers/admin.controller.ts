@@ -183,9 +183,38 @@ export const deleteAccountant = async (req: Request, res: Response) => {
     const exists = await prisma.accountant.findUnique({ where: { id }, select: { id: true } });
     if (!exists) return res.status(404).json({ error: 'Accountant not found' });
 
-    // Null out reviewed_by FK before delete to avoid FK constraint violation
-    await prisma.document.updateMany({ where: { reviewedBy: id }, data: { reviewedBy: null } });
-    await prisma.accountant.delete({ where: { id } });
+    // Full manual cascade — bypass any FK constraint issues in the DB
+    await prisma.$transaction(async (tx) => {
+      // 1. Clear reviewed_by FK on documents
+      await tx.document.updateMany({ where: { reviewedBy: id }, data: { reviewedBy: null } });
+
+      // 2. Get all clients of this accountant
+      const clients = await tx.client.findMany({ where: { accountantId: id }, select: { id: true } });
+      const clientIds = clients.map(c => c.id);
+
+      if (clientIds.length > 0) {
+        // 3. Get all tax years of those clients
+        const taxYears = await tx.taxYear.findMany({ where: { clientId: { in: clientIds } }, select: { id: true } });
+        const taxYearIds = taxYears.map(ty => ty.id);
+
+        if (taxYearIds.length > 0) {
+          // 4. Delete validations + documents under those tax years
+          await tx.validation.deleteMany({ where: { taxYearId: { in: taxYearIds } } });
+          await tx.document.deleteMany({ where: { taxYearId: { in: taxYearIds } } });
+        }
+
+        // 5. Delete tax years + clients
+        await tx.taxYear.deleteMany({ where: { clientId: { in: clientIds } } });
+        await tx.client.deleteMany({ where: { accountantId: id } });
+      }
+
+      // 6. Delete notifications for this accountant
+      await tx.notification.deleteMany({ where: { recipientId: id, recipientType: 'accountant' } });
+
+      // 7. Finally delete the accountant
+      await tx.accountant.delete({ where: { id } });
+    });
+
     res.json({ message: 'Accountant deleted' });
   } catch (error: any) {
     console.error('Admin delete accountant error:', error);

@@ -15,7 +15,12 @@ function getTokenForUrl(url?: string): string | null {
   const pagePath = window.location.pathname;
 
   // Accountant API endpoints — always use accountant token
-  if (apiPath.includes('/accountant/') || apiPath.includes('/users/accountant/')) {
+  if (
+    apiPath.includes('/accountant/') ||
+    apiPath.includes('/users/accountant/') ||
+    apiPath.includes('/billing/') ||   // billing is accountant-only
+    apiPath.includes('/admin/')         // admin routes
+  ) {
     return localStorage.getItem('auth_token_accountant')
       || localStorage.getItem('auth_token');
   }
