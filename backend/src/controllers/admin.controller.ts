@@ -185,7 +185,7 @@ export const deleteAccountant = async (req: Request, res: Response) => {
 
     // Clear reviewed_by FK using Prisma ORM (PgBouncer-safe, no raw SQL)
     await prisma.document.updateMany({ where: { reviewedBy: id }, data: { reviewedBy: null } });
-    await prisma.accountant.delete({ where: { id } });
+    await prisma.accountant.delete({ where: { id }, select: { id: true } });
 
     res.json({ message: 'Accountant deleted' });
   } catch (error: any) {
