@@ -341,6 +341,55 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${BillingFunction}
       RetentionInDays: 7
 
+  # Admin Lambda
+  AdminFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/lambda/admin.handler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: "*"
+      Events:
+        AdminProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /admin/{proxy+}
+            Method: ANY
+        AdminRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /admin
+            Method: ANY
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: 'es2020'
+        Sourcemap: false
+        EntryPoints:
+          - src/lambda/admin.ts
+        External:
+          - sharp
+          - '@mapbox/node-pre-gyp'
+          - mock-aws-s3
+          - aws-sdk
+          - nock
+          - '@prisma/client'
+          - '@aws-sdk/client-sqs'
+
+  AdminFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AdminFunction}
+      RetentionInDays: 7
+
   # ── SQS ─────────────────────────────────────────────────────────────────────
 
   # Dead-Letter Queue — messages land here after 3 failed processing attempts
@@ -529,6 +578,10 @@ Outputs:
   BillingFunctionArn:
     Description: Billing Lambda ARN
     Value: !GetAtt BillingFunction.Arn
+
+  AdminFunctionArn:
+    Description: Admin Lambda ARN
+    Value: !GetAtt AdminFunction.Arn
 
   HealthFunctionArn:
     Description: Health Lambda ARN
