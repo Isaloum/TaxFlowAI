@@ -117,6 +117,9 @@ export const getAccountants = async (req: Request, res: Response) => {
         phone: true,
         languagePref: true,
         createdAt: true,
+        subscriptionStatus: true,
+        trialEndsAt: true,
+        currentPeriodEnd: true,
         clients: {
           select: {
             id: true,
@@ -149,6 +152,9 @@ export const getAccountants = async (req: Request, res: Response) => {
       phone: acct.phone,
       languagePref: acct.languagePref,
       createdAt: acct.createdAt,
+      subscriptionStatus: acct.subscriptionStatus,
+      trialEndsAt: acct.trialEndsAt,
+      currentPeriodEnd: acct.currentPeriodEnd,
       clientCount: acct.clients.length,
       clients: acct.clients.map((c) => {
         const latest = c.taxYears[0];
