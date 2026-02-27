@@ -19,6 +19,8 @@ async function main() {
     { sql: `ALTER TABLE accountants ADD COLUMN IF NOT EXISTS current_period_end TIMESTAMPTZ`, name: 'accountants.current_period_end' },
     // Admin table
     { sql: `CREATE TABLE IF NOT EXISTS admins (id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`, name: 'admins table' },
+    // Rename passwordHash → password_hash if prisma db push previously renamed it (camelCase → snake_case fix)
+    { sql: `ALTER TABLE admins RENAME COLUMN "passwordHash" TO password_hash`, name: 'admins.passwordHash rename' },
   ];
 
   for (const { sql, name } of cols) {
