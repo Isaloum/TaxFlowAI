@@ -192,22 +192,22 @@ export const deleteAccountant = async (req: Request, res: Response) => {
       DELETE FROM validations WHERE tax_year_id IN (
         SELECT ty.id FROM tax_years ty
         JOIN clients c ON ty.client_id = c.id
-        WHERE c.accountant_id = ${id}
+        WHERE c."accountantId" = ${id}
       )`);
     step = 3;
     await prisma.$executeRaw(Prisma.sql`
       DELETE FROM documents WHERE tax_year_id IN (
         SELECT ty.id FROM tax_years ty
         JOIN clients c ON ty.client_id = c.id
-        WHERE c.accountant_id = ${id}
+        WHERE c."accountantId" = ${id}
       )`);
     step = 4;
     await prisma.$executeRaw(Prisma.sql`
       DELETE FROM tax_years WHERE client_id IN (
-        SELECT id FROM clients WHERE accountant_id = ${id}
+        SELECT id FROM clients WHERE "accountantId" = ${id}
       )`);
     step = 5;
-    await prisma.$executeRaw(Prisma.sql`DELETE FROM clients WHERE accountant_id = ${id}`);
+    await prisma.$executeRaw(Prisma.sql`DELETE FROM clients WHERE "accountantId" = ${id}`);
     step = 6;
     await prisma.$executeRaw(Prisma.sql`DELETE FROM notifications WHERE recipient_id = ${id} AND recipient_type = 'accountant'`);
     step = 7;
