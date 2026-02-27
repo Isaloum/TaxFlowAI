@@ -3,6 +3,8 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api-client';
+import { useT } from '@/lib/i18n';
+import LanguageToggle from '@/components/LanguageToggle';
 
 interface BillingStatus {
   subscriptionStatus: string;
@@ -12,23 +14,15 @@ interface BillingStatus {
   stripeSubscriptionId: string | null;
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  trialing:  { label: 'Free Trial',    color: 'text-blue-400',   bg: 'bg-blue-900/30 border-blue-800' },
-  active:    { label: 'Active',        color: 'text-green-400',  bg: 'bg-green-900/30 border-green-800' },
-  past_due:  { label: 'Past Due',      color: 'text-yellow-400', bg: 'bg-yellow-900/30 border-yellow-800' },
-  canceled:  { label: 'Canceled',      color: 'text-red-400',    bg: 'bg-red-900/30 border-red-800' },
-  unpaid:    { label: 'Unpaid',        color: 'text-red-400',    bg: 'bg-red-900/30 border-red-800' },
-  incomplete:{ label: 'Incomplete',    color: 'text-gray-400',   bg: 'bg-gray-800 border-gray-700' },
-};
-
-function fmt(dateStr: string | null) {
+function fmt(dateStr: string | null, lang: string) {
   if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+  return new Date(dateStr).toLocaleDateString(lang === 'fr' ? 'fr-CA' : 'en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 function BillingContent() {
   const router       = useRouter();
   const searchParams = useSearchParams();
+  const { t, lang }  = useT();
   const [billing, setBilling]   = useState<BillingStatus | null>(null);
   const [loading, setLoading]   = useState(true);
   const [working, setWorking]   = useState(false);
@@ -37,8 +31,8 @@ function BillingContent() {
   useEffect(() => {
     const success  = searchParams.get('success');
     const canceled = searchParams.get('canceled');
-    if (success  === 'true') showToast('🎉 Subscription activated! Welcome aboard.', true);
-    if (canceled === 'true') showToast('Checkout was canceled. No charge was made.', false);
+    if (success  === 'true') showToast(t('billing.successMsg'), true);
+    if (canceled === 'true') showToast(t('billing.canceledMsg'), false);
     load();
   }, []);
 
@@ -61,7 +55,7 @@ function BillingContent() {
       const res = await api.post('/billing/checkout');
       window.location.href = res.data.url;
     } catch {
-      showToast('Failed to start checkout. Please try again.', false);
+      showToast(t('billing.canceledMsg'), false);
       setWorking(false);
     }
   };
@@ -72,7 +66,7 @@ function BillingContent() {
       const res = await api.post('/billing/portal');
       window.location.href = res.data.url;
     } catch {
-      showToast('Failed to open billing portal. Please try again.', false);
+      showToast(t('billing.canceledMsg'), false);
       setWorking(false);
     }
   };
@@ -80,6 +74,15 @@ function BillingContent() {
   const showToast = (msg: string, ok: boolean) => {
     setToast({ msg, ok });
     setTimeout(() => setToast(null), 5000);
+  };
+
+  const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
+    trialing:  { label: t('billing.status.trialing'),  color: 'text-blue-400',   bg: 'bg-blue-900/30 border-blue-800' },
+    active:    { label: t('billing.status.active'),    color: 'text-green-400',  bg: 'bg-green-900/30 border-green-800' },
+    past_due:  { label: t('billing.status.past_due'),  color: 'text-yellow-400', bg: 'bg-yellow-900/30 border-yellow-800' },
+    canceled:  { label: t('billing.status.canceled'),  color: 'text-red-400',    bg: 'bg-red-900/30 border-red-800' },
+    unpaid:    { label: t('billing.status.unpaid'),    color: 'text-red-400',    bg: 'bg-red-900/30 border-red-800' },
+    incomplete:{ label: t('billing.status.incomplete'),color: 'text-gray-400',   bg: 'bg-gray-800 border-gray-700' },
   };
 
   if (loading) return (
@@ -105,25 +108,28 @@ function BillingContent() {
       )}
 
       <div className="max-w-2xl mx-auto px-4 py-12">
-        {/* Back */}
-        <button onClick={() => router.push('/accountant/dashboard')} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white mb-8 transition">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Dashboard
-        </button>
+        {/* Back + Language */}
+        <div className="flex items-center justify-between mb-8">
+          <button onClick={() => router.push('/accountant/dashboard')} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            {t('billing.backToDash')}
+          </button>
+          <LanguageToggle />
+        </div>
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Billing &amp; Subscription</h1>
-          <p className="text-sm text-gray-400 mt-1">Manage your TaxFlowAI subscription</p>
+          <h1 className="text-2xl font-bold text-white">{t('billing.title')}</h1>
+          <p className="text-sm text-gray-400 mt-1">{t('billing.subtitle')}</p>
         </div>
 
         {/* Status card */}
         <div className={`rounded-2xl border p-6 mb-6 ${meta.bg}`}>
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Status</p>
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">{t('billing.status.active') === meta.label ? t('billing.status.active') : t('billing.title').split('&')[0].trim()}</p>
               <p className={`text-2xl font-bold ${meta.color}`}>{meta.label}</p>
             </div>
             <div className={`text-xs font-semibold px-3 py-1 rounded-full border ${meta.bg} ${meta.color}`}>
@@ -133,30 +139,25 @@ function BillingContent() {
 
           {status === 'trialing' && billing?.trialEndsAt && (
             <p className="text-sm text-gray-300 mt-4">
-              Your free trial ends on <span className="font-semibold text-white">{fmt(billing.trialEndsAt)}</span>.
-              Subscribe before then to keep access.
+              {t('billing.trialEnds')} <span className="font-semibold text-white">{fmt(billing.trialEndsAt, lang)}</span>. {t('billing.trialEndsSub')}
             </p>
           )}
           {status === 'active' && billing?.currentPeriodEnd && (
             <p className="text-sm text-gray-300 mt-4">
-              Next billing date: <span className="font-semibold text-white">{fmt(billing.currentPeriodEnd)}</span>
+              {t('billing.nextBilling')} <span className="font-semibold text-white">{fmt(billing.currentPeriodEnd, lang)}</span>
             </p>
           )}
           {status === 'past_due' && (
-            <p className="text-sm text-yellow-300 mt-4">
-              Your payment is past due. Update your payment method to avoid service interruption.
-            </p>
+            <p className="text-sm text-yellow-300 mt-4">{t('billing.pastDueMsg')}</p>
           )}
           {(status === 'canceled' || status === 'unpaid') && (
-            <p className="text-sm text-red-300 mt-4">
-              Your subscription is inactive. Subscribe to add new clients.
-            </p>
+            <p className="text-sm text-red-300 mt-4">{t('billing.inactiveMsg')}</p>
           )}
         </div>
 
         {/* Seats card */}
         <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 mb-6">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Active Clients</p>
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">{t('billing.activeClients')}</p>
           <div className="flex items-end gap-2">
             <span className="text-4xl font-bold text-white">{billing?.clientCount ?? 0}</span>
             <span className="text-gray-400 text-sm mb-1">client{billing?.clientCount !== 1 ? 's' : ''}</span>
@@ -166,7 +167,7 @@ function BillingContent() {
             const annual = billed * 12;
             return (
               <p className="text-xs text-gray-500 mt-2">
-                Billed for {billed} clients × 12$ = <span className="text-white font-medium">{annual.toLocaleString()}$/year</span> (minimum 500$/year)
+                {t('billing.billedFor')} {billed} {t('billing.clientsX12')} <span className="text-white font-medium">{annual.toLocaleString()}$/year</span> {t('billing.minYear')}
               </p>
             );
           })()}
@@ -177,8 +178,8 @@ function BillingContent() {
           <div className="bg-gray-900 rounded-2xl border border-blue-900/50 p-6 mb-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="font-semibold text-white text-lg">Professional Plan</p>
-                <p className="text-sm text-gray-400 mt-1">Billed annually — no monthly surprises</p>
+                <p className="font-semibold text-white text-lg">{t('billing.plan')}</p>
+                <p className="text-sm text-gray-400 mt-1">{t('billing.planSubtitle')}</p>
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="text-2xl font-bold text-white">12$<span className="text-base font-normal text-gray-400">/client/year</span></p>
@@ -189,19 +190,19 @@ function BillingContent() {
             {/* One-time onboarding fee callout */}
             <div className="mt-4 bg-blue-950/50 border border-blue-800/50 rounded-xl px-4 py-3 flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-300">One-time onboarding fee</p>
-                <p className="text-xs text-gray-400 mt-0.5">Setup, integration &amp; going live</p>
+                <p className="text-sm font-medium text-blue-300">{t('billing.onboarding')}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{t('billing.onboardingDesc')}</p>
               </div>
               <p className="text-xl font-bold text-white">3,500$</p>
             </div>
 
             <ul className="mt-4 space-y-2 text-sm text-gray-300">
               {[
-                'Unlimited document uploads per client',
-                'AI-powered completeness validation',
-                'Email notifications & daily digest',
-                'Client portal with secure access',
-                'Priority support',
+                t('billing.features.unlimited'),
+                t('billing.features.ai'),
+                t('billing.features.notifications'),
+                t('billing.features.portal'),
+                t('billing.features.support'),
               ].map(f => (
                 <li key={f} className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,7 +233,7 @@ function BillingContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
               )}
-              {working ? 'Redirecting…' : 'Subscribe Now'}
+              {working ? t('billing.redirecting') : t('billing.subscribe')}
             </button>
           ) : (
             <button
@@ -251,15 +252,13 @@ function BillingContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               )}
-              {working ? 'Redirecting…' : 'Manage Subscription'}
+              {working ? t('billing.redirecting') : t('billing.manage')}
             </button>
           )}
         </div>
 
         {/* Footer note */}
-        <p className="text-center text-xs text-gray-600 mt-6">
-          Payments are processed securely by Stripe. TaxFlowAI does not store card details.
-        </p>
+        <p className="text-center text-xs text-gray-600 mt-6">{t('billing.footer')}</p>
       </div>
     </div>
   );
