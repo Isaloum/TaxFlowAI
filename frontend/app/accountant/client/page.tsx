@@ -170,7 +170,9 @@ function ClientDetail() {
   useEffect(() => {
     if (!isScanning || !selectedYear) return;
     const timer = setInterval(() => loadYearDetails(selectedYear, true), 2000);
-    return () => clearInterval(timer);
+    // Stop polling after 60s — prevents infinite loop on stuck documents
+    const timeout = setTimeout(() => clearInterval(timer), 60000);
+    return () => { clearInterval(timer); clearTimeout(timeout); };
   }, [isScanning, selectedYear?.id]);
 
   const loadAll = async () => {
