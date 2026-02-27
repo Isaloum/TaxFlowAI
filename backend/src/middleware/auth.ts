@@ -8,13 +8,13 @@ if (!JWT_SECRET) {
 }
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
-  // 1. Try HttpOnly cookie first (JS cannot read this — XSS safe)
-  let token: string | undefined = (req as any).cookies?.taxflow_token;
+  // 1. Authorization header takes priority — role-specific token set by api-client
+  const authHeader = req.headers['authorization'];
+  let token: string | undefined = (authHeader && authHeader.split(' ')[1]) || undefined;
 
-  // 2. Fall back to Authorization header (for API clients / mobile)
+  // 2. Fall back to HttpOnly cookie (used by /auth/me and browser-only flows)
   if (!token) {
-    const authHeader = req.headers['authorization'];
-    token = (authHeader && authHeader.split(' ')[1]) || undefined;
+    token = (req as any).cookies?.taxflow_token;
   }
 
   if (!token) {
