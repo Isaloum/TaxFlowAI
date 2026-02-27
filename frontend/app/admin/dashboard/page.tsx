@@ -77,6 +77,7 @@ export default function AdminDashboard() {
       setAccountants(aRes.data.accountants);
     } catch (err: any) {
       if (err.response?.status === 401 || err.response?.status === 403) router.push('/admin/login');
+      else showToast(`❌ Load error: ${err.response?.data?.error || err.message}`);
     } finally {
       setLoading(false);
     }
