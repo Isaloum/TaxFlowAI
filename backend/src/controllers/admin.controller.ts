@@ -97,9 +97,9 @@ export const getStats = async (req: Request, res: Response) => {
       completedTaxYears,
       submittedTaxYears,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Admin stats error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', detail: error?.message || String(error) });
   }
 };
 
@@ -174,9 +174,9 @@ export const getAccountants = async (req: Request, res: Response) => {
     }));
 
     res.json({ accountants: result });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Admin get accountants error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', detail: error?.message || String(error) });
   }
 };
 
