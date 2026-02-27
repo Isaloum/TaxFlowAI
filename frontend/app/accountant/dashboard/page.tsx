@@ -303,7 +303,7 @@ export default function AccountantDashboard() {
                           {client.pendingReview} doc{client.pendingReview > 1 ? 's' : ''}
                         </span>
                       ) : client.status === 'completed' ? (
-                        <span className="text-xs text-green-600">✓ All reviewed</span>
+                        <span className="text-xs text-green-600">✓ File completed</span>
                       ) : client.documentsCount === 0 ? (
                         <span className="text-xs text-gray-400">No uploads yet</span>
                       ) : (
