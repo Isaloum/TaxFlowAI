@@ -166,7 +166,7 @@ function BillingContent() {
             const annual = billed * 12;
             return (
               <p className="text-xs text-gray-500 mt-2">
-                Billed for {billed} clients × $12 = <span className="text-white font-medium">${annual.toLocaleString()}/year</span> (minimum $500/year)
+                Billed for {billed} clients × 12$ = <span className="text-white font-medium">{annual.toLocaleString()}$/year</span> (minimum 500$/year)
               </p>
             );
           })()}
@@ -181,8 +181,8 @@ function BillingContent() {
                 <p className="text-sm text-gray-400 mt-1">Billed annually — no monthly surprises</p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-2xl font-bold text-white">$12<span className="text-base font-normal text-gray-400">/client/year</span></p>
-                <p className="text-xs text-gray-500 mt-1">min. $500/year</p>
+                <p className="text-2xl font-bold text-white">12$<span className="text-base font-normal text-gray-400">/client/year</span></p>
+                <p className="text-xs text-gray-500 mt-1">min. 500$/year</p>
               </div>
             </div>
 
@@ -192,7 +192,7 @@ function BillingContent() {
                 <p className="text-sm font-medium text-blue-300">One-time onboarding fee</p>
                 <p className="text-xs text-gray-400 mt-0.5">Setup, integration &amp; going live</p>
               </div>
-              <p className="text-xl font-bold text-white">$3,500</p>
+              <p className="text-xl font-bold text-white">3,500$</p>
             </div>
 
             <ul className="mt-4 space-y-2 text-sm text-gray-300">

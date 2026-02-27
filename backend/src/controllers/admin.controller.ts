@@ -187,8 +187,8 @@ export const deleteAccountant = async (req: Request, res: Response) => {
     await prisma.document.updateMany({ where: { reviewedBy: id }, data: { reviewedBy: null } });
     await prisma.accountant.delete({ where: { id } });
     res.json({ message: 'Accountant deleted' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Admin delete accountant error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', detail: error?.message || String(error) });
   }
 };
