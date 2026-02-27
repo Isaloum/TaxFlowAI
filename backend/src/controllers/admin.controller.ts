@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { Prisma } from '@prisma/client';
 import prisma from '../config/database';
 
 const JWT_SECRET = process.env.JWT_SECRET!;
@@ -184,36 +183,15 @@ export const deleteAccountant = async (req: Request, res: Response) => {
     const exists = await prisma.accountant.findUnique({ where: { id }, select: { id: true } });
     if (!exists) return res.status(404).json({ error: 'Accountant not found' });
 
-    // Prisma.sql tagged template — safe parameterized queries, PgBouncer-compatible
-    let step = 1;
-    await prisma.$executeRaw(Prisma.sql`UPDATE documents SET reviewed_by = NULL WHERE reviewed_by = ${id}`);
-    step = 2;
-    await prisma.$executeRaw(Prisma.sql`
-      DELETE FROM validations WHERE tax_year_id IN (
-        SELECT ty.id FROM tax_years ty
-        JOIN clients c ON ty.client_id = c.id
-        WHERE c."accountantId" = ${id}
-      )`);
-    step = 3;
-    await prisma.$executeRaw(Prisma.sql`
-      DELETE FROM documents WHERE tax_year_id IN (
-        SELECT ty.id FROM tax_years ty
-        JOIN clients c ON ty.client_id = c.id
-        WHERE c."accountantId" = ${id}
-      )`);
-    step = 4;
-    await prisma.$executeRaw(Prisma.sql`
-      DELETE FROM tax_years WHERE client_id IN (
-        SELECT id FROM clients WHERE "accountantId" = ${id}
-      )`);
-    step = 5;
-    await prisma.$executeRaw(Prisma.sql`DELETE FROM clients WHERE "accountantId" = ${id}`);
-    step = 6;
-    await prisma.$executeRaw(Prisma.sql`DELETE FROM notifications WHERE recipient_id = ${id} AND recipient_type = 'accountant'`);
-    step = 7;
-    await prisma.$executeRaw(Prisma.sql`DELETE FROM notification_logs WHERE recipient_id = ${id}`);
-    step = 8;
-    await prisma.$executeRaw(Prisma.sql`DELETE FROM accountants WHERE id = ${id}`);
+    // $executeRawUnsafe with correct camelCase column names as stored in DB
+    await prisma.$executeRawUnsafe(`UPDATE documents SET reviewed_by = NULL WHERE reviewed_by = $1`, id);
+    await prisma.$executeRawUnsafe(`DELETE FROM validations WHERE tax_year_id IN (SELECT ty.id FROM tax_years ty JOIN clients c ON ty.client_id = c.id WHERE c."accountantId" = $1)`, id);
+    await prisma.$executeRawUnsafe(`DELETE FROM documents WHERE tax_year_id IN (SELECT ty.id FROM tax_years ty JOIN clients c ON ty.client_id = c.id WHERE c."accountantId" = $1)`, id);
+    await prisma.$executeRawUnsafe(`DELETE FROM tax_years WHERE client_id IN (SELECT id FROM clients WHERE "accountantId" = $1)`, id);
+    await prisma.$executeRawUnsafe(`DELETE FROM clients WHERE "accountantId" = $1`, id);
+    await prisma.$executeRawUnsafe(`DELETE FROM notifications WHERE recipient_id = $1 AND recipient_type = 'accountant'`, id);
+    await prisma.$executeRawUnsafe(`DELETE FROM notification_logs WHERE recipient_id = $1`, id);
+    await prisma.$executeRawUnsafe(`DELETE FROM accountants WHERE id = $1`, id);
 
     res.json({ message: 'Accountant deleted' });
   } catch (error: any) {
