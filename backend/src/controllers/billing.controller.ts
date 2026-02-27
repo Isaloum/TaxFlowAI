@@ -47,8 +47,15 @@ export const getBillingStatus = async (req: Request, res: Response) => {
       hasStripe:          !!accountant.stripeSubscriptionId,
     });
   } catch (error) {
-    console.error('Billing status error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    // DB columns may not exist yet — return safe trialing defaults instead of 500
+    console.error('Billing status error (returning defaults):', error);
+    res.json({
+      subscriptionStatus: 'trialing',
+      trialEndsAt:        null,
+      currentPeriodEnd:   null,
+      clientCount:        0,
+      hasStripe:          false,
+    });
   }
 };
 
