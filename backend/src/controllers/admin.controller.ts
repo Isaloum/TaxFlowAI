@@ -183,8 +183,8 @@ export const deleteAccountant = async (req: Request, res: Response) => {
     const exists = await prisma.accountant.findUnique({ where: { id }, select: { id: true } });
     if (!exists) return res.status(404).json({ error: 'Accountant not found' });
 
-    // Prisma handles all cascades via schema: clients→taxYears→documents→validations (Cascade)
-    // and reviewedDocuments (SetNull) — no raw SQL needed
+    // Clear reviewed_by FK using Prisma ORM (PgBouncer-safe, no raw SQL)
+    await prisma.document.updateMany({ where: { reviewedBy: id }, data: { reviewedBy: null } });
     await prisma.accountant.delete({ where: { id } });
 
     res.json({ message: 'Accountant deleted' });
