@@ -57,9 +57,13 @@ export const adminLogin = async (req: Request, res: Response) => {
     });
 
     return res.json({ message: 'Login successful', token, user: { id: admin.id, email: admin.email, role: 'admin' } });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Admin login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    // Temporary: return actual error so we can diagnose
+    res.status(500).json({
+      error: 'Internal server error',
+      detail: error?.message || String(error),
+    });
   }
 };
 
