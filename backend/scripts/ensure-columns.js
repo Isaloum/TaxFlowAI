@@ -11,6 +11,14 @@ async function main() {
     { sql: `ALTER TABLE accountants ADD COLUMN IF NOT EXISTS password_reset_expiry TIMESTAMPTZ`, name: 'accountants.password_reset_expiry' },
     { sql: `ALTER TABLE clients ADD COLUMN IF NOT EXISTS password_reset_token TEXT UNIQUE`, name: 'clients.password_reset_token' },
     { sql: `ALTER TABLE clients ADD COLUMN IF NOT EXISTS password_reset_expiry TIMESTAMPTZ`, name: 'clients.password_reset_expiry' },
+    // Stripe billing fields
+    { sql: `ALTER TABLE accountants ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT UNIQUE`, name: 'accountants.stripe_customer_id' },
+    { sql: `ALTER TABLE accountants ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT UNIQUE`, name: 'accountants.stripe_subscription_id' },
+    { sql: `ALTER TABLE accountants ADD COLUMN IF NOT EXISTS subscription_status TEXT NOT NULL DEFAULT 'trialing'`, name: 'accountants.subscription_status' },
+    { sql: `ALTER TABLE accountants ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMPTZ`, name: 'accountants.trial_ends_at' },
+    { sql: `ALTER TABLE accountants ADD COLUMN IF NOT EXISTS current_period_end TIMESTAMPTZ`, name: 'accountants.current_period_end' },
+    // Admin table
+    { sql: `CREATE TABLE IF NOT EXISTS admins (id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`, name: 'admins table' },
   ];
 
   for (const { sql, name } of cols) {
