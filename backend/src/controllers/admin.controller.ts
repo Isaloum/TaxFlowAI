@@ -16,6 +16,25 @@ export const adminLogin = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
+    // Ensure admins table exists (self-healing for first deploy)
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS admins (
+        id TEXT PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `).catch(() => {});
+
+    // Auto-seed default admin on very first login if no admins exist yet
+    const adminCount = await prisma.admin.count().catch(() => 0);
+    if (adminCount === 0) {
+      const defaultEmail    = process.env.ADMIN_EMAIL    || 'admin@isaloumapps.com';
+      const defaultPassword = process.env.ADMIN_PASSWORD || 'AdminPass123!';
+      const hash = await bcrypt.hash(defaultPassword, 12);
+      await prisma.admin.create({ data: { email: defaultEmail, passwordHash: hash } }).catch(() => {});
+    }
+
     const admin = await prisma.admin.findUnique({ where: { email } });
     if (!admin) return res.status(401).json({ error: 'Invalid credentials' });
 
