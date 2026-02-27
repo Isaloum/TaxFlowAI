@@ -183,6 +183,8 @@ export const deleteAccountant = async (req: Request, res: Response) => {
     const exists = await prisma.accountant.findUnique({ where: { id }, select: { id: true } });
     if (!exists) return res.status(404).json({ error: 'Accountant not found' });
 
+    // Null out reviewed_by FK before delete to avoid FK constraint violation
+    await prisma.document.updateMany({ where: { reviewedBy: id }, data: { reviewedBy: null } });
     await prisma.accountant.delete({ where: { id } });
     res.json({ message: 'Accountant deleted' });
   } catch (error) {
