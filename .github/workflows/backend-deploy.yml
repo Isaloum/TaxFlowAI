@@ -133,10 +133,10 @@ jobs:
               JwtSecret="${{ secrets.JWT_SECRET }}" \
               AllowedOrigin="https://isaloumapps.com,https://www.isaloumapps.com" \
               DeployVersion="${{ github.sha }}" \
-              StripeSecretKey="${{ secrets.STRIPE_SECRET_KEY }}" \
-              StripeWebhookSecret="${{ secrets.STRIPE_WEBHOOK_SECRET }}" \
-              StripePriceId="${{ secrets.STRIPE_PRICE_ID }}" \
-              StripeOnboardingPriceId="${{ secrets.STRIPE_ONBOARDING_PRICE_ID }}"
+              StripeSecretKey="${{ secrets.STRIPE_SECRET_KEY || 'placeholder' }}" \
+              StripeWebhookSecret="${{ secrets.STRIPE_WEBHOOK_SECRET || 'placeholder' }}" \
+              StripePriceId="${{ secrets.STRIPE_PRICE_ID || 'placeholder' }}" \
+              StripeOnboardingPriceId="${{ secrets.STRIPE_ONBOARDING_PRICE_ID || 'placeholder' }}"
 
       - name: Get API endpoint
         id: endpoint
