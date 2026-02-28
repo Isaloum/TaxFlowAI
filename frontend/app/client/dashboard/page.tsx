@@ -120,11 +120,12 @@ export default function ClientDashboard() {
     };
   });
 
-  // Active year = current year; previous = ALL other years sorted newest first
+  // Active year = current year; previous = last 5 years only (currentYear-5 to currentYear-1)
   const activeYear = currentYear;
+  const minYear = currentYear - 5;
   const previousYears = Object.keys(taxYearMap)
     .map(Number)
-    .filter(y => y !== currentYear)
+    .filter(y => y !== currentYear && y >= minYear)
     .sort((a, b) => b - a);
 
   const logout = () => {

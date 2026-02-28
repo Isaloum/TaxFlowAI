@@ -417,7 +417,7 @@ function ClientDetail() {
                   onChange={e => setNewYear(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAddYear()}
                   className="w-full border rounded-lg px-2 py-1 text-sm"
-                  min="2000" max="2100"
+                  min={new Date().getFullYear() - 5} max={new Date().getFullYear()}
                 />
                 <button
                   onClick={handleAddYear}

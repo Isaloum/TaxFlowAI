@@ -35,6 +35,12 @@ export const createTaxYear = async (req: Request, res: Response) => {
     }
 
     const yearNum = Number(year);
+    const currentYear = new Date().getFullYear();
+    const minYear = currentYear - 5;
+
+    if (yearNum < minYear || yearNum > currentYear) {
+      return res.status(400).json({ error: `Year must be between ${minYear} and ${currentYear}` });
+    }
 
     // Verify client belongs to this accountant
     const client = await prisma.client.findFirst({
