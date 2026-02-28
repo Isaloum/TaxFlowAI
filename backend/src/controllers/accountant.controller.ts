@@ -52,6 +52,7 @@ export const markAsComplete = async (req: Request, res: Response) => {
     const updated = await prisma.taxYear.update({
       where: { id: taxYearId },
       data: { status: 'completed', completedAt: new Date(), completenessScore: 100 },
+      select: { id: true, status: true, completedAt: true, completenessScore: true },
     });
 
     // Send completion email to client (non-blocking)
@@ -97,11 +98,46 @@ export const reopenTaxYear = async (req: Request, res: Response) => {
     const updated = await prisma.taxYear.update({
       where: { id: taxYearId },
       data: { status: 'submitted', completedAt: null },
+      select: { id: true, status: true },
     });
 
     return res.json({ message: 'Tax year re-opened', taxYear: updated });
   } catch (error) {
     console.error('Re-open tax year error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * POST /api/accountant/tax-years/:taxYearId/force-submit
+ * Accountant manually advances a draft tax year to submitted (bypasses client submit step)
+ */
+export const forceSubmitTaxYear = async (req: Request, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'accountant') {
+      return res.status(403).json({ error: 'Only accountants can force-submit' });
+    }
+
+    const { taxYearId } = req.params;
+
+    const taxYear = await prisma.taxYear.findFirst({
+      where: { id: taxYearId, client: { accountantId: req.user.sub } },
+      select: { id: true, status: true },
+    });
+
+    if (!taxYear) return res.status(404).json({ error: 'Tax year not found' });
+    if (taxYear.status === 'completed') return res.status(400).json({ error: 'Already completed' });
+    if (taxYear.status === 'submitted') return res.status(400).json({ error: 'Already submitted' });
+
+    const updated = await prisma.taxYear.update({
+      where: { id: taxYearId },
+      data: { status: 'submitted' },
+      select: { id: true, status: true },
+    });
+
+    return res.json({ message: 'Marked as submitted', taxYear: updated });
+  } catch (error) {
+    console.error('Force submit error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

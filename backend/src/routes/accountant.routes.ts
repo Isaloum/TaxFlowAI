@@ -17,6 +17,7 @@ import {
   downloadTaxPackage,
   markAsComplete,
   reopenTaxYear,
+  forceSubmitTaxYear,
   updateTaxYearNotes
 } from '../controllers/accountant.controller';
 import { authenticateToken, requireRole } from '../middleware/auth';
@@ -43,6 +44,7 @@ router.get('/tax-years/:taxYearId', getTaxYearDetails);
 router.get('/tax-years/:taxYearId/download-package', downloadTaxPackage);
 router.post('/tax-years/:taxYearId/complete', markAsComplete);
 router.post('/tax-years/:taxYearId/reopen', reopenTaxYear);
+router.post('/tax-years/:taxYearId/force-submit', forceSubmitTaxYear);
 router.patch('/tax-years/:taxYearId/notes', updateTaxYearNotes);
 
 // Document review

@@ -184,6 +184,10 @@ export class APIClient {
     return api.post(`/users/accountant/tax-years/${taxYearId}/reopen`);
   }
 
+  static async forceSubmitTaxYear(taxYearId: string) {
+    return api.post(`/users/accountant/tax-years/${taxYearId}/force-submit`);
+  }
+
   static async deleteDocument(documentId: string) {
     return api.delete(`/documents/${documentId}`);
   }

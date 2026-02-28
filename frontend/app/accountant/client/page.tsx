@@ -148,6 +148,7 @@ function ClientDetail() {
   const [completing, setCompleting] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [reopening, setReopening] = useState(false);
+  const [forceSubmitting, setForceSubmitting] = useState(false);
   const [notes, setNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
   const [notesSaved, setNotesSaved] = useState(false);
@@ -250,6 +251,23 @@ function ClientDetail() {
       console.error(err);
     } finally {
       setReopening(false);
+    }
+  };
+
+  const handleForceSubmit = async () => {
+    if (!selectedYear) return;
+    if (!confirm('Mark this tax year as submitted on behalf of the client?')) return;
+    setForceSubmitting(true);
+    try {
+      await APIClient.forceSubmitTaxYear(selectedYear.id);
+      await loadYearDetails(selectedYear);
+      const yearsRes = await APIClient.getClientTaxYears(clientId);
+      setTaxYears(yearsRes.data.client?.taxYears || []);
+      showToast('Marked as submitted', 'success');
+    } catch (err: any) {
+      showToast(err?.response?.data?.error || 'Failed', 'error');
+    } finally {
+      setForceSubmitting(false);
     }
   };
 
@@ -417,7 +435,16 @@ function ClientDetail() {
                           {completing ? t('acctClient.completing') : `✅ ${t('acctClient.markComplete')}`}
                         </button>
                       </div>
-                    ) : null}
+                    ) : (
+                      <button
+                        disabled={forceSubmitting}
+                        onClick={handleForceSubmit}
+                        title="Mark as submitted on behalf of client"
+                        className="px-4 py-2 border border-blue-300 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 disabled:opacity-50 transition"
+                      >
+                        {forceSubmitting ? '…' : '📬 Mark as Submitted'}
+                      </button>
+                    )}
                   </div>
                 </div>
 
