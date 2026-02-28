@@ -163,6 +163,7 @@ export const createClient = async (req: Request, res: Response) => {
 
     const accountant = await prisma.accountant.findUnique({
       where: { id: req.user.sub },
+      select: { id: true, email: true, firmName: true },
     });
 
     if (!accountant) {

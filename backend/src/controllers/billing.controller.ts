@@ -71,7 +71,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
 
     const accountant = await prisma.accountant.findUnique({
       where: { id: accountantId },
-      include: { _count: { select: { clients: true } } },
+      select: { id: true, email: true, firmName: true, stripeCustomerId: true, stripeSubscriptionId: true, _count: { select: { clients: true } } },
     });
 
     if (!accountant) return res.status(404).json({ error: 'Accountant not found' });
