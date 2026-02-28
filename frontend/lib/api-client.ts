@@ -128,6 +128,10 @@ export class APIClient {
     return api.delete(`/users/accountant/clients/${clientId}`);
   }
 
+  static async getBillingStatus() {
+    return api.get('/billing/status');
+  }
+
   static async getAccountantClients() {
     return api.get('/users/accountant/clients-with-tax-years');
   }

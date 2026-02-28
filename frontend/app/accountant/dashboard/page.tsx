@@ -60,12 +60,9 @@ export default function AccountantDashboard() {
 
   const checkBilling = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/billing/status`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        const blocked = data.subscriptionStatus === 'canceled' || data.subscriptionStatus === 'unpaid';
-        setBillingBlocked(blocked);
-      }
+      const res = await APIClient.getBillingStatus();
+      const blocked = res.data.subscriptionStatus === 'canceled' || res.data.subscriptionStatus === 'unpaid';
+      setBillingBlocked(blocked);
     } catch { /* non-fatal */ }
   };
 
