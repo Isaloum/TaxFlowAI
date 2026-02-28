@@ -120,9 +120,12 @@ export default function ClientDashboard() {
     };
   });
 
-  // Active year = current year; previous = everything else that has data
+  // Active year = current year; previous = ALL other years sorted newest first
   const activeYear = currentYear;
-  const previousYears = [currentYear - 1, currentYear - 2].filter(y => taxYearMap[y]);
+  const previousYears = Object.keys(taxYearMap)
+    .map(Number)
+    .filter(y => y !== currentYear)
+    .sort((a, b) => b - a);
 
   const logout = () => {
     localStorage.removeItem('auth_token_client');
@@ -233,23 +236,27 @@ export default function ClientDashboard() {
           />
         </div>
 
-        {/* ── PREVIOUS YEARS — collapsible ── */}
-        {previousYears.length > 0 && (
-          <div className="mt-6">
-            <button
-              onClick={() => setShowPrev(v => !v)}
-              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition mb-3"
+        {/* ── PREVIOUS YEARS — always visible ── */}
+        <div className="mt-6">
+          <button
+            onClick={() => setShowPrev(v => !v)}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition mb-3"
+          >
+            <svg
+              className={`w-4 h-4 transition-transform ${showPrev ? 'rotate-90' : ''}`}
+              fill="none" stroke="currentColor" viewBox="0 0 24 24"
             >
-              <svg
-                className={`w-4 h-4 transition-transform ${showPrev ? 'rotate-90' : ''}`}
-                fill="none" stroke="currentColor" viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              <span className="font-medium">{t('clientDash.previous')} ({previousYears.length})</span>
-            </button>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+            <span className="font-medium">
+              {t('clientDash.previous')}{previousYears.length > 0 ? ` (${previousYears.length})` : ''}
+            </span>
+          </button>
 
-            {showPrev && (
+          {showPrev && (
+            previousYears.length === 0 ? (
+              <p className="text-sm text-gray-400 pl-1">{t('clientDash.noPreviousYears')}</p>
+            ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 {previousYears.map(year => (
                   <YearCard
@@ -261,9 +268,9 @@ export default function ClientDashboard() {
                   />
                 ))}
               </div>
-            )}
-          </div>
-        )}
+            )
+          )}
+        </div>
 
       </div>
     </div>
