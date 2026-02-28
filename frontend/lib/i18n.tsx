@@ -95,6 +95,7 @@ const EN: Translations = {
   'clientDash.docsNeed':          'documents need to be corrected for',
   'clientDash.docNeeds':          'document needs to be corrected for',
   'clientDash.uploadCorrect':     'Please upload corrected versions of the rejected documents.',
+  'clientDash.provinceBadge':     'documents filtered for your province',
 
   // ── Tax Year page ────────────────────────────────────────────────────────────
   'taxYear.step1.title':   'Step 1 — Complete your tax profile',
@@ -364,6 +365,7 @@ const FR: Translations = {
   'clientDash.docsNeed':          'documents doivent être corrigés pour',
   'clientDash.docNeeds':          'document doit être corrigé pour',
   'clientDash.uploadCorrect':     'Veuillez téléverser les versions corrigées des documents rejetés.',
+  'clientDash.provinceBadge':     'documents filtrés pour votre province',
 
   'taxYear.step1.title':   'Étape 1 — Complétez votre profil fiscal',
   'taxYear.step1.desc':    'Dites-nous vos sources de revenus et déductions pour que nous puissions vous indiquer exactement quels documents téléverser.',

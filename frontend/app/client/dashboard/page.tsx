@@ -217,7 +217,7 @@ export default function ClientDashboard() {
         {/* Province badge */}
         {profile?.province && (
           <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-medium px-3 py-1.5 rounded-full mb-6">
-            📍 {profile.province} — documents filtered for your province
+            📍 {profile.province} — {t('clientDash.provinceBadge')}
           </div>
         )}
 
