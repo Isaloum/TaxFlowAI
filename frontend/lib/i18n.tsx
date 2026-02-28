@@ -159,7 +159,11 @@ const EN: Translations = {
 
   // ── Change Password ──────────────────────────────────────────────────────────
   'changePw.title':        'Change Password',
-  'changePw.current':      'Current password',
+  'changePw.intro':        'Welcome',
+  'changePw.setPassword':  'Please set a permanent password to continue.',
+  'changePw.emailSent':    'Your accountant sent you a temporary password by email. Enter it below, then choose a new secure password.',
+  'changePw.notYou':       'Not you?',
+  'changePw.current':      'Temporary password (from email)',
   'changePw.new':          'New password',
   'changePw.confirm':      'Confirm new password',
   'changePw.submit':       'Update password',
@@ -407,7 +411,11 @@ const FR: Translations = {
   'profile.family.dependents':    'Personnes à charge (enfants, parent âgé…)',
 
   'changePw.title':        'Changer le mot de passe',
-  'changePw.current':      'Mot de passe actuel',
+  'changePw.intro':        'Bienvenue',
+  'changePw.setPassword':  'Veuillez créer un mot de passe permanent pour continuer.',
+  'changePw.emailSent':    'Votre comptable vous a envoyé un mot de passe temporaire par courriel. Entrez-le ci-dessous, puis choisissez un nouveau mot de passe sécurisé.',
+  'changePw.notYou':       'Ce n\'est pas vous?',
+  'changePw.current':      'Mot de passe temporaire (reçu par courriel)',
   'changePw.new':          'Nouveau mot de passe',
   'changePw.confirm':      'Confirmer le nouveau mot de passe',
   'changePw.submit':       'Mettre à jour',

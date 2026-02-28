@@ -220,6 +220,7 @@ export const changePassword = async (req: Request, res: Response) => {
       await prisma.accountant.update({
         where: { id: req.user.sub },
         data: { passwordHash: newPasswordHash },
+        select: { id: true },
       });
     } else if (req.user.role === 'client') {
       const client = await prisma.client.findUnique({
@@ -241,10 +242,11 @@ export const changePassword = async (req: Request, res: Response) => {
 
       await prisma.client.update({
         where: { id: req.user.sub },
-        data: { 
+        data: {
           passwordHash: newPasswordHash,
           isFirstLogin: false,
         },
+        select: { id: true },
       });
     }
 
