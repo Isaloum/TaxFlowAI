@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
-const POLL_INTERVAL = 60_000; // 60 seconds
+const POLL_INTERVAL = 30_000; // 30 seconds
 
 export function useVersionCheck() {
   const knownVersion = useRef<string | null>(null);
@@ -10,6 +10,9 @@ export function useVersionCheck() {
     let timer: ReturnType<typeof setInterval>;
 
     const check = async () => {
+      // Skip if tab is hidden — no point checking when user isn't looking
+      if (document.visibilityState === 'hidden') return;
+
       try {
         const res = await fetch(`${API_BASE}/api/version`, { cache: 'no-store' });
         if (!res.ok) return;
@@ -17,10 +20,8 @@ export function useVersionCheck() {
         if (!version) return;
 
         if (knownVersion.current === null) {
-          // First load — store the current version
           knownVersion.current = version;
         } else if (knownVersion.current !== version) {
-          // New deploy detected — reload silently
           window.location.reload();
         }
       } catch {
@@ -28,8 +29,17 @@ export function useVersionCheck() {
       }
     };
 
+    // Check immediately on load, then every 30s
     check();
     timer = setInterval(check, POLL_INTERVAL);
-    return () => clearInterval(timer);
+
+    // Also check instantly when user switches back to the tab
+    const onVisible = () => { if (document.visibilityState === 'visible') check(); };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
 }
