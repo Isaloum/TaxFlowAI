@@ -124,6 +124,10 @@ export class APIClient {
     return api.post('/users/accountant/clients', data);
   }
 
+  static async deleteClient(clientId: string) {
+    return api.delete(`/users/accountant/clients/${clientId}`);
+  }
+
   static async getAccountantClients() {
     return api.get('/users/accountant/clients-with-tax-years');
   }

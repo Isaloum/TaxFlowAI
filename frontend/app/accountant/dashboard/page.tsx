@@ -44,6 +44,7 @@ export default function AccountantDashboard() {
   const [toast, setToast] = useState('');
 
   const [billingBlocked, setBillingBlocked] = useState(false);
+  const [deletingClientId, setDeletingClientId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '',
@@ -82,6 +83,21 @@ export default function AccountantDashboard() {
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(''), 4000);
+  };
+
+  const handleDeleteClient = async (e: React.MouseEvent, clientId: string, clientName: string) => {
+    e.stopPropagation();
+    if (!confirm(`Delete ${clientName} and all their data? This cannot be undone.`)) return;
+    setDeletingClientId(clientId);
+    try {
+      await APIClient.deleteClient(clientId);
+      setClients(prev => prev.filter(c => c.id !== clientId));
+      showToast(`✅ ${clientName} deleted`);
+    } catch {
+      showToast('❌ Delete failed');
+    } finally {
+      setDeletingClientId(null);
+    }
   };
 
   const handleAddClient = async (e: React.FormEvent) => {
@@ -309,6 +325,15 @@ export default function AccountantDashboard() {
                       ) : (
                         <span className="text-xs text-gray-500">All reviewed</span>
                       )}
+                    </td>
+                    <td className="px-3 py-4">
+                      <button
+                        onClick={(e) => handleDeleteClient(e, client.id, client.name)}
+                        disabled={deletingClientId === client.id}
+                        className="text-xs text-gray-400 hover:text-red-500 transition px-2 py-1 rounded border border-transparent hover:border-red-200 hover:bg-red-50 disabled:opacity-50"
+                      >
+                        {deletingClientId === client.id ? '…' : '🗑'}
+                      </button>
                     </td>
                   </tr>
                 );
