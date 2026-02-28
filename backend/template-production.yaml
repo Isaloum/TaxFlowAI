@@ -45,6 +45,28 @@ Parameters:
     Default: "dev"
     Description: Git SHA injected at deploy time for version checks
 
+  StripeSecretKey:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: Stripe secret key
+
+  StripeWebhookSecret:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: Stripe webhook signing secret
+
+  StripePriceId:
+    Type: String
+    Default: ""
+    Description: Stripe monthly per-client price ID
+
+  StripeOnboardingPriceId:
+    Type: String
+    Default: ""
+    Description: Stripe one-time setup fee price ID
+
 
 Globals:
   Function:
@@ -61,6 +83,10 @@ Globals:
         JWT_SECRET: !Ref JwtSecret
         ALLOWED_ORIGIN: !Ref AllowedOrigin
         DEPLOY_VERSION: !Ref DeployVersion
+        STRIPE_SECRET_KEY: !Ref StripeSecretKey
+        STRIPE_WEBHOOK_SECRET: !Ref StripeWebhookSecret
+        STRIPE_PRICE_ID: !Ref StripePriceId
+        STRIPE_ONBOARDING_PRICE_ID: !Ref StripeOnboardingPriceId
         SES_EMAIL: notifications@isaloumapps.com
         LOGIN_URL: https://www.isaloumapps.com/login
         APP_URL: https://www.isaloumapps.com
