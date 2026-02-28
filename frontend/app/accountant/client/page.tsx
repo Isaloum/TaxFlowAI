@@ -150,6 +150,8 @@ function ClientDetail() {
   const [reopening, setReopening] = useState(false);
   const [forceSubmitting, setForceSubmitting] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [addingYear, setAddingYear] = useState(false);
+  const [newYear, setNewYear] = useState<string>('');
   const [notes, setNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
   const [notesSaved, setNotesSaved] = useState(false);
@@ -290,6 +292,23 @@ function ClientDetail() {
     }
   };
 
+  const handleAddYear = async () => {
+    const y = parseInt(newYear);
+    if (!y || y < 2000 || y > 2100) return showToast('Enter a valid year', 'error');
+    setAddingYear(true);
+    try {
+      await APIClient.createTaxYear(clientId, y);
+      const yearsRes = await APIClient.getClientTaxYears(clientId);
+      setTaxYears(yearsRes.data.client?.taxYears || []);
+      setNewYear('');
+      showToast(`Tax year ${y} added`, 'success');
+    } catch (err: any) {
+      showToast(err?.response?.data?.error || 'Failed to add year', 'error');
+    } finally {
+      setAddingYear(false);
+    }
+  };
+
   const handleApprove = async (docId: string) => {
     setActionLoading(docId);
     try {
@@ -388,6 +407,27 @@ function ClientDetail() {
                   <div className={`text-xs ${selectedYear?.id === year.id ? 'text-blue-100' : 'text-gray-400'}`}>{year.status}</div>
                 </button>
               ))}
+
+              {/* Add new tax year */}
+              <div className="flex gap-1 mt-2">
+                <input
+                  type="number"
+                  placeholder={String(new Date().getFullYear())}
+                  value={newYear}
+                  onChange={e => setNewYear(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleAddYear()}
+                  className="w-full border rounded-lg px-2 py-1 text-sm"
+                  min="2000" max="2100"
+                />
+                <button
+                  onClick={handleAddYear}
+                  disabled={addingYear || !newYear}
+                  className="px-2 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+                  title="Add tax year"
+                >
+                  {addingYear ? '…' : '+'}
+                </button>
+              </div>
             </div>
           </div>
 

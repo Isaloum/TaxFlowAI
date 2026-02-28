@@ -18,7 +18,9 @@ import {
   markAsComplete,
   reopenTaxYear,
   forceSubmitTaxYear,
-  updateTaxYearNotes
+  updateTaxYearNotes,
+  createTaxYear,
+  exportTaxYearExcel,
 } from '../controllers/accountant.controller';
 import { authenticateToken, requireRole } from '../middleware/auth';
 
@@ -39,7 +41,9 @@ router.delete('/clients/:id', deleteClient);
 router.post('/clients/:id/resend-invitation', resendInvitation);
 
 // Tax year management
+router.post('/clients/:clientId/tax-years', createTaxYear);
 router.get('/clients/:clientId/years', getClientTaxYears);
+router.get('/tax-years/:taxYearId/export-excel', exportTaxYearExcel);
 router.get('/tax-years/:taxYearId', getTaxYearDetails);
 router.get('/tax-years/:taxYearId/download-package', downloadTaxPackage);
 router.post('/tax-years/:taxYearId/complete', markAsComplete);

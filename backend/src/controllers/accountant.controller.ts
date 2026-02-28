@@ -16,6 +16,52 @@ import { syncStripeSeats } from './billing.controller';
  * POST /api/accountant/tax-years/:taxYearId/complete
  * Accountant marks a tax year as fully complete — triggers client email
  */
+/**
+ * POST /api/accountant/clients/:clientId/tax-years
+ * Accountant creates a new tax year for a client
+ */
+export const createTaxYear = async (req: Request, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'accountant') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const accountantId = req.user.sub;
+    const { clientId } = req.params;
+    const { year } = req.body;
+
+    if (!year || isNaN(Number(year))) {
+      return res.status(400).json({ error: 'Valid year is required' });
+    }
+
+    const yearNum = Number(year);
+
+    // Verify client belongs to this accountant
+    const client = await prisma.client.findFirst({
+      where: { id: clientId, accountantId },
+      select: { id: true },
+    });
+    if (!client) return res.status(404).json({ error: 'Client not found' });
+
+    // Prevent duplicate years
+    const existing = await prisma.taxYear.findFirst({
+      where: { clientId, year: yearNum },
+      select: { id: true },
+    });
+    if (existing) return res.status(409).json({ error: `Tax year ${yearNum} already exists` });
+
+    const taxYear = await prisma.taxYear.create({
+      data: { clientId, year: yearNum, status: 'draft' },
+      select: { id: true, year: true, status: true },
+    });
+
+    return res.status(201).json({ taxYear });
+  } catch (error) {
+    console.error('Create tax year error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const markAsComplete = async (req: Request, res: Response) => {
   try {
     if (!req.user || req.user.role !== 'accountant') {
