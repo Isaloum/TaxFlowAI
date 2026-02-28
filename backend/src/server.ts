@@ -73,6 +73,12 @@ app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', message: 'TaxFlowAI API is running' });
 });
 
+// Version endpoint — returns deploy timestamp so frontend can detect new deploys
+app.get('/api/version', (req: Request, res: Response) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ version: process.env.DEPLOY_VERSION || process.env.AWS_LAMBDA_FUNCTION_VERSION || 'dev' });
+});
+
 app.use('/api/auth',    authRoutes);
 app.use('/api/admin',   adminRoutes);
 app.use('/api/billing', billingRoutes);

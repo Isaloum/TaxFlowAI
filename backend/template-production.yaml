@@ -40,6 +40,11 @@ Parameters:
     Default: "https://www.isaloumapps.com,https://isaloumapps.com"
     Description: CORS allowed origin
 
+  DeployVersion:
+    Type: String
+    Default: "dev"
+    Description: Git SHA injected at deploy time for version checks
+
 
 Globals:
   Function:
@@ -55,6 +60,7 @@ Globals:
         OPENAI_API_KEY: !Ref OpenAIKey
         JWT_SECRET: !Ref JwtSecret
         ALLOWED_ORIGIN: !Ref AllowedOrigin
+        DEPLOY_VERSION: !Ref DeployVersion
         SES_EMAIL: notifications@isaloumapps.com
         LOGIN_URL: https://www.isaloumapps.com/login
         APP_URL: https://www.isaloumapps.com
