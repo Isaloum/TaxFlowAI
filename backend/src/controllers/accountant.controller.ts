@@ -221,8 +221,9 @@ export const createClient = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors[0].message });
     }
+    const detail = error?.meta?.cause || error?.meta?.message || error?.message || 'Internal server error';
     console.error('Create client error:', JSON.stringify({ message: error?.message, code: error?.code, meta: error?.meta }));
-    res.status(500).json({ error: error?.message || 'Internal server error', code: error?.code });
+    res.status(500).json({ error: detail, code: error?.code, meta: error?.meta });
   }
 };
 
