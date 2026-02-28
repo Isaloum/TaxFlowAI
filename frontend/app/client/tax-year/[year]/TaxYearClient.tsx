@@ -662,7 +662,7 @@ export default function TaxYearClient() {
             {/* Province indicator */}
             <div className="flex items-center gap-2 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
               <span className="text-sm text-blue-700">
-                📍 Showing document types for <strong>{PROVINCE_NAMES[province] ?? province}</strong>
+                📍 {t('taxYear.step2.province')} <strong>{PROVINCE_NAMES[province] ?? province}</strong>
               </span>
             </div>
 
@@ -712,7 +712,7 @@ export default function TaxYearClient() {
                   type="text"
                   value={ownerName}
                   onChange={(e) => setOwnerName(e.target.value)}
-                  placeholder="e.g. John Smith"
+                  placeholder={t('taxYear.step2.ownerPlaceholder')}
                   className="w-full px-3 py-2 border rounded-lg text-sm"
                   required
                 />
