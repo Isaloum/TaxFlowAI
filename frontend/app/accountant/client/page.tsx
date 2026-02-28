@@ -149,6 +149,7 @@ function ClientDetail() {
   const [completed, setCompleted] = useState(false);
   const [reopening, setReopening] = useState(false);
   const [forceSubmitting, setForceSubmitting] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [notes, setNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
   const [notesSaved, setNotesSaved] = useState(false);
@@ -268,6 +269,24 @@ function ClientDetail() {
       showToast(err?.response?.data?.error || 'Failed', 'error');
     } finally {
       setForceSubmitting(false);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    if (!selectedYear) return;
+    setExporting(true);
+    try {
+      const blob = await APIClient.exportTaxYearExcel(selectedYear.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `TaxFlowAI_${yearDetails?.taxYear?.client?.lastName ?? 'Client'}_${selectedYear.year}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      showToast(err?.response?.data?.error || 'Export failed', 'error');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -443,6 +462,17 @@ function ClientDetail() {
                         className="px-4 py-2 border border-blue-300 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 disabled:opacity-50 transition"
                       >
                         {forceSubmitting ? '…' : '📬 Mark as Submitted'}
+                      </button>
+                    )}
+                    {/* Excel export — always visible when docs exist */}
+                    {documents.length > 0 && (
+                      <button
+                        disabled={exporting}
+                        onClick={handleExportExcel}
+                        title="Export all documents to Excel"
+                        className="px-4 py-2 border border-green-300 text-green-700 text-sm font-medium rounded-lg hover:bg-green-50 disabled:opacity-50 transition"
+                      >
+                        {exporting ? '…' : '📊 Export Excel'}
                       </button>
                     )}
                   </div>

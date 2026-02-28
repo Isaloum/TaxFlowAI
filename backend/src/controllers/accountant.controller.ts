@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import archiver from 'archiver';
 import axios from 'axios';
+import ExcelJS from 'exceljs';
 import prisma from '../config/database';
 import { generateTemporaryPassword, SESEmailService } from '../services/ses-email.service';
 import { NotificationService } from '../services/notifications/notification.service';
@@ -328,6 +329,132 @@ export const getClientById = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Get client by ID error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * GET /api/accountant/tax-years/:taxYearId/export-excel
+ * Export all documents for a tax year as a structured Excel file
+ */
+export const exportTaxYearExcel = async (req: Request, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'accountant') {
+      return res.status(403).json({ error: 'Only accountants can export data' });
+    }
+
+    const { taxYearId } = req.params;
+
+    // Verify tax year belongs to this accountant's client
+    const taxYear = await prisma.taxYear.findFirst({
+      where: { id: taxYearId, client: { accountantId: req.user.sub } },
+      select: {
+        id: true, year: true, status: true,
+        client: { select: { firstName: true, lastName: true, email: true, province: true } },
+        documents: {
+          select: {
+            id: true, docType: true, docSubtype: true, originalFilename: true,
+            reviewStatus: true, extractionStatus: true, extractionConfidence: true,
+            uploadedAt: true, extractedData: true,
+          },
+          orderBy: { uploadedAt: 'asc' },
+        },
+      },
+    });
+
+    if (!taxYear) return res.status(404).json({ error: 'Tax year not found' });
+
+    const client = taxYear.client;
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'TaxFlowAI';
+    wb.created = new Date();
+
+    // ── Sheet 1: Summary ─────────────────────────────────────────────────────
+    const summary = wb.addWorksheet('Summary');
+    summary.columns = [
+      { header: 'Field', key: 'field', width: 28 },
+      { header: 'Value', key: 'value', width: 40 },
+    ];
+    // Style header row
+    summary.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    summary.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } };
+
+    const statusLabel: Record<string, string> = {
+      draft: 'Draft', submitted: 'Submitted', completed: 'Completed', in_review: 'In Review',
+    };
+    summary.addRows([
+      { field: 'Client Name',    value: `${client.firstName} ${client.lastName}` },
+      { field: 'Email',          value: client.email },
+      { field: 'Province',       value: client.province },
+      { field: 'Tax Year',       value: taxYear.year },
+      { field: 'Status',         value: statusLabel[taxYear.status] ?? taxYear.status },
+      { field: 'Total Documents', value: taxYear.documents.length },
+      { field: 'Approved',       value: taxYear.documents.filter(d => d.reviewStatus === 'approved').length },
+      { field: 'Pending Review', value: taxYear.documents.filter(d => d.reviewStatus === 'pending').length },
+      { field: 'Rejected',       value: taxYear.documents.filter(d => d.reviewStatus === 'rejected').length },
+      { field: 'Exported At',    value: new Date().toLocaleString('en-CA') },
+    ]);
+
+    // ── Sheet 2: Documents ───────────────────────────────────────────────────
+    const docs = wb.addWorksheet('Documents');
+    docs.columns = [
+      { header: 'Document Type',      key: 'docType',      width: 18 },
+      { header: 'Label / Subtype',    key: 'subtype',      width: 22 },
+      { header: 'Owner Name',         key: 'owner',        width: 22 },
+      { header: 'Taxpayer (OCR)',     key: 'taxpayer',     width: 22 },
+      { header: 'Tax Year (OCR)',     key: 'taxYear',      width: 16 },
+      { header: 'Review Status',      key: 'review',       width: 16 },
+      { header: 'Extraction Status',  key: 'extraction',   width: 18 },
+      { header: 'Confidence',         key: 'confidence',   width: 14 },
+      { header: 'Original Filename',  key: 'filename',     width: 34 },
+      { header: 'Uploaded At',        key: 'uploadedAt',   width: 22 },
+    ];
+
+    // Style header
+    const docHeader = docs.getRow(1);
+    docHeader.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    docHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E40AF' } };
+
+    for (const d of taxYear.documents) {
+      const ex = d.extractedData as any ?? {};
+      const conf = d.extractionConfidence ? `${Math.round(Number(d.extractionConfidence) * 100)}%` : '—';
+      const row = docs.addRow({
+        docType:    d.docType,
+        subtype:    d.docSubtype ?? '—',
+        owner:      ex._ownerName ?? ex._metadata?.ownerName ?? '—',
+        taxpayer:   ex.taxpayer_name ?? '—',
+        taxYear:    ex.tax_year ?? '—',
+        review:     d.reviewStatus,
+        extraction: d.extractionStatus,
+        confidence: conf,
+        filename:   d.originalFilename ?? '—',
+        uploadedAt: new Date(d.uploadedAt).toLocaleString('en-CA'),
+      });
+
+      // Color-code review status
+      const reviewCell = row.getCell('review');
+      if (d.reviewStatus === 'approved') {
+        reviewCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } };
+        reviewCell.font = { color: { argb: 'FF065F46' }, bold: true };
+      } else if (d.reviewStatus === 'rejected') {
+        reviewCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } };
+        reviewCell.font = { color: { argb: 'FF991B1B' }, bold: true };
+      }
+    }
+
+    // Freeze top row on both sheets
+    summary.views = [{ state: 'frozen', ySplit: 1 }];
+    docs.views    = [{ state: 'frozen', ySplit: 1 }];
+
+    // Stream response
+    const filename = `TaxFlowAI_${client.lastName}_${client.firstName}_${taxYear.year}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    await wb.xlsx.write(res);
+    res.end();
+
+  } catch (error: any) {
+    console.error('Export Excel error:', error);
+    res.status(500).json({ error: error?.message || 'Internal server error' });
   }
 };
 

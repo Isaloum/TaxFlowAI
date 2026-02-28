@@ -188,6 +188,13 @@ export class APIClient {
     return api.post(`/users/accountant/tax-years/${taxYearId}/force-submit`);
   }
 
+  static async exportTaxYearExcel(taxYearId: string): Promise<Blob> {
+    const response = await api.get(`/users/accountant/tax-years/${taxYearId}/export-excel`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  }
+
   static async deleteDocument(documentId: string) {
     return api.delete(`/documents/${documentId}`);
   }
