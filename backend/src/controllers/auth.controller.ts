@@ -286,7 +286,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
       return res.json({ message: 'If that email exists, a reset link has been sent.' });
     }
 
-    const client = await prisma.client.findUnique({ where: { email } });
+    const client = await prisma.client.findUnique({ where: { email }, select: { id: true, email: true } });
     if (client) {
       await prisma.client.update({
         where: { email },
@@ -333,6 +333,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     // Check client
     const client = await prisma.client.findFirst({
       where: { passwordResetToken: token, passwordResetExpiry: { gt: now } },
+      select: { id: true },
     });
     if (client) {
       const passwordHash = await bcrypt.hash(password, 12);

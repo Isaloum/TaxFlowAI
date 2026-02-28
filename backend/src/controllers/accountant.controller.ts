@@ -185,6 +185,7 @@ export const createClient = async (req: Request, res: Response) => {
         languagePref: validatedData.languagePref,
         isFirstLogin: true,
       },
+      select: { id: true, email: true, firstName: true, lastName: true },
     });
 
     try {
