@@ -40,4 +40,4 @@ main().catch(e => {
   console.error('Migration failed (non-blocking):', e.message);
   process.exit(0); // exit 0 = don't fail the deploy
 });
-// triggered Fri Feb 27 18:00:00 UTC 2026
+// triggered Sat Feb 28 12:00:00 UTC 2026

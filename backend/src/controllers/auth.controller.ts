@@ -36,6 +36,7 @@ export const registerAccountant = async (req: Request, res: Response) => {
 
     const existingAccountant = await prisma.accountant.findUnique({
       where: { email: validatedData.email },
+      select: { id: true },
     });
 
     if (existingAccountant) {
@@ -52,6 +53,7 @@ export const registerAccountant = async (req: Request, res: Response) => {
         phone: validatedData.phone,
         languagePref: validatedData.languagePref,
       },
+      select: { id: true, email: true, firmName: true, phone: true, languagePref: true },
     });
 
     const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN as any };
@@ -200,6 +202,7 @@ export const changePassword = async (req: Request, res: Response) => {
     if (req.user.role === 'accountant') {
       const accountant = await prisma.accountant.findUnique({
         where: { id: req.user.sub },
+        select: { id: true, passwordHash: true },
       });
 
       if (!accountant) {
@@ -274,11 +277,12 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     // Try accountant first, then client
-    const accountant = await prisma.accountant.findUnique({ where: { email } });
+    const accountant = await prisma.accountant.findUnique({ where: { email }, select: { id: true, firmName: true } });
     if (accountant) {
       await prisma.accountant.update({
         where: { email },
         data: { passwordResetToken: token, passwordResetExpiry: expiry },
+        select: { id: true },
       });
       SESEmailService.sendPasswordResetEmail(email, accountant.firmName, token).catch(
         (e) => console.error('[forgot] email error:', e?.message)
@@ -286,11 +290,12 @@ export const forgotPassword = async (req: Request, res: Response) => {
       return res.json({ message: 'If that email exists, a reset link has been sent.' });
     }
 
-    const client = await prisma.client.findUnique({ where: { email }, select: { id: true, email: true } });
+    const client = await prisma.client.findUnique({ where: { email }, select: { id: true, email: true, firstName: true, lastName: true } });
     if (client) {
       await prisma.client.update({
         where: { email },
         data: { passwordResetToken: token, passwordResetExpiry: expiry },
+        select: { id: true },
       });
       SESEmailService.sendPasswordResetEmail(
         email, `${client.firstName} ${client.lastName}`, token
@@ -320,12 +325,14 @@ export const resetPassword = async (req: Request, res: Response) => {
     // Check accountant
     const accountant = await prisma.accountant.findFirst({
       where: { passwordResetToken: token, passwordResetExpiry: { gt: now } },
+      select: { id: true },
     });
     if (accountant) {
       const passwordHash = await bcrypt.hash(password, 12);
       await prisma.accountant.update({
         where: { id: accountant.id },
         data: { passwordHash, passwordResetToken: null, passwordResetExpiry: null },
+        select: { id: true },
       });
       return res.json({ message: 'Password reset successfully. You can now log in.' });
     }
@@ -340,6 +347,7 @@ export const resetPassword = async (req: Request, res: Response) => {
       await prisma.client.update({
         where: { id: client.id },
         data: { passwordHash, passwordResetToken: null, passwordResetExpiry: null },
+        select: { id: true },
       });
       return res.json({ message: 'Password reset successfully. You can now log in.' });
     }

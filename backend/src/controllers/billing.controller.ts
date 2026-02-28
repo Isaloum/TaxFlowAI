@@ -88,6 +88,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
       await prisma.accountant.update({
         where: { id: accountantId },
         data:  { stripeCustomerId: customerId },
+        select: { id: true },
       });
     }
 
@@ -183,6 +184,7 @@ export const stripeWebhook = async (req: Request, res: Response) => {
             currentPeriodEnd:     new Date((sub as any).current_period_end * 1000),
             trialEndsAt:          sub.trial_end ? new Date(sub.trial_end * 1000) : null,
           },
+          select: { id: true },
         });
         break;
       }
@@ -200,6 +202,7 @@ export const stripeWebhook = async (req: Request, res: Response) => {
             currentPeriodEnd:   new Date((sub as any).current_period_end * 1000),
             trialEndsAt:        sub.trial_end ? new Date(sub.trial_end * 1000) : null,
           },
+          select: { id: true },
         }).catch(() => {}); // ignore if accountant not found
         break;
       }
@@ -210,6 +213,7 @@ export const stripeWebhook = async (req: Request, res: Response) => {
         await prisma.accountant.update({
           where: { stripeSubscriptionId: invoice.subscription as string },
           data:  { subscriptionStatus: 'past_due' },
+          select: { id: true },
         }).catch(() => {});
         break;
       }

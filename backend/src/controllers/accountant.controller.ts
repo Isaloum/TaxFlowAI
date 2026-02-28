@@ -185,7 +185,7 @@ export const createClient = async (req: Request, res: Response) => {
         languagePref: validatedData.languagePref,
         isFirstLogin: true,
       },
-      select: { id: true, email: true, firstName: true, lastName: true },
+      select: { id: true, email: true, firstName: true, lastName: true, province: true, phone: true, languagePref: true, isFirstLogin: true, createdAt: true },
     });
 
     try {
@@ -316,6 +316,7 @@ export const deleteClient = async (req: Request, res: Response) => {
 
     await prisma.client.delete({
       where: { id },
+      select: { id: true },
     });
 
     // Sync Stripe seat count (non-fatal)
