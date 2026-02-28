@@ -295,6 +295,63 @@ export const getClientById = async (req: Request, res: Response) => {
   }
 };
 
+export const resendInvitation = async (req: Request, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'accountant') {
+      return res.status(403).json({ error: 'Only accountants can resend invitations' });
+    }
+
+    const { id } = req.params;
+
+    const accountant = await prisma.accountant.findUnique({
+      where: { id: req.user.sub },
+      select: { id: true, email: true, firmName: true },
+    });
+
+    if (!accountant) {
+      return res.status(404).json({ error: 'Accountant not found' });
+    }
+
+    const client = await prisma.client.findFirst({
+      where: { id, accountantId: req.user.sub },
+      select: { id: true, email: true, firstName: true, lastName: true, languagePref: true },
+    });
+
+    if (!client) {
+      return res.status(404).json({ error: 'Client not found' });
+    }
+
+    // Generate fresh temporary password and update client
+    const temporaryPassword = generateTemporaryPassword();
+    const passwordHash = await bcrypt.hash(temporaryPassword, 12);
+
+    await prisma.client.update({
+      where: { id: client.id },
+      data: { passwordHash, isFirstLogin: true },
+      select: { id: true },
+    });
+
+    // Send fresh invitation email
+    try {
+      await SESEmailService.sendClientInvitationEmail(
+        client.email,
+        `${client.firstName} ${client.lastName}`,
+        temporaryPassword,
+        accountant.firmName,
+        client.languagePref
+      );
+    } catch (emailError) {
+      console.error('Failed to resend invitation email:', emailError);
+      return res.status(500).json({ error: 'Failed to send invitation email' });
+    }
+
+    res.status(200).json({ message: 'Invitation resent successfully' });
+  } catch (error: any) {
+    console.error('Resend invitation error:', error);
+    res.status(500).json({ error: error?.message || 'Internal server error' });
+  }
+};
+
 export const deleteClient = async (req: Request, res: Response) => {
   try {
     if (!req.user || req.user.role !== 'accountant') {

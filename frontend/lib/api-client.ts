@@ -128,6 +128,10 @@ export class APIClient {
     return api.delete(`/users/accountant/clients/${clientId}`);
   }
 
+  static async resendInvitation(clientId: string) {
+    return api.post(`/users/accountant/clients/${clientId}/resend-invitation`, {});
+  }
+
   static async getBillingStatus() {
     return api.get('/billing/status');
   }

@@ -4,6 +4,7 @@ import {
   getClients,
   getClientById,
   deleteClient,
+  resendInvitation,
   getDashboardStats,
   getClientsWithTaxYears,
   getClientTaxYears,
@@ -34,6 +35,7 @@ router.get('/clients', getClients);
 router.get('/clients-with-tax-years', getClientsWithTaxYears);
 router.get('/clients/:id', getClientById);
 router.delete('/clients/:id', deleteClient);
+router.post('/clients/:id/resend-invitation', resendInvitation);
 
 // Tax year management
 router.get('/clients/:clientId/years', getClientTaxYears);

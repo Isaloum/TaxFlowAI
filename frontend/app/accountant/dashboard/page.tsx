@@ -45,6 +45,7 @@ export default function AccountantDashboard() {
 
   const [billingBlocked, setBillingBlocked] = useState(false);
   const [deletingClientId, setDeletingClientId] = useState<string | null>(null);
+  const [resendingClientId, setResendingClientId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '',
@@ -94,6 +95,20 @@ export default function AccountantDashboard() {
       showToast('❌ Delete failed');
     } finally {
       setDeletingClientId(null);
+    }
+  };
+
+  const handleResendInvitation = async (e: React.MouseEvent, clientId: string, clientEmail: string) => {
+    e.stopPropagation();
+    if (!confirm(`Resend invitation to ${clientEmail}? This will reset their password.`)) return;
+    setResendingClientId(clientId);
+    try {
+      await APIClient.resendInvitation(clientId);
+      showToast(`✅ New invitation sent to ${clientEmail}`);
+    } catch {
+      showToast('❌ Failed to resend invitation');
+    } finally {
+      setResendingClientId(null);
     }
   };
 
@@ -324,13 +339,24 @@ export default function AccountantDashboard() {
                       )}
                     </td>
                     <td className="px-3 py-4">
-                      <button
-                        onClick={(e) => handleDeleteClient(e, client.id, client.name)}
-                        disabled={deletingClientId === client.id}
-                        className="text-xs text-gray-400 hover:text-red-500 transition px-2 py-1 rounded border border-transparent hover:border-red-200 hover:bg-red-50 disabled:opacity-50"
-                      >
-                        {deletingClientId === client.id ? '…' : '🗑'}
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={(e) => handleResendInvitation(e, client.id, client.email)}
+                          disabled={resendingClientId === client.id}
+                          title="Resend invitation"
+                          className="text-xs text-gray-400 hover:text-blue-500 transition px-2 py-1 rounded border border-transparent hover:border-blue-200 hover:bg-blue-50 disabled:opacity-50"
+                        >
+                          {resendingClientId === client.id ? '…' : '📧'}
+                        </button>
+                        <button
+                          onClick={(e) => handleDeleteClient(e, client.id, client.name)}
+                          disabled={deletingClientId === client.id}
+                          title="Delete client"
+                          className="text-xs text-gray-400 hover:text-red-500 transition px-2 py-1 rounded border border-transparent hover:border-red-200 hover:bg-red-50 disabled:opacity-50"
+                        >
+                          {deletingClientId === client.id ? '…' : '🗑'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
