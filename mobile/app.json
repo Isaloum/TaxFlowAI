@@ -14,13 +14,16 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.isaloumapps.taxflowai"
+      "bundleIdentifier": "com.isaloumapps.taxflowai",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.isaloumapps.taxflowai",
       "adaptiveIcon": {
         "backgroundColor": "#1E40AF",
-        "foregroundImage": "./assets/adaptive-icon.png"
+        "foregroundImage": "./assets/android-icon-foreground.png"
       }
     },
     "web": {
@@ -28,6 +31,14 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "1d895c0d-ec59-4a18-8e7e-528a557f19dd"
+      }
+    }
   }
 }
