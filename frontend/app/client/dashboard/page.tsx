@@ -55,13 +55,18 @@ function YearCard({ year, ty, onClick, large = false, t }: { year: number; ty: a
       ) : (
         <ul className="space-y-1.5">
           {(ty.documents as any[]).slice(0, large ? 6 : 3).map((doc: any, i: number) => (
-            <li key={i} className="flex items-center justify-between gap-2">
-              <span className="text-xs text-gray-700 truncate" title={doc.originalFilename ?? doc.docType}>
-                {doc.docType}
-              </span>
-              {doc.reviewStatus === 'approved' && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full shrink-0">✓ Approved</span>}
-              {doc.reviewStatus === 'rejected' && <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full shrink-0">✗ Fix needed</span>}
-              {doc.reviewStatus === 'pending'  && <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full shrink-0">Pending</span>}
+            <li key={i}>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-gray-700 truncate" title={doc.originalFilename ?? doc.docType}>
+                  {doc.docType}
+                </span>
+                {doc.reviewStatus === 'approved' && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full shrink-0">✓ Approved</span>}
+                {doc.reviewStatus === 'rejected' && <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full shrink-0">✗ Fix needed</span>}
+                {doc.reviewStatus === 'pending'  && <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full shrink-0">Pending</span>}
+              </div>
+              {doc.reviewStatus === 'rejected' && doc.rejectionReason && (
+                <p className="text-[10px] text-red-500 pl-2 mt-0.5">↳ {doc.rejectionReason}</p>
+              )}
             </li>
           ))}
           {docsCount > (large ? 6 : 3) && (
