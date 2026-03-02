@@ -45,9 +45,25 @@ export class EmailService {
     firstName: string,
     docType: string,
     reason: string,
-    year: number
+    year: number,
+    language: string = 'en'
   ): Promise<void> {
-    const html = `
+    const isFr = language === 'fr';
+    const subject = isFr
+      ? `Action requise : ${docType} doit être téléchargé à nouveau (${year})`
+      : `Action Required: ${docType} Needs Re-upload (${year})`;
+    const html = isFr ? `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#dc2626;">Action requise — TaxFlowAI</h2>
+        <p>Bonjour ${firstName},</p>
+        <p>Votre document <strong>${docType}</strong> pour l'année fiscale <strong>${year}</strong> doit être téléchargé à nouveau.</p>
+        <div style="background:#fef2f2;border-left:4px solid #dc2626;padding:14px;margin:16px 0;border-radius:4px;">
+          <strong>Raison :</strong> ${reason}
+        </div>
+        <p>Veuillez vous connecter et télécharger une version corrigée.</p>
+        <p><a href="${FRONTEND_URL}/client/tax-year/${year}" style="background:#dc2626;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;">Télécharger maintenant</a></p>
+        <p style="color:#6b7280;font-size:13px;">Merci d'utiliser TaxFlowAI.</p>
+      </div>` : `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
         <h2 style="color:#dc2626;">Action Required — TaxFlowAI</h2>
         <p>Hi ${firstName},</p>
@@ -59,7 +75,7 @@ export class EmailService {
         <p><a href="${FRONTEND_URL}/client/tax-year/${year}" style="background:#dc2626;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;">Re-upload Now</a></p>
         <p style="color:#6b7280;font-size:13px;">Thank you for using TaxFlowAI.</p>
       </div>`;
-    await sendEmail(to, `Action Required: ${docType} Needs Re-upload (${year})`, html);
+    await sendEmail(to, subject, html);
   }
 
   /**

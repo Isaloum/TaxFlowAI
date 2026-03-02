@@ -96,7 +96,8 @@ export class NotificationService {
           client.firstName,
           document.docType,
           reason,
-          document.taxYear.year
+          document.taxYear.year,
+          client.languagePref || 'en'
         );
         await this.logNotification(client.id, 'email', 'document_rejected', 'sent');
       }
