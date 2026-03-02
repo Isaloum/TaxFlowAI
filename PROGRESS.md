@@ -1,6 +1,6 @@
 # TaxFlowAI — Build Progress
 
-Last updated: 2026-02-23 (Session 5)
+Last updated: 2026-03-02 (Session 8)
 
 ---
 
@@ -8,10 +8,11 @@ Last updated: 2026-02-23 (Session 5)
 
 ### Infrastructure
 - AWS Lambda + API Gateway (backend)
-- Cloudflare Pages (frontend, Next.js)
+- AWS Amplify (frontend, Next.js static export)
 - Supabase (PostgreSQL + file storage)
 - GitHub Actions CI/CD (auto-deploy on push)
 - Prisma ORM with schema migrations
+- AWS SES (production) — 50,000 emails/day, out of sandbox
 
 ### Auth Flow
 - Accountant registers and logs in
@@ -51,15 +52,16 @@ Built dynamically from the client's profile + province:
   - `⚠️ Wrong year — doc shows 2022` — document is from wrong tax year
   - `❌ Unreadable` — too blurry to scan
   - `✓ Approved` / `✗ Needs correction` — accountant review result
-- Completeness score calculated on frontend (not broken backend)
+- Completeness score calculated on frontend
 - Auto-polls every 5 seconds while any doc is still scanning
 - "Additional Documents" section for uploads outside the required checklist
 
 ### Client — Dashboard (`/client/dashboard`)
-- Shows 3 year cards (current year, -1, -2)
+- Shows current year card + previous years (always visible, even if empty)
+- 5-year rolling window (currentYear-5 to currentYear)
 - Each card shows: completeness bar + list of uploaded docs with status badges
 - Province badge in nav
-- No need to click into a year to see what was uploaded
+- "No previous years on file" empty state message (bilingual EN/FR)
 
 ### Document Scanning Pipeline
 Every upload goes through:
@@ -77,132 +79,36 @@ Every upload goes through:
 
 ### Accountant — Dashboard (`/accountant/dashboard`)
 - Lists all clients with doc counts and completeness scores
+- Sorted: submitted → in_review → draft → completed
 - Click client → client detail page
 
 ### Accountant — Client Detail (`/accountant/client`)
-- Shows client info: name, email, phone (formatted `(514) 571-2812`), province badge
+- Shows client info: name, email, phone, province badge
 - Lists uploaded documents per tax year
+- Add tax year: input + button (enforces 5-year window, blocks duplicates)
+- Internal notes textarea (auto-saves, accountant-only)
+- Export tax year to Excel
 
-### Client — Multi-Document Support
-- Certain document types allow multiple uploads: T4, T4A, T5, RL1, GigPlatformReport, VehicleLog, and others
-- Each copy gets a **label** (e.g. "McDonald's", "Uber") to tell copies apart
-- Checklist shows all copies per type as sub-rows with the label in bold
-- "+ Add another" button pre-selects that doc type in the upload form
-- `docSubtype` field saved to DB and returned in all document responses
+### Accountant — Billing (`/accountant/billing`)
+- Stripe per-seat billing: $12.99/month per client (recurring)
+- $3,500 one-time setup/onboarding fee
+- Stripe Checkout integration
 
----
+### Admin — Dashboard (`/admin/dashboard`)
+- Lists all accountants with client counts, revenue, health status
 
-## ✅ Session 3 — Completed (commit 03a7523)
+### Auto-Reload on Deploy
+- `public/version.json` generated at build time with a unique timestamp
+- `useVersionCheck` hook polls every 30s
+- On version mismatch → silent page reload
+- Skips polling when tab is hidden, checks instantly on tab focus
 
-### Accountant Sees Scan Results (fixed + upgraded)
-- **Bug fixed**: documents weren't showing at all — backend returns `taxYear.documents`, not `documents` at root
-- Each doc now shows: scan badge (⏳/✓/⚠️/❌), extracted taxpayer name, tax year, employer/payer, key dollar amounts
-- Orange row highlight + full mismatch description when AI detects wrong doc type or wrong year
-- Rejection reason shown inline on each rejected doc
-- Summary bar shows "X docs need attention" pill
-
-### Client Rejection Alert
-- Red banner at top of client dashboard when any doc is rejected
-- Tells client to click the year to fix it
-
-### Submit for Review Button
-- Appears on tax year page once profile is done + at least 1 doc uploaded
-- Sets `taxYear.status = 'submitted'`, stamps `submittedAt`
-- Button disabled while docs are still scanning
-- Replaced by blue "File submitted" confirmation after submission
-- Backend: `POST /api/client/tax-years/:year/submit`
-
----
-
-## ✅ Session 4 — Completed (commit bf074cd)
-
-### Root Cause: 502 on All /documents/* Endpoints — Fixed
-The Lambda was crashing on cold start before handling any request. Root cause chain:
-
-1. `document.controller.ts` imported `queueDocumentExtraction` → not imported → TypeScript error → **fixed by adding import**
-2. `queue.service.ts` imports `bull` (Redis) → native dependency → Lambda crash → **fixed by removing queue import, calling ExtractionService directly**
-3. `ocr.service.ts` had `import Tesseract from 'tesseract.js'` at module level → `tesseract.js` has native C++ binaries → Lambda crash on cold start → **fixed by replacing entire OCR service**
-
-### OCR: Replaced Tesseract with AWS Textract + pdf-parse
-- `ocr.service.ts` completely rewritten — no more Tesseract or Google Vision
-- **PDFs** → `pdf-parse` (pure JS, zero native deps, instant)
-- **Images** (JPG/PNG/HEIC) → AWS `DetectDocumentText` (HTTP call to Textract)
-- Textract IAM policy added to `DocumentsFunction` in `template-production.yaml`
-- `tesseract.js` and `@google-cloud/vision` removed from all esbuild External lists
-
-### Lambda Timeout Safety
-- `confirmUpload` races OCR against a **20s timeout** using `Promise.race`
-- If timeout fires → explicitly sets `extractionStatus = 'failed'` in DB before returning
-- Frontend stops polling after **12 polls (60s)** to prevent infinite "Scanning…" state
-
----
-
-## ✅ Session 5 — Completed (commits 39a455a → c876f7b)
-
-### Full Workflow Closed (Mark as Complete)
-- Accountant: "✅ Mark as Complete" button on tax year (shown when status = submitted)
-- Sets `status = completed`, `completedAt` timestamp — new field added to schema
-- Client gets bilingual SES email (FR/EN) confirming their return is done
-- Client dashboard shows green "🎉 Your tax return is complete!" banner
-- Accountant gets email when client clicks "Submit for Review"
-
-### Document Verification — Gaps Fixed
-- **Smart checklist**: a doc only counts as ✓ done when at least one clean copy exists (no typeMismatch, no yearMismatch, not failed, not rejected). Previously a wrong doc still checked the box.
-- **🗑 Delete button**: appears on any doc with issues. Client deletes → uploads correct file.
-- **Submit blocked**: "Submit for Review" is disabled + orange warning if any doc has issues.
-- **Duplicate RL10** removed from QC_RL_SLIPS dropdown.
-
-### Accountant Internal Notes
-- Free-text notes textarea on each tax year (accountant side only)
-- "Only visible to you — not shown to client" label
-- Auto-loads existing notes when switching years, `✓ Saved` confirmation
-- Backend: `PATCH /api/accountant/tax-years/:taxYearId/notes`
-
-### Accountant Dashboard Sort
-- Clients now sorted: `submitted` → `in_review` → `draft` → `completed`
-- Clients needing attention always float to the top
-
-### Bug Fixed: Lambda 500 on All /users/* Routes
-- Root cause: broken JSDoc in `ses-email.service.ts` caused TypeScript parse failure → `UsersFunction` crashed on cold start → 500 on all client and accountant endpoints
-- Fix: removed malformed comment block, file parses cleanly
-
----
-
-## 🔜 Next Steps (Priority Order)
-
-### 1. Real email when accountant rejects a document
-`NotificationService.notifyDocumentRejected` calls `EmailService` (not `SESEmailService`).
-Need to verify `EmailService` is wired to SES and actually sends to the client's inbox.
-
-### 2. Accountant dashboard — submitted date column
-Show `submittedAt` date on the dashboard table so accountant knows how long a file has been waiting.
-
-### 3. Client can see rejection reason inline without clicking into the year
-Currently the rejection detail is only inside `/client/tax-year/[year]`.
-Add the rejection reason text directly in the dashboard card.
-
-### 4. Password reset / "Forgot password" flow
-Currently clients have no way to reset their password if they forget it.
-
-### 5. Accountant can re-open a completed file
-Once marked `completed`, there is no way to go back to `submitted` if the accountant made an error.
-
----
-
-## 🗂️ Key Files
-
-| File | Purpose |
-|---|---|
-| `backend/src/controllers/document.controller.ts` | presignUpload, confirmUpload (runs OCR sync) |
-| `backend/src/controllers/client.controller.ts` | getProfile (returns taxYears+docs), getTaxYearCompleteness |
-| `backend/src/services/extraction.service.ts` | OCR → AI → mismatch detection → DB save |
-| `backend/src/services/ai-classifier.service.ts` | GPT-4o-mini prompt, 25 doc types |
-| `backend/src/services/ocr.service.ts` | AWS Textract (images) + pdf-parse (PDFs) |
-| `frontend/app/client/dashboard/page.tsx` | Client dashboard with doc preview |
-| `frontend/app/client/tax-year/[year]/TaxYearClient.tsx` | Upload + checklist + scan badges |
-| `frontend/app/client/tax-year/[year]/profile/ProfileClient.tsx` | Tax profile form |
-| `frontend/app/client/change-password/page.tsx` | First-login password change |
-| `frontend/app/accountant/client/page.tsx` | Accountant client detail view |
+### Stripe — Fully Wired (Live + Test)
+- Live API keys in GitHub secrets
+- Live Price IDs for subscription + onboarding
+- Live webhook: `https://api.isaloumapps.com/api/billing/webhook`
+- 4 events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`
+- All secrets injected into Lambda via SAM template parameters
 
 ---
 
@@ -216,3 +122,51 @@ Once marked `completed`, there is no way to go back to `submitted` if the accoun
 | **Total per doc (PDF)** | **~$0.0002** |
 
 100 clients × 15 docs (mixed) = **~$1–2 total**
+
+---
+
+## 🔜 Next Steps (Priority Order)
+
+### 1. Real rejection email
+When accountant rejects a doc, client gets SES email with the rejection reason.
+`NotificationService.notifyDocumentRejected` — verify it calls `SESEmailService` and actually sends.
+
+### 2. Submitted date column on accountant dashboard
+Show `submittedAt` date so accountant knows how long a file has been waiting.
+
+### 3. Rejection reason on client dashboard
+Show rejection reason inline in the dashboard card — no need to click into the year.
+
+### 4. Forgot password flow
+Clients have no way to reset their password if they forget it.
+
+### 5. Re-open completed file
+Once marked `completed`, accountant cannot push back to `submitted` if they made an error.
+
+### 6. Per-accountant sender email
+Each accountant sends invitations from their own email address (not a shared domain address).
+
+### 7. Stripe trial → paid conversion
+When trial ends, auto-convert to paid subscription. Handle `customer.subscription.updated` webhook properly.
+
+---
+
+## 🗂️ Key Files
+
+| File | Purpose |
+|---|---|
+| `backend/src/controllers/document.controller.ts` | presignUpload, confirmUpload (runs OCR sync) |
+| `backend/src/controllers/client.controller.ts` | getProfile, getTaxYearCompleteness |
+| `backend/src/controllers/accountant.controller.ts` | createTaxYear, exportTaxYearExcel |
+| `backend/src/services/extraction.service.ts` | OCR → AI → mismatch detection → DB save |
+| `backend/src/services/ai-classifier.service.ts` | GPT-4o-mini prompt, 25 doc types |
+| `backend/src/services/ocr.service.ts` | AWS Textract (images) + pdf-parse (PDFs) |
+| `backend/template-production.yaml` | SAM template — Lambda + API Gateway + Stripe params |
+| `frontend/app/client/dashboard/page.tsx` | Client dashboard with previous years |
+| `frontend/app/client/tax-year/[year]/TaxYearClient.tsx` | Upload + checklist + scan badges |
+| `frontend/app/client/tax-year/[year]/profile/ProfileClient.tsx` | Tax profile form |
+| `frontend/app/accountant/client/page.tsx` | Accountant client detail + add year |
+| `frontend/app/accountant/billing/page.tsx` | Stripe billing page |
+| `frontend/hooks/useVersionCheck.ts` | Auto-reload on deploy |
+| `frontend/scripts/generate-version.js` | Generates public/version.json at build time |
+| `.github/workflows/backend-deploy.yml` | SAM deploy with Stripe secrets |
