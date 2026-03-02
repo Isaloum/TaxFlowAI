@@ -14,7 +14,7 @@ export function useVersionCheck() {
 
       try {
         // Calls Next.js own API route — same domain, no auth, no CORS
-        const res = await fetch('/api/version', { cache: 'no-store' });
+        const res = await fetch('/version.json', { cache: 'no-store' });
         if (!res.ok) return;
         const { version } = await res.json();
         if (!version) return;
