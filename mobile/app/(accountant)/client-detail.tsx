@@ -35,7 +35,7 @@ export default function ClientDetailScreen() {
 
   const load = async () => {
     try {
-      const { data } = await api.get(`/accountant/clients/${id}/tax-years`);
+      const { data } = await api.get(`/users/accountant/clients/${id}/years`);
       setYears(data);
     } catch {
       // handled
@@ -50,7 +50,7 @@ export default function ClientDetailScreen() {
   const approve = async (docId: string) => {
     setActionLoading(true);
     try {
-      await api.patch(`/accountant/documents/${docId}/review`, { status: 'approved' });
+      await api.post(`/users/accountant/documents/${docId}/approve`, {});
       load();
     } catch {
       Alert.alert('Error', 'Could not approve.');
@@ -63,8 +63,8 @@ export default function ClientDetailScreen() {
     if (!rejectReason.trim()) return Alert.alert('Enter a reason.');
     setActionLoading(true);
     try {
-      await api.patch(`/accountant/documents/${rejectModal!.docId}/review`, {
-        status: 'rejected', rejectionReason: rejectReason.trim(),
+      await api.post(`/users/accountant/documents/${rejectModal!.docId}/reject`, {
+        reason: rejectReason.trim(),
       });
       setRejectModal(null);
       setRejectReason('');

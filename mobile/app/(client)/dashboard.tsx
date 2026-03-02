@@ -37,8 +37,8 @@ export default function ClientDashboard() {
 
   const load = async () => {
     try {
-      const { data } = await api.get('/client/tax-years');
-      setYears(data);
+      const { data } = await api.get('/users/client/profile');
+      setYears(data.client?.taxYears ?? data.taxYears ?? []);
     } catch {
       // handled
     } finally {

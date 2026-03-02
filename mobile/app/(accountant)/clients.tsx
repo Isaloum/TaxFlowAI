@@ -26,7 +26,7 @@ export default function ClientsScreen() {
 
   const load = async () => {
     try {
-      const { data } = await api.get('/accountant/clients');
+      const { data } = await api.get('/users/accountant/clients');
       setClients(data);
     } catch {
       // handled

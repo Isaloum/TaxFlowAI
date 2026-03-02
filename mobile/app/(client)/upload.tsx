@@ -27,7 +27,7 @@ export default function UploadScreen() {
       const form = new FormData();
       form.append('file', { uri: file.uri, name: file.name, type: file.mimeType } as any);
       form.append('docType', docType);
-      await api.post('/client/documents', form, {
+      await api.post(`/documents/tax-years/${new Date().getFullYear()}/documents`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       Alert.alert('Uploaded!', `${docType} uploaded successfully.`);
