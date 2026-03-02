@@ -18,7 +18,8 @@ export default function LoginScreen() {
     try {
       await login(email.trim().toLowerCase(), password);
     } catch (e: any) {
-      Alert.alert('Login failed', e?.response?.data?.message || 'Invalid credentials.');
+      const msg = e?.response?.data?.error || e?.response?.data?.message || e?.message || 'Unknown error';
+      Alert.alert('Login failed', `${msg} (${e?.response?.status ?? 'no status'})`);
     } finally {
       setLoading(false);
     }
