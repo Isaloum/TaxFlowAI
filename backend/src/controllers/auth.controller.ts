@@ -100,8 +100,10 @@ export const login = async (req: Request, res: Response) => {
   try {
     const validatedData = loginSchema.parse(req.body);
 
-    const accountant = await prisma.accountant.findUnique({
-      where: { email: validatedData.email },
+    const normalizedEmail = validatedData.email.toLowerCase().trim();
+
+    const accountant = await prisma.accountant.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
       select: { id: true, email: true, passwordHash: true, firmName: true, phone: true, languagePref: true },
     });
 
@@ -140,7 +142,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const client = await prisma.client.findFirst({
-      where: { email: validatedData.email },
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
       select: { id: true, email: true, passwordHash: true, firstName: true, lastName: true, province: true, phone: true, languagePref: true, isFirstLogin: true },
     });
 
