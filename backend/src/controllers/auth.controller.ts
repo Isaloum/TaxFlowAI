@@ -365,5 +365,24 @@ export const resetPassword = async (req: Request, res: Response) => {
 
 export const getMe = async (req: Request, res: Response) => {
   if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
-  res.json({ user: req.user });
+  try {
+    if (req.user.role === 'accountant') {
+      const accountant = await prisma.accountant.findUnique({
+        where: { id: req.user.sub },
+        select: { id: true, email: true, firmName: true, phone: true, languagePref: true },
+      });
+      if (!accountant) return res.status(404).json({ error: 'User not found' });
+      return res.json({ user: { ...accountant, role: 'accountant' } });
+    } else {
+      const client = await prisma.client.findUnique({
+        where: { id: req.user.sub },
+        select: { id: true, email: true, firstName: true, lastName: true, province: true, phone: true, languagePref: true, isFirstLogin: true },
+      });
+      if (!client) return res.status(404).json({ error: 'User not found' });
+      return res.json({ user: { ...client, role: 'client' } });
+    }
+  } catch (e) {
+    console.error('getMe error:', e);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };

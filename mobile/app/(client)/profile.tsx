@@ -8,9 +8,9 @@ export default function ProfileScreen() {
     <SafeAreaView style={s.safe}>
       <View style={s.container}>
         <View style={s.avatar}>
-          <Text style={s.initials}>{user?.firstName?.[0]}{user?.lastName?.[0]}</Text>
+          <Text style={s.initials}>{user?.firstName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}</Text>
         </View>
-        <Text style={s.name}>{user?.firstName} {user?.lastName}</Text>
+        <Text style={s.name}>{user?.firstName ? `${user.firstName} ${user.lastName}` : user?.email}</Text>
         <Text style={s.email}>{user?.email}</Text>
         <Text style={s.role}>Client</Text>
         <TouchableOpacity style={s.logoutBtn} onPress={logout}>

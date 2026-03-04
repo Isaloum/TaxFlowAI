@@ -4,6 +4,7 @@ import {
   ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../../lib/auth';
 import api from '../../lib/api';
 
@@ -31,6 +32,7 @@ const STATUS_COLOR: Record<string, string> = {
 
 export default function ClientDashboard() {
   const { user, logout } = useAuth();
+  const router = useRouter();
   const [years, setYears] = useState<TaxYear[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -52,7 +54,7 @@ export default function ClientDashboard() {
   return (
     <SafeAreaView style={s.safe}>
       <View style={s.header}>
-        <Text style={s.greeting}>Hi, {user?.firstName} 👋</Text>
+        <Text style={s.greeting}>Hi, {user?.firstName || user?.email?.split('@')[0]} 👋</Text>
         <TouchableOpacity onPress={logout}>
           <Text style={s.logout}>Sign out</Text>
         </TouchableOpacity>
@@ -66,7 +68,7 @@ export default function ClientDashboard() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} />}
         >
           {years.map((ty) => (
-            <View key={ty.id} style={s.card}>
+            <TouchableOpacity key={ty.id} style={s.card} onPress={() => router.push({ pathname: '/(client)/year-detail', params: { yearId: ty.id, year: String(ty.year) } })}>
               <View style={s.cardHeader}>
                 <Text style={s.year}>{ty.year}</Text>
                 <Text style={[s.badge, { color: STATUS_COLOR[ty.status] ?? '#6B7280' }]}>
@@ -76,7 +78,7 @@ export default function ClientDashboard() {
 
               {/* Progress bar */}
               <View style={s.barBg}>
-                <View style={[s.barFill, { width: `${ty.completeness}%` as any }]} />
+                <View style={[s.barFill, { width: `${ty.completeness ?? 0}%` as any }]} />
               </View>
               <Text style={s.pct}>{ty.completeness}% complete</Text>
 
@@ -104,7 +106,7 @@ export default function ClientDashboard() {
                   )}
                 </View>
               ))}
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       )}
