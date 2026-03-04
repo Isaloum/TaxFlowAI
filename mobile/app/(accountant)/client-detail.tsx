@@ -36,7 +36,7 @@ export default function ClientDetailScreen() {
   const load = async () => {
     try {
       const { data } = await api.get(`/users/accountant/clients/${id}/years`);
-      setYears(data);
+      setYears(data.client?.taxYears ?? data ?? []);
     } catch {
       // handled
     } finally {
@@ -93,7 +93,7 @@ export default function ClientDetailScreen() {
           contentContainerStyle={s.scroll}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} />}
         >
-          {years.map((ty) => (
+          {(years ?? []).map((ty) => (
             <View key={ty.id} style={s.yearCard}>
               <Text style={s.yearTitle}>{ty.year} — <Text style={s.yearStatus}>{ty.status}</Text></Text>
               {ty.documents.map((doc) => (
