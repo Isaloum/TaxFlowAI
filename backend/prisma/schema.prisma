@@ -165,3 +165,19 @@ model Admin {
 
   @@map("admins")
 }
+
+model PushToken {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  userRole      String   @map("user_role")   // 'client' | 'accountant'
+  tokenType     String   @map("token_type")  // 'expo' | 'web'
+  token         String                       // Expo token OR web push endpoint
+  p256dh        String?                      // Web push only
+  auth          String?                      // Web push only
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt          @map("updated_at")
+
+  @@unique([userId, tokenType, token])
+  @@index([userId, userRole])
+  @@map("push_tokens")
+}

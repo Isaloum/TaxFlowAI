@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { APIClient } from '@/lib/api-client';
 import { useT } from '@/lib/i18n';
 import LanguageToggle from '@/components/LanguageToggle';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 // STATUS_CONFIG will use translations - see below in component
 
@@ -90,6 +91,7 @@ function YearCard({ year, ty, onClick, large = false, t }: { year: number; ty: a
 export default function ClientDashboard() {
   const router = useRouter();
   const { t } = useT();
+  usePushNotifications();
   const [profile,  setProfile]  = useState<any>(null);
   const [loading,  setLoading]  = useState(true);
   const [showPrev, setShowPrev] = useState(false);

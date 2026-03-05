@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { APIClient } from '@/lib/api-client';
 import { useT } from '@/lib/i18n';
 import LanguageToggle from '@/components/LanguageToggle';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 const PROVINCES = [
   { value: 'AB', label: 'Alberta' },
@@ -35,6 +36,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: number |
 export default function AccountantDashboard() {
   const router = useRouter();
   const { t } = useT();
+  usePushNotifications();
   const [clients, setClients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

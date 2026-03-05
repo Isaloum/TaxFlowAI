@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { AuthProvider, useAuth } from '../lib/auth';
+import { usePushNotifications } from '../lib/usePushNotifications';
 
 function RootGuard() {
   const { user, loading } = useAuth();
@@ -20,10 +21,16 @@ function RootGuard() {
   return null;
 }
 
+function PushSetup() {
+  usePushNotifications();
+  return null;
+}
+
 export default function RootLayout() {
   return (
     <AuthProvider>
       <RootGuard />
+      <PushSetup />
       <Stack screenOptions={{ headerShown: false }} />
     </AuthProvider>
   );

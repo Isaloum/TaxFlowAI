@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import clientRoutes from '../routes/client.routes';
 import accountantRoutes from '../routes/accountant.routes';
+import pushRoutes from '../routes/push.routes';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -13,5 +14,6 @@ app.use(cookieParser());
 app.use(express.json());
 app.use('/users/client', clientRoutes);
 app.use('/users/accountant', accountantRoutes);
+app.use('/users/push', pushRoutes);
 
 export const handler = serverless(app);

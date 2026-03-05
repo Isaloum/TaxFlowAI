@@ -8,6 +8,7 @@ import prisma from '../config/database';
 import { generateTemporaryPassword, SESEmailService } from '../services/ses-email.service';
 import { NotificationService } from '../services/notifications/notification.service';
 import { ValidationService } from '../services/validation.service';
+import { PushService } from '../services/push.service';
 import { StorageService } from '../services/storage.service';
 import { enqueueExtraction } from '../services/sqs.service';
 import { syncStripeSeats } from './billing.controller';
@@ -866,6 +867,14 @@ export const approveDocument = async (req: Request, res: Response) => {
     // Recalculate completeness after approval
     try { await ValidationService.autoValidate(document.taxYearId); } catch (_) {}
 
+    // Push notification to client
+    try {
+      const doc = await prisma.document.findUnique({ where: { id: documentId }, include: { taxYear: { select: { clientId: true, year: true } } } });
+      if (doc?.taxYear?.clientId) {
+        await PushService.sendToUser(doc.taxYear.clientId, 'client', '✅ Document Approved', `Your ${doc.docType} for ${doc.taxYear.year} has been approved.`, { screen: 'dashboard' });
+      }
+    } catch (_) {}
+
     res.json({ document: updated, message: 'Document approved' });
   } catch (error) {
     console.error('Approve document error:', error);
@@ -913,8 +922,16 @@ export const rejectDocument = async (req: Request, res: Response) => {
       }
     });
 
-    // Send rejection notification
+    // Send rejection notification (email/SMS)
     await NotificationService.notifyDocumentRejected(documentId, reason);
+
+    // Push notification to client
+    try {
+      const doc = await prisma.document.findUnique({ where: { id: documentId }, include: { taxYear: { select: { clientId: true, year: true } } } });
+      if (doc?.taxYear?.clientId) {
+        await PushService.sendToUser(doc.taxYear.clientId, 'client', '❌ Document Needs Attention', `Your ${doc.docType} for ${doc.taxYear.year} needs to be re-uploaded. Reason: ${reason}`, { screen: 'dashboard' });
+      }
+    } catch (_) {}
 
     // Recalculate completeness after rejection
     try { await ValidationService.autoValidate(document.taxYearId); } catch (_) {}
