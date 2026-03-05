@@ -1,299 +1,147 @@
-# TaxFlowAI - Project Status Update
+# TaxFlowAI — Project Status
 
-**Date**: December 5, 2024  
-**Branch**: `copilot/status-update-progress`  
-**Last Update**: Status review requested
-
----
-
-## 📊 Executive Summary
-
-TaxFlowAI is a **free, open-source, bilingual (FR/EN) Canada-wide tax credits estimator** for 2025. The project is in active development with a functional web application deployed at [https://Isaloum.github.io/TaxFlowAI](https://Isaloum.github.io/TaxFlowAI).
-
-**Current Status**: ✅ **STABLE** with minor test configuration issues
+**Last Updated**: March 5, 2026
+**Branch**: `main`
+**Overall Health**: 🟢 LIVE & OPERATIONAL
 
 ---
 
-## 🎯 Project Overview
+## 🏗️ Architecture Overview
 
-### Purpose
-A privacy-first, client-side tax calculator that helps Canadian residents estimate:
-- Provincial Credits (Solidarity Tax Credit, Work Premium)
-- Federal Credits (Basic Personal Amount, Canada Workers Benefit)
-- RRSP impact on tax savings
-
-### Key Features
-- ✅ 100% client-side (no data sent to servers)
-- ✅ Bilingual FR/EN interface
-- ✅ Simple & advanced modes (RL-1 and T4 slip support)
-- ✅ RRSP impact calculator
-- ✅ CLI tool and web UI
-- ✅ n8n webhook integration for auto-parsing
+| Layer | Technology | URL |
+|---|---|---|
+| Mobile App | React Native / Expo SDK 52 | App Store / Play Store |
+| Web Frontend | Next.js (static export) | https://www.isaloumapps.com |
+| Backend API | AWS Lambda (Node.js 22) + API Gateway | https://api.isaloumapps.com |
+| Database | Supabase PostgreSQL | swkqwqtgbxymyhcnhmfv.supabase.co |
+| CI/CD (backend) | GitHub Actions → AWS SAM | Auto-deploys on push to `backend/**` |
+| CI/CD (web) | AWS Amplify | Auto-deploys on push to `frontend/**` |
 
 ---
 
-## 📂 Repository Structure
+## ✅ Features Completed
 
-```
-TaxFlowAI/
-├── index.html                  # Main web UI
-├── cli.js                      # Command-line interface
-├── credit-calculator.js        # Quebec/Federal credit calculations
-├── rrsp-calculator.js          # RRSP impact calculations
-├── income-slip-parser.js       # RL-1/T4 slip parser
-├── autoparse.js                # Auto-parsing for n8n integration
-├── i18n.js                     # Bilingual FR/EN translations
-├── tests/
-│   ├── credit.test.js          # Unit tests (Node.js test runner)
-│   ├── rrsp.test.js            # Unit tests (Node.js test runner)
-│   └── playwright/
-│       └── pages.test.js       # E2E tests (Playwright)
-└── .github/workflows/ci.yml    # CI/CD pipeline
-```
+### Mobile App (iOS + Android)
+- [x] Client login / JWT auth
+- [x] Dashboard with tax year cards + progress bar (`completenessScore`)
+- [x] Auto-refresh on screen focus (`useFocusEffect`)
+- [x] Upload documents with **year selector** (7 years back from current)
+- [x] Delete uploaded documents (with confirmation alert)
+- [x] Year detail screen — view & manage documents per year
+- [x] Push notifications via Expo (`expo-notifications`)
+- [x] Profile name + email display
 
----
+### Web Frontend (www.isaloumapps.com)
+- [x] Client dashboard — all tax years visible (including years 5+ back)
+- [x] Tax year detail page — document upload + delete
+- [x] Accountant dashboard — client list + document review
+- [x] Admin dashboard
+- [x] Login / forgot password / reset password
+- [x] Bilingual (FR/EN) via i18n
+- [x] Push notifications via Web Push API + service worker (`/sw.js`)
 
-## ✅ Recent Work Completed
-
-### PR #14: CI/CD Improvements (Documented)
-**Status**: Fixes documented and ready to apply
-
-**Issues Identified**:
-1. ❌ GitHub Actions artifact name conflict in matrix builds
-2. ❌ 123 ESLint/Prettier lint errors
-
-**Solutions Implemented**:
-- Created `.eslintignore` to exclude HTML files and browser scripts
-- Fixed artifact naming: `ci-logs-node-${{ matrix.node-version }}`
-- Auto-formatted all JavaScript files with Prettier
-- All lint errors resolved
-
-**Documentation**:
-- `TASK_COMPLETE.md` - Comprehensive summary
-- `PR14_SOLUTION.md` - Detailed solution guide
-- `PR14_FIX_REPORT.md` - Quick reference
-
-### PR #4: CI Verification (Completed)
-**Status**: Main branch verified as healthy
-
-**Result**: No action needed - main branch passes all CI checks
-- ✅ Linting: 0 errors
-- ✅ Tests: Passing
-- ✅ Code formatting: Compliant
-
-**Documentation**: `CI_VERIFICATION_REPORT.md`
+### Backend API (api.isaloumapps.com)
+- [x] Auth (register, login, JWT)
+- [x] Document management (upload presign → confirm → delete)
+- [x] Accountant approve / reject documents
+- [x] Push notifications on approve/reject → client notified instantly
+- [x] Push token registration endpoints (`/users/push/expo`, `/users/push/web`)
+- [x] VAPID key endpoint for web push setup
+- [x] Stripe billing integration
+- [x] SES email notifications
+- [x] AI document classification (OpenAI)
+- [x] Self-migrating `push_tokens` table (no manual migration needed)
 
 ---
 
-## 🔧 Current State
+## 🔑 Infrastructure
 
-### Build & Lint Status
-```bash
-npm ci          ✅ SUCCESS (181 packages installed)
-npm run lint    ✅ PASSED (0 errors, 0 warnings)
-npm test        ✅ PASSED (5/5 unit tests passing)
-npm run test:e2e Available for E2E tests (requires deployed site)
-```
+### Active AWS Resources
+| Resource | Name | Purpose |
+|---|---|---|
+| Lambda | `taxflowai-backend-UsersFunction-LheGu0SfGlne` | Auth, users, push routes |
+| Lambda | `taxflowai-backend-DocumentsFunction-49RHO9Lz4hT5` | Document management |
+| Lambda | `taxflowai-backend-AuthFunction-*` | Authentication |
+| Lambda | `taxflowai-backend-NotificationsFunction-*` | Email notifications |
+| API Gateway | `vpkpe98ucc` (taxflowai-backend) | Routes to all Lambdas |
+| Amplify | `d2gxcp91k7yq8u` | Web frontend hosting |
+| SQS | `taxflowai-extraction` | Async document processing |
+| S3 | `aws-sam-cli-managed-default-*` | Lambda deployment artifacts |
 
-### Detailed Test Results
+### DNS (Route 53 — isaloumapps.com)
+| Record | Type | Points To |
+|---|---|---|
+| `www.isaloumapps.com` | CNAME | `d3a9la5gxt2rw7.cloudfront.net` (Amplify) |
+| `isaloumapps.com` | A (ALIAS) | `d3a9la5gxt2rw7.cloudfront.net` (Amplify) |
+| `api.isaloumapps.com` | A (ALIAS) | API Gateway custom domain |
 
-**Passing Tests** (5/5):
-- ✅ `calculateSolidarityCredit` returns number
-- ✅ `calculateWorkPremium` returns number  
-- ✅ `calculateCWB` returns number
-- ✅ `calculateRrspImpact`: no contribution
-- ✅ `calculateRrspImpact`: with contribution reduces income
-
-**Test Configuration**: ✅ FIXED
-- Unit tests now run separately via `npm test`
-- E2E tests run separately via `npm run test:e2e`
-- Combined test suite available via `npm run test:all`
-
----
-
-## 🚨 Active Issues
-
-### ✅ RESOLVED: Test Configuration Mixing
-
-**Problem**: `npm test` was running both Node.js unit tests AND Playwright E2E tests together, causing failures.
-
-**Solution Applied**: Updated `package.json` to separate test commands:
-```json
-{
-  "scripts": {
-    "test": "c8 --reporter=text --reporter=lcov node --test tests/*.test.js",
-    "test:e2e": "playwright test",
-    "test:all": "npm test && npm run test:e2e"
-  }
-}
-```
-
-**Status**: ✅ FIXED - All unit tests now pass
-
-### ✅ RESOLVED: Unused Variables in autoparse.js
-
-**Problem**: Two catch blocks had unused error parameters.
-
-**Solution Applied**: 
-1. Renamed error parameters from `e` to `_e` (convention for intentionally unused)
-2. Updated ESLint config to ignore variables starting with underscore:
-```javascript
-'no-unused-vars': [
-  'warn',
-  {
-    argsIgnorePattern: '^_',
-    varsIgnorePattern: '^_',
-    caughtErrorsIgnorePattern: '^_',
-  },
-]
-```
-
-**Status**: ✅ FIXED - 0 lint warnings
+### Environment Variables (UsersFunction Lambda)
+| Key | Value |
+|---|---|
+| `DATABASE_URL` | Supabase PostgreSQL (pgbouncer) |
+| `JWT_SECRET` | Set |
+| `VAPID_PUBLIC_KEY` | Set (March 2026) |
+| `VAPID_PRIVATE_KEY` | Set (March 2026) |
+| `VAPID_EMAIL` | notifications@isaloumapps.com |
+| `STRIPE_SECRET_KEY` | Set |
+| `SES_EMAIL` | notifications@isaloumapps.com |
+| `OPENAI_API_KEY` | Set |
 
 ---
 
-## 📈 Code Coverage
+## 📱 Mobile Build Status
 
-Current coverage (unit tests only):
-```
-File                  | % Stmts | % Branch | % Funcs | % Lines
-----------------------|---------|----------|---------|--------
-All files             |   82.95 |    41.17 |     100 |   82.95
-credit-calculator.js  |   74.57 |    30.76 |     100 |   74.57
-rrsp-calculator.js    |     100 |       75 |     100 |     100
-```
+| Platform | Version | Build | Status |
+|---|---|---|---|
+| Android | 1.0.0 (build 2) | EAS — `e2d4892c` | 🔄 Queued (Mar 5 2026) |
+| iOS | 1.0.0 (build 2) | EAS — `94a82b0b` | 🔄 Waiting for Android |
 
-**Analysis**:
-- ✅ Good function coverage (100%)
-- ⚠️  Branch coverage needs improvement (41.17%)
-- 📝 Missing test coverage for edge cases in credit calculations
+**Expo project**: `@isaloum85/taxflowai` (ID: `1d895c0d-ec59-4a18-8e7e-528a557f19dd`)
+**Apple Team**: QV66C78N58 (Ihab Saloum — Individual)
+**Bundle ID**: `com.isaloumapps.taxflowai`
+**APNs Push Key**: Created March 5, 2026 ✅
 
 ---
 
-## 🛣️ Roadmap Status
+## 🚀 Recent Changes (March 2026)
 
-### Phase 1: MVP ✅ COMPLETE
-- [x] Basic RL-1/T4 parsing
-- [x] Quebec + Federal credit calculations
-- [x] RRSP impact estimator
-- [x] Bilingual web UI
-- [x] CLI tool
-- [x] GitHub Pages deployment
+### Bug Fixes
+- Fixed upload confirm URL 404 (`/documents/documents/:id/confirm`)
+- Fixed progress bar showing empty (field `completeness` → `completenessScore`)
+- Fixed dashboard stale data (added `useFocusEffect` for auto-refresh)
+- Fixed upload year selector always defaulting to current year
+- Fixed web frontend hiding years older than 5 years (removed `minYear` filter)
 
-### Phase 2: Enhanced UX 🚧 IN PROGRESS
-- [ ] PDF auto-extraction
-- [ ] RRSP optimizer chart
-- [ ] Multi-year comparison
+### New Features
+- **Push notifications** — full stack: Expo (mobile) + Web Push (browser) + backend
+- **Delete documents** — clients can delete uploaded docs with confirmation
+- **Year selector in upload** — choose any year back 7 years
+- **VAPID keys** deployed to Lambda
 
-### Phase 3: Pro Features 📅 PLANNED
-- [ ] CRA/RQ XML export
-- [ ] More credits (Childcare, Medical, CCB)
-- [ ] Multi-province support
-
----
-
-## 🔍 Recommendations
-
-### ✅ Completed This Update
-1. ✅ **Fixed test configuration** - Separated Node.js unit tests from Playwright E2E tests
-2. ✅ **Resolved lint warnings** - Fixed unused variables in `autoparse.js`
-3. ✅ **Created comprehensive status document** - This STATUS.md file
-
-### Next Actions (This Week)
-1. **Update CI workflow** - Ensure both test suites run separately in CI
-2. **Apply PR #14 fixes** - If CI failures occur on that branch
-3. **Test E2E suite** - Verify Playwright tests work against deployed site
-
-### Short-term Improvements (Next 2 Weeks)
-1. **Increase test coverage** - Add edge case tests for credit calculations
-2. **Add integration tests** - Test CLI with various input combinations
-3. **Documentation** - Add JSDoc comments to exported functions
-4. **Performance** - Profile calculation speed for large inputs
-
-### Long-term Goals (Next Month)
-1. **Implement Phase 2 features** - PDF extraction, optimizer chart
-2. **Set up automated E2E testing** - Run Playwright tests in CI
-3. **Accessibility audit** - Address any A11Y violations found
-4. **User feedback loop** - Gather feedback from early users
+### Infrastructure
+- Identified active Lambdas (`taxflowai-backend-*` not `-production-*`)
+- Verified GitHub Actions auto-deploys backend on `backend/**` changes
+- Verified Amplify auto-deploys web on `frontend/**` changes
+- VAPID keys added to Lambda environment
 
 ---
 
-## 🔒 Security Status
+## ⏳ Pending / Next Steps
 
-**Last Security Audit**: December 5, 2024
-
-- ✅ No security vulnerabilities in production code
-- ✅ Client-side only - no server-side data exposure
-- ⚠️  2 moderate vulnerabilities in dev dependencies (`micromatch`) - PRE-EXISTING
-- ✅ No secrets or credentials in repository
-
-**Recommendation**: Update `micromatch` when a patch is available.
+- [ ] **DNS**: Confirm `isaloumapps.com` (no-www) works after Amplify re-verification
+- [ ] **Mobile stores**: Submit builds to App Store + Play Store after EAS build completes
+- [ ] **Subdomains**: `{slug}.isaloumapps.com` per accountant (planned feature)
+- [ ] **EAS paid plan**: Consider upgrading to run iOS + Android builds in parallel
 
 ---
 
-## 📦 Dependencies Status
+## 🔐 Secrets Location
 
-**Production**: 0 dependencies (vanilla JavaScript)
-
-**Development**: 181 packages
-- ESLint 9.39.1
-- Prettier 3.7.4
-- Playwright 1.40.0
-- c8 (coverage) 7.12.0
-- husky 9.1.7
-
-**Health**: ✅ All dependencies installed successfully
+All production secrets are in:
+- **AWS Lambda env vars** (via AWS Console or SAM deploy)
+- **GitHub Secrets** (for CI/CD deploys): `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `DATABASE_URL`, `JWT_SECRET`, `STRIPE_*`, `OPENAI_API_KEY`
 
 ---
 
-## 🌐 Deployment Status
-
-**Live Site**: [https://Isaloum.github.io/TaxFlowAI](https://Isaloum.github.io/TaxFlowAI)  
-**Hosting**: GitHub Pages  
-**Status**: ✅ ONLINE
-
-**Last Deployment**: Not tracked (static site auto-deploys from main)
-
----
-
-## 👥 Contributors
-
-**Creator**: Ihab Saloum ([@Isaloum](https://github.com/Isaloum))  
-**Built with**: Claude AI assistance
-
----
-
-## 📊 Project Metrics
-
-- **Lines of Code**: ~3,000 (excluding dependencies)
-- **Files**: 15 core JavaScript files
-- **Test Files**: 3 (2 unit, 1 E2E)
-- **Test Coverage**: 82.95% statement coverage
-- **Languages**: JavaScript (ES6+), HTML, CSS
-- **License**: MIT
-
----
-
-## 🎯 Summary & Next Steps
-
-TaxFlowAI is a **stable, functional project** with a working MVP deployed and accessible to users. The codebase is well-structured with good test coverage.
-
-**Recent Updates** (December 5, 2024):
-- ✅ Fixed test configuration to separate unit and E2E tests
-- ✅ Resolved all lint warnings
-- ✅ All unit tests passing (5/5)
-- ✅ Created comprehensive status documentation
-
-**Immediate Focus**:
-1. Update CI workflow to use new test commands
-2. Continue with Phase 2 feature development
-3. Monitor deployed site for user feedback
-
-**Overall Health**: 🟢 **EXCELLENT** - No blockers, all issues resolved
-
----
-
-**Last Updated**: December 5, 2024  
-**Status Review By**: GitHub Copilot Agent  
-**Next Review**: After CI workflow updates
-
+**Maintained by**: Ihab Saloum
+**Built with**: Claude AI (Anthropic)
