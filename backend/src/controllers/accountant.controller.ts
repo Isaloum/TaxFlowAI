@@ -498,12 +498,13 @@ export const exportTaxYearExcel = async (req: Request, res: Response) => {
     summary.views = [{ state: 'frozen', ySplit: 1 }];
     docs.views    = [{ state: 'frozen', ySplit: 1 }];
 
-    // Stream response
+    // Write to buffer first (streaming directly causes corruption)
     const filename = `TaxFlowAI_${client.lastName}_${client.firstName}_${taxYear.year}.xlsx`;
+    const buffer = await wb.xlsx.writeBuffer();
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    await wb.xlsx.write(res);
-    res.end();
+    res.setHeader('Content-Length', buffer.byteLength);
+    res.end(buffer);
 
   } catch (error: any) {
     console.error('Export Excel error:', error);
