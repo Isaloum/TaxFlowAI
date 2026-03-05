@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Alert,
-  ActivityIndicator, ScrollView, Platform,
+  ActivityIndicator, ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
@@ -11,32 +11,63 @@ export default function UploadScreen() {
   const [docType, setDocType] = useState('');
   const [file, setFile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState('');
 
   const DOC_TYPES = ['T4', 'T5', 'T3', 'RRSP', 'RL1', 'RL5', 'T4A', 'Other'];
 
   const pickFile = async () => {
-    const result = await DocumentPicker.getDocumentAsync({ type: ['application/pdf', 'image/*'] });
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['application/pdf', 'image/*'],
+      copyToCacheDirectory: true,
+    });
     if (!result.canceled && result.assets?.length) setFile(result.assets[0]);
   };
 
   const handleUpload = async () => {
-    if (!docType) return Alert.alert('Select document type first.');
-    if (!file) return Alert.alert('Pick a file first.');
+    if (!docType) return Alert.alert('Missing', 'Select a document type first.');
+    if (!file) return Alert.alert('Missing', 'Pick a file first.');
     setLoading(true);
     try {
-      const form = new FormData();
-      form.append('file', { uri: file.uri, name: file.name, type: file.mimeType } as any);
-      form.append('docType', docType);
-      await api.post(`/documents/tax-years/${new Date().getFullYear()}/documents`, form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const year = new Date().getFullYear();
+      const mimeType = file.mimeType || 'application/pdf';
+
+      // Step 1: Get presigned URL
+      setStep('Preparing upload...');
+      const { data: presignData } = await api.post(
+        `/documents/tax-years/${year}/presign`,
+        {
+          docType,
+          filename: file.name,
+          mimeType,
+          fileSize: file.size ?? null,
+        }
+      );
+      const { signedUrl, documentId } = presignData;
+
+      // Step 2: Upload file directly to Supabase storage
+      setStep('Uploading file...');
+      const fileContent = await fetch(file.uri);
+      const blob = await fileContent.blob();
+      const uploadRes = await fetch(signedUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': mimeType },
+        body: blob,
       });
-      Alert.alert('Uploaded!', `${docType} uploaded successfully.`);
+      if (!uploadRes.ok) throw new Error(`Storage upload failed: ${uploadRes.status}`);
+
+      // Step 3: Confirm upload
+      setStep('Confirming...');
+      await api.post(`/documents/${documentId}/confirm`);
+
+      Alert.alert('Success! 🎉', `${docType} uploaded successfully.`);
       setFile(null);
       setDocType('');
-    } catch {
-      Alert.alert('Error', 'Upload failed. Please try again.');
+    } catch (e: any) {
+      console.error('Upload error:', e?.message || e);
+      Alert.alert('Error', `Upload failed: ${e?.message || 'Please try again.'}`);
     } finally {
       setLoading(false);
+      setStep('');
     }
   };
 
@@ -44,6 +75,7 @@ export default function UploadScreen() {
     <SafeAreaView style={s.safe}>
       <ScrollView contentContainerStyle={s.scroll}>
         <Text style={s.title}>Upload Document</Text>
+
         <Text style={s.label}>Document Type</Text>
         <View style={s.types}>
           {DOC_TYPES.map((t) => (
@@ -63,7 +95,12 @@ export default function UploadScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity style={s.uploadBtn} onPress={handleUpload} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.uploadText}>Upload</Text>}
+          {loading
+            ? <View style={{ alignItems: 'center' }}>
+                <ActivityIndicator color="#fff" />
+                {!!step && <Text style={s.stepText}>{step}</Text>}
+              </View>
+            : <Text style={s.uploadText}>Upload</Text>}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -84,4 +121,5 @@ const s = StyleSheet.create({
   pickText: { color: '#1E40AF', fontSize: 14, fontWeight: '600' },
   uploadBtn: { backgroundColor: '#1E40AF', borderRadius: 12, padding: 16, alignItems: 'center' },
   uploadText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  stepText: { color: '#fff', fontSize: 12, marginTop: 4, opacity: 0.85 },
 });
