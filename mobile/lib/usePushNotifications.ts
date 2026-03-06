@@ -1,23 +1,32 @@
 import { useEffect, useRef } from 'react';
-import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import api from './api';
-
-// Show notifications even when app is in foreground
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
 
 export function usePushNotifications() {
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
 
   useEffect(() => {
+    // Skip entirely on emulators/simulators
+    if (!Device.isDevice) return;
+
+    let Notifications: typeof import('expo-notifications');
+    try {
+      Notifications = require('expo-notifications');
+    } catch {
+      return;
+    }
+
+    // Show notifications even when app is in foreground
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+      }),
+    });
+
     registerForPushNotifications();
 
     // Handle notification received in foreground
@@ -28,7 +37,6 @@ export function usePushNotifications() {
     // Handle notification tap
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       console.log('Push tapped:', response);
-      // Could navigate to a specific screen here based on response.notification.request.content.data
     });
 
     return () => {
@@ -39,8 +47,12 @@ export function usePushNotifications() {
 }
 
 async function registerForPushNotifications() {
-  if (!Device.isDevice) {
-    console.log('Push notifications require a physical device');
+  if (!Device.isDevice) return;
+
+  let Notifications: typeof import('expo-notifications');
+  try {
+    Notifications = require('expo-notifications');
+  } catch {
     return;
   }
 
