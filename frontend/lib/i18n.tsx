@@ -23,6 +23,9 @@ const EN: Translations = {
   'common.yes':            'Yes',
   'common.no':             'No',
   'common.deleting':       'Deleting…',
+  'common.login':          'Login',
+  'common.getStarted':     'Get Started',
+  'common.startTrial':     'Start Free Trial',
 
   // ── Nav ─────────────────────────────────────────────────────────────────────
   'nav.dashboard':         'Dashboard',
@@ -299,6 +302,9 @@ const FR: Translations = {
   'common.yes':            'Oui',
   'common.no':             'Non',
   'common.deleting':       'Suppression…',
+  'common.login':          'Connexion',
+  'common.getStarted':     'Commencer',
+  'common.startTrial':     'Essai gratuit',
 
   'nav.dashboard':         'Tableau de bord',
   'nav.taxYear':           'Année fiscale',

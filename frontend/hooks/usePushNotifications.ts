@@ -32,7 +32,7 @@ async function registerWebPush() {
     // Subscribe
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(data.key),
+      applicationServerKey: urlBase64ToUint8Array(data.key) as BufferSource,
     });
 
     // Send subscription to backend
