@@ -26,6 +26,10 @@ const EN: Translations = {
   'common.login':          'Login',
   'common.getStarted':     'Get Started',
   'common.startTrial':     'Start Free Trial',
+  'common.secure':         '🔒 Secured by 256-bit encryption',
+  'common.backToLogin':    'Back to login',
+  'common.passwordHint':   'Must be at least 8 characters',
+  'common.redirecting':    'Redirecting…',
 
   // ── Nav ─────────────────────────────────────────────────────────────────────
   'nav.dashboard':         'Dashboard',
@@ -305,6 +309,10 @@ const FR: Translations = {
   'common.login':          'Connexion',
   'common.getStarted':     'Commencer',
   'common.startTrial':     'Essai gratuit',
+  'common.secure':         '🔒 Sécurisé par chiffrement 256 bits',
+  'common.backToLogin':    'Retour à la connexion',
+  'common.passwordHint':   'Doit contenir au moins 8 caractères',
+  'common.redirecting':    'Redirection…',
 
   'nav.dashboard':         'Tableau de bord',
   'nav.taxYear':           'Année fiscale',
