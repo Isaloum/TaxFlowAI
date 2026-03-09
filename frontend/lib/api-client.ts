@@ -55,6 +55,24 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Auto-redirect to login when session expires (401 or 403 on /auth/me or all routes)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (typeof window !== 'undefined') {
+      const status = error?.response?.status;
+      const url = error?.config?.url || '';
+      // If /auth/me returns 401/403, session is expired → clear and redirect
+      if ((status === 401 || status === 403) && url.includes('/auth/me')) {
+        ['auth_token', 'auth_user', 'auth_token_accountant', 'auth_user_accountant',
+         'auth_token_client', 'auth_user_client'].forEach(k => localStorage.removeItem(k));
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export class APIClient {
   static async login(email: string, password: string) {
     const res = await api.post('/auth/login', { email, password });

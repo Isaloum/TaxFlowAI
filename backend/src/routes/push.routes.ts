@@ -26,8 +26,9 @@ router.post('/web', authenticateToken, async (req: Request, res: Response) => {
     await PushService.registerWebPush(req.user!.sub, req.user!.role, { endpoint, keys });
     res.json({ ok: true });
   } catch (e: any) {
-    console.error('Register web push error:', e);
-    res.status(500).json({ error: e.message });
+    // Push registration is non-critical — log but don't crash the user's session
+    console.warn('Register web push error (non-critical):', e?.message);
+    res.json({ ok: true, warn: 'push registration skipped' });
   }
 });
 
