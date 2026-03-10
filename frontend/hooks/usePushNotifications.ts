@@ -29,6 +29,10 @@ async function registerWebPush() {
     const { data } = await api.get('/users/push/vapid-public');
     if (!data.key) return;
 
+    // Unsubscribe any existing subscription (handles VAPID key rotation)
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) await existing.unsubscribe();
+
     // Subscribe
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
