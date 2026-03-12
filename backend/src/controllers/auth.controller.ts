@@ -238,3 +238,53 @@ export const changePassword = async (req: Request, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
   res.status(200).json({ message: 'Logout successful' });
 };
+
+export const getMe = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    if (req.user.role === 'accountant') {
+      const accountant = await prisma.accountant.findUnique({
+        where: { id: req.user.sub },
+      });
+      if (!accountant) {
+        return res.status(404).json({ error: 'Accountant not found' });
+      }
+      return res.status(200).json({
+        id: accountant.id,
+        email: accountant.email,
+        firmName: accountant.firmName,
+        phone: accountant.phone,
+        languagePref: accountant.languagePref,
+        role: 'accountant',
+      });
+    }
+
+    if (req.user.role === 'client') {
+      const client = await prisma.client.findUnique({
+        where: { id: req.user.sub },
+      });
+      if (!client) {
+        return res.status(404).json({ error: 'Client not found' });
+      }
+      return res.status(200).json({
+        id: client.id,
+        email: client.email,
+        firstName: client.firstName,
+        lastName: client.lastName,
+        province: client.province,
+        phone: client.phone,
+        languagePref: client.languagePref,
+        isFirstLogin: client.isFirstLogin,
+        role: 'client',
+      });
+    }
+
+    return res.status(400).json({ error: 'Unknown role' });
+  } catch (error) {
+    console.error('Get me error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

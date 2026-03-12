@@ -23,11 +23,12 @@ export class APIClient {
   }
 
   static async register(data: any) {
-    return api.post('/auth/register', data);
+    const res = await api.post('/auth/register', data);
+    return res.data;
   }
 
   static async getProfile() {
-    return api.get('/client/profile');
+    return api.get('/auth/me');
   }
 
   static async getCompleteness(year: number) {
