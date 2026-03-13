@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform,
+  StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
 import { Link } from 'expo-router';
 import { useAuth } from '../../lib/auth';
@@ -26,7 +26,16 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={s.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={s.container}
+      behavior={Platform.OS === 'ios' ? 'height' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+    >
+      <ScrollView
+        contentContainerStyle={s.scroll}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
       <View style={s.card}>
         <Text style={s.logo}>TaxFlow<Text style={s.logoBlue}>AI</Text></Text>
         <Text style={s.subtitle}>Sign in to your account</Text>
@@ -57,12 +66,14 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </Link>
       </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0F7FF', justifyContent: 'center', padding: 24 },
+  container: { flex: 1, backgroundColor: '#F0F7FF' },
+  scroll: { flexGrow: 1, justifyContent: 'center', padding: 24 },
   card: { backgroundColor: '#fff', borderRadius: 16, padding: 28, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 },
   logo: { fontSize: 32, fontWeight: '800', color: '#111827', textAlign: 'center', marginBottom: 4 },
   logoBlue: { color: '#1E40AF' },
