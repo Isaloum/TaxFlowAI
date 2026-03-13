@@ -66,8 +66,9 @@ api.interceptors.response.use(
       if ((status === 401 || status === 403) && url.includes('/auth/me')) {
         ['auth_token', 'auth_user', 'auth_token_accountant', 'auth_user_accountant',
          'auth_token_client', 'auth_user_client'].forEach(k => localStorage.removeItem(k));
-        // Don't redirect if already on /login — prevents infinite twitching loop
-        if (!window.location.pathname.includes('/login')) {
+        // Don't redirect on public pages — login, forgot-password, reset-password
+        const publicPaths = ['/login', '/forgot-password', '/reset-password'];
+        if (!publicPaths.some(p => window.location.pathname.includes(p))) {
           window.location.href = '/login';
         }
       }
