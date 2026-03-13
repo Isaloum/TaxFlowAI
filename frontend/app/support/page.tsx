@@ -80,14 +80,14 @@ export default function SupportPage() {
           <div style={{ padding: '24px 0', borderTop: '1px solid #E5E7EB' }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 8px', color: '#111827' }}>How do I reset my password?</h3>
             <p style={{ margin: 0, color: '#4B5563', fontSize: 15 }}>
-              On the login screen, tap <strong>"Forgot password?"</strong> and enter your email address. You&apos;ll receive a password reset link within a few minutes. Check your spam folder if it doesn&apos;t arrive. If you still have trouble, email us at <a href="mailto:support@isaloumapps.com" style={{ color: '#2563EB' }}>support@isaloumapps.com</a>.
+              On the login screen, tap <strong>&quot;Forgot password?&quot;</strong> and enter your email address. You&apos;ll receive a password reset link within a few minutes. Check your spam folder if it doesn&apos;t arrive. If you still have trouble, email us at <a href="mailto:support@isaloumapps.com" style={{ color: '#2563EB' }}>support@isaloumapps.com</a>.
             </p>
           </div>
 
           <div style={{ padding: '24px 0', borderTop: '1px solid #E5E7EB' }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 8px', color: '#111827' }}>I can&apos;t log in — what should I do?</h3>
             <p style={{ margin: 0, color: '#4B5563', fontSize: 15 }}>
-              First, double-check that you&apos;re using the same email address your accountant used to invite you. If your password isn&apos;t working, use the <strong>"Forgot password?"</strong> link on the login screen. If you&apos;re still locked out, contact us at <a href="mailto:support@isaloumapps.com" style={{ color: '#2563EB' }}>support@isaloumapps.com</a> and we&apos;ll restore access promptly.
+              First, double-check that you&apos;re using the same email address your accountant used to invite you. If your password isn&apos;t working, use the <strong>&quot;Forgot password?&quot;</strong> link on the login screen. If you&apos;re still locked out, contact us at <a href="mailto:support@isaloumapps.com" style={{ color: '#2563EB' }}>support@isaloumapps.com</a> and we&apos;ll restore access promptly.
             </p>
           </div>
 
@@ -131,7 +131,7 @@ export default function SupportPage() {
           <div style={{ padding: '24px 0', borderTop: '1px solid #E5E7EB' }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 8px', color: '#111827' }}>How do I delete my account and data?</h3>
             <p style={{ margin: 0, color: '#4B5563', fontSize: 15 }}>
-              To request account deletion and removal of your personal data, email us at <a href="mailto:support@isaloumapps.com" style={{ color: '#2563EB' }}>support@isaloumapps.com</a> with the subject line <strong>"Account Deletion Request"</strong>. We will process your request within 5 business days.
+              To request account deletion and removal of your personal data, email us at <a href="mailto:support@isaloumapps.com" style={{ color: '#2563EB' }}>support@isaloumapps.com</a> with the subject line <strong>&quot;Account Deletion Request&quot;</strong>. We will process your request within 5 business days.
             </p>
           </div>
 
