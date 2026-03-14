@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView,
+  StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { Link } from 'expo-router';
 import { useAuth } from '../../lib/auth';
@@ -28,52 +28,51 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       style={s.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView
-        contentContainerStyle={s.scroll}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-      <View style={s.card}>
-        <Text style={s.logo}>TaxFlow<Text style={s.logoBlue}>AI</Text></Text>
-        <Text style={s.subtitle}>Sign in to your account</Text>
+      <View style={s.inner}>
+        <View style={s.card}>
+          <Text style={s.logo}>TaxFlow<Text style={s.logoBlue}>AI</Text></Text>
+          <Text style={s.subtitle}>Sign in to your account</Text>
 
-        <TextInput
-          style={s.input}
-          placeholder="Email"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={s.input}
-          placeholder="Password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+          <TextInput
+            style={s.input}
+            placeholder="Email"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+            autoCorrect={false}
+            spellCheck={false}
+          />
+          <TextInput
+            style={s.input}
+            placeholder="Password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            autoCorrect={false}
+            spellCheck={false}
+          />
 
-        <TouchableOpacity style={s.btn} onPress={handleLogin} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.btnText}>Sign In</Text>}
-        </TouchableOpacity>
-
-        <Link href="/(auth)/forgot-password" asChild>
-          <TouchableOpacity style={s.link}>
-            <Text style={s.linkText}>Forgot password?</Text>
+          <TouchableOpacity style={s.btn} onPress={handleLogin} disabled={loading}>
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.btnText}>Sign In</Text>}
           </TouchableOpacity>
-        </Link>
+
+          <Link href="/(auth)/forgot-password" asChild>
+            <TouchableOpacity style={s.link}>
+              <Text style={s.linkText}>Forgot password?</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
       </View>
-      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F0F7FF' },
-  scroll: { flexGrow: 1, justifyContent: 'center', padding: 24 },
+  inner: { flex: 1, justifyContent: 'center', padding: 24 },
   card: { backgroundColor: '#fff', borderRadius: 16, padding: 28, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 },
   logo: { fontSize: 32, fontWeight: '800', color: '#111827', textAlign: 'center', marginBottom: 4 },
   logoBlue: { color: '#1E40AF' },
