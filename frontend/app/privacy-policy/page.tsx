@@ -6,7 +6,7 @@ export default function PrivacyPolicy() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>1. Who We Are</h2>
-        <p>TaxFlowAI ("we", "our", "us") is a Canadian tax document management application operated by Ihab Saloum. We help accountants and their clients securely manage tax documents.</p>
+        <p>TaxFlowAI is a Canadian tax document management application operated by Ihab Saloum. We help accountants and their clients securely manage tax documents.</p>
         <p style={{ marginTop: 8 }}>Contact: <a href="mailto:ihabsaloum85@gmail.com" style={{ color: "#2563eb" }}>ihabsaloum85@gmail.com</a></p>
       </section>
 
@@ -32,7 +32,7 @@ export default function PrivacyPolicy() {
       </section>
 
       <section style={{ marginBottom: 32 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>4. Data Storage & Security</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>4. Data Storage &amp; Security</h2>
         <p>Your data is stored on secure infrastructure including AWS S3 (documents) and a PostgreSQL database hosted on Supabase. All data is encrypted in transit (TLS) and at rest. We do not sell your data to third parties.</p>
       </section>
 
@@ -49,7 +49,7 @@ export default function PrivacyPolicy() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>6. Advertising</h2>
-        <p>TaxFlowAI does not use advertising SDKs and does not collect or share advertising identifiers (IDFA/GAID).</p>
+        <p>TaxFlowAI does not use advertising SDKs and does not collect or share advertising identifiers.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
@@ -58,7 +58,7 @@ export default function PrivacyPolicy() {
       </section>
 
       <section style={{ marginBottom: 32 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>8. Children's Privacy</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>8. Children&apos;s Privacy</h2>
         <p>TaxFlowAI is not intended for users under the age of 18. We do not knowingly collect personal information from minors.</p>
       </section>
 
