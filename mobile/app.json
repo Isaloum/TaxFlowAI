@@ -2,7 +2,7 @@
   "expo": {
     "name": "TaxFlowAI",
     "slug": "taxflowai",
-    "version": "1.0.0",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -21,6 +21,7 @@
     },
     "android": {
       "package": "com.isaloumapps.taxflowai",
+      "targetSdkVersion": 35,
       "adaptiveIcon": {
         "backgroundColor": "#1E40AF",
         "foregroundImage": "./assets/android-icon-foreground.png"
@@ -30,7 +31,13 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      ["expo-build-properties", {
+        "android": {
+          "targetSdkVersion": 35,
+          "compileSdkVersion": 35
+        }
+      }]
     ],
     "extra": {
       "router": {
