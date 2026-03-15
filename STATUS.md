@@ -103,19 +103,20 @@
 
 ---
 
-## 📊 Store Status (March 14, 2026)
+## 📊 Store Status (March 15, 2026)
 
 | Platform | Status | Version | Notes |
 |---|---|---|---|
-| iOS App Store | ✅ Live | v1.1 (build 7) | Approved. 4 screenshots uploaded. |
-| Google Play | ⏳ Closed Testing | v1.1.0 (build 7) | Need 12 testers opted-in × 14 days |
+| iOS App Store | ⏳ Waiting for Review | v1.2 (build 9) | Submitted 2026-03-14. Auto-release on approval. |
+| iOS App Store | ✅ Live | v1.1 (build 7) | Currently live for users. |
+| Google Play | ⏳ Closed Testing | v1.1.0 (build 7) | Need 12 Android testers opted-in × 14 days |
 | Privacy Policy | ✅ Live | — | https://www.isaloumapps.com/privacy-policy |
 
 ### Known Bugs
 | Bug | Status | Fix | Commit |
 |---|---|---|---|
-| Login screen twitching on every keystroke | ✅ Fixed in code | Removed ScrollView, added autoCorrect=false | 02ff8dc |
-| Wrong launch image (grid/crosshair shows for 1s) | ❌ Not fixed | Replace splash-icon.png with branded image | — |
+| Login screen twitching on every keystroke | ✅ Fixed | Removed ScrollView, added autoCorrect=false | 02ff8dc |
+| Wrong launch image (grid/crosshair shows for 1s) | ✅ Fixed | Replaced splash-icon.png with branded 1284×2778px image | 7333951 |
 
 ---
 
@@ -142,17 +143,15 @@
 
 ---
 
-## ⏳ Pending / Next Steps
+## ⏳ Pending / Next Steps (priority order)
 
-- [ ] **DNS**: Confirm `isaloumapps.com` (no-www) works after Amplify re-verification
-- [ ] **Subdomains**: `{slug}.isaloumapps.com` per accountant (planned feature)
-- [ ] **EAS paid plan**: Consider upgrading to run iOS + Android builds in parallel
-- [ ] Build new iOS version: `cd mobile && eas build --platform ios --profile production`
-- [ ] Test twitching fix on TestFlight before submitting v1.2
-- [ ] Fix splash screen image (replace `mobile/assets/splash-icon.png` with branded image)
-- [ ] Complete Google Play store setup: Data safety, App category (Finance), Target audience (18+)
-- [ ] Send closed test opt-in link to all 12 testers (Play Console → Closed testing → Alpha → Testers → "Join on the web")
-- [ ] Wait 14 days with 12 testers opted-in → apply for Production on Google Play
+- [ ] **Deploy Stripe billing** — run `sam deploy` with real Stripe keys (BillingFunction + env vars now in template.yaml)
+- [ ] **Create Stripe products** — go to dashboard.stripe.com → create $12/client/year price + $3,500 onboarding price, copy IDs
+- [ ] **Find 12 Android testers** — post in r/androidapps on Reddit
+- [ ] **Build Android v1.2.0** — `cd mobile && eas build --platform android --profile production`
+- [ ] **Get 5 paying accountants** — LinkedIn / email cold outreach
+- [ ] **Wait for iOS v1.2 approval** — email from Apple (24-48 hrs)
+- [ ] **Wait 14 days** with 12 Android testers opted-in → apply for Google Play Production
 
 ---
 

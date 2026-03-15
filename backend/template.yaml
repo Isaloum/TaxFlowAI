@@ -15,6 +15,11 @@ Globals:
         OPENAI_API_KEY: !Ref OpenAIKey
         SES_EMAIL: notifications@isaloumapps.com
         NODE_ENV: production
+        STRIPE_SECRET_KEY: !Ref StripeSecretKey
+        STRIPE_PRICE_ID: !Ref StripePriceId
+        STRIPE_ONBOARDING_PRICE_ID: !Ref StripeOnboardingPriceId
+        STRIPE_WEBHOOK_SECRET: !Ref StripeWebhookSecret
+        FRONTEND_URL: https://www.isaloumapps.com
 
 Parameters:
   DatabaseUrl:
@@ -32,6 +37,20 @@ Parameters:
     Type: String
     NoEcho: true
     Description: OpenAI API key for document classification
+  StripeSecretKey:
+    Type: String
+    NoEcho: true
+    Description: Stripe secret key (sk_live_...)
+  StripePriceId:
+    Type: String
+    Description: Stripe recurring price ID for $12/client/year
+  StripeOnboardingPriceId:
+    Type: String
+    Description: Stripe one-time onboarding price ID ($3,500)
+  StripeWebhookSecret:
+    Type: String
+    NoEcho: true
+    Description: Stripe webhook signing secret (whsec_...)
   AllowedOrigin:
     Type: String
     Default: "'https://isaloumapps.com,https://www.isaloumapps.com'"
@@ -88,6 +107,20 @@ Resources:
           Properties:
             RestApiId: !Ref TaxFlowAPI
             Path: /users/{proxy+}
+            Method: ANY
+
+  BillingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/lambda/billing.handler
+      Description: Stripe billing, subscriptions, and webhooks
+      Events:
+        BillingAPI:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaxFlowAPI
+            Path: /billing/{proxy+}
             Method: ANY
 
   NotificationFunction:
