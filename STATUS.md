@@ -103,6 +103,22 @@
 
 ---
 
+## 📊 Store Status (March 14, 2026)
+
+| Platform | Status | Version | Notes |
+|---|---|---|---|
+| iOS App Store | ✅ Live | v1.1 (build 7) | Approved. 4 screenshots uploaded. |
+| Google Play | ⏳ Closed Testing | v1.1.0 (build 7) | Need 12 testers opted-in × 14 days |
+| Privacy Policy | ✅ Live | — | https://www.isaloumapps.com/privacy-policy |
+
+### Known Bugs
+| Bug | Status | Fix | Commit |
+|---|---|---|---|
+| Login screen twitching on every keystroke | ✅ Fixed in code | Removed ScrollView, added autoCorrect=false | 02ff8dc |
+| Wrong launch image (grid/crosshair shows for 1s) | ❌ Not fixed | Replace splash-icon.png with branded image | — |
+
+---
+
 ## 🚀 Recent Changes (March 2026)
 
 ### Bug Fixes
@@ -129,9 +145,14 @@
 ## ⏳ Pending / Next Steps
 
 - [ ] **DNS**: Confirm `isaloumapps.com` (no-www) works after Amplify re-verification
-- [ ] **Mobile stores**: Submit builds to App Store + Play Store after EAS build completes
 - [ ] **Subdomains**: `{slug}.isaloumapps.com` per accountant (planned feature)
 - [ ] **EAS paid plan**: Consider upgrading to run iOS + Android builds in parallel
+- [ ] Build new iOS version: `cd mobile && eas build --platform ios --profile production`
+- [ ] Test twitching fix on TestFlight before submitting v1.2
+- [ ] Fix splash screen image (replace `mobile/assets/splash-icon.png` with branded image)
+- [ ] Complete Google Play store setup: Data safety, App category (Finance), Target audience (18+)
+- [ ] Send closed test opt-in link to all 12 testers (Play Console → Closed testing → Alpha → Testers → "Join on the web")
+- [ ] Wait 14 days with 12 testers opted-in → apply for Production on Google Play
 
 ---
 
