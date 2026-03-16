@@ -107,8 +107,7 @@
 
 | Platform | Status | Version | Notes |
 |---|---|---|---|
-| iOS App Store | ⏳ Waiting for Review | v1.2 (build 9) | Submitted 2026-03-14. Auto-release on approval. |
-| iOS App Store | ✅ Live | v1.1 (build 7) | Currently live for users. |
+| iOS App Store | ✅ Live | v1.2 (build 9) | Approved & live. Auto-released. |
 | Google Play | ⏳ Closed Testing | v1.1.0 (build 7) | Need 12 Android testers opted-in × 14 days |
 | Privacy Policy | ✅ Live | — | https://www.isaloumapps.com/privacy-policy |
 
@@ -141,16 +140,38 @@
 - Verified Amplify auto-deploys web on `frontend/**` changes
 - VAPID keys added to Lambda environment
 
+### March 15, 2026
+- iOS v1.2 submitted and **approved same day** ✅
+- Branded splash screen generated (1284×2778px, #1E40AF + centered logo)
+- Login twitching fix confirmed live
+- BillingFunction added to template.yaml + all Stripe env vars deployed
+- Stripe products created in CAD: $12/client/year + $3,500 onboarding
+- Stripe webhook configured for 4 events
+- Billing API live and auth-protected
+
+---
+
+## 💳 Stripe Billing (March 15, 2026)
+
+| Item | Status |
+|---|---|
+| Stripe products created | ✅ Annual Plan ($12 CAD/client/year) + Onboarding ($3,500 CAD one-time) |
+| Annual Plan Price ID | `price_1TBPzpE9neqrFM5LdI0W68fn` |
+| Onboarding Price ID | `price_1TBQ1HE9neqrFM5Lvuo7Jo5P` |
+| Webhook endpoint | ✅ Created → `https://vpkpe98ucc.execute-api.us-east-1.amazonaws.com/prod/billing/webhook` |
+| BillingFunction deployed | ✅ `taxflowai-backend-BillingFunction-ifZyhkP8eQiN` |
+| Stripe env vars in Lambda | ✅ All set |
+| Billing API live | ✅ `/prod/billing/status` returns `"Access token required"` (correct) |
+| Stripe secret key rotation | ⚠️ PENDING — key was accidentally shared in chat, must rotate immediately |
+
 ---
 
 ## ⏳ Pending / Next Steps (priority order)
 
-- [ ] **Deploy Stripe billing** — run `sam deploy` with real Stripe keys (BillingFunction + env vars now in template.yaml)
-- [ ] **Create Stripe products** — go to dashboard.stripe.com → create $12/client/year price + $3,500 onboarding price, copy IDs
+- [ ] **Rotate Stripe secret key** — Stripe dashboard → Developers → API keys → Secret key → `...` → Rotate key
 - [ ] **Find 12 Android testers** — post in r/androidapps on Reddit
 - [ ] **Build Android v1.2.0** — `cd mobile && eas build --platform android --profile production`
 - [ ] **Get 5 paying accountants** — LinkedIn / email cold outreach
-- [ ] **Wait for iOS v1.2 approval** — email from Apple (24-48 hrs)
 - [ ] **Wait 14 days** with 12 Android testers opted-in → apply for Google Play Production
 
 ---
